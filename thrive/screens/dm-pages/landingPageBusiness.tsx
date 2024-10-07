@@ -126,16 +126,6 @@ const LandingPageBusiness: React.FC = () => {
     );
 };
 
-const footerBarVendor: React.FC = () => {
-    return(
-        <View>
-
-        </View>
-    )
-}
-
-
-
 const styles = StyleSheet.create({
     container: {
         flex: 1,
