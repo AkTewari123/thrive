@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Feather from "@expo/vector-icons/Feather";
-import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  Text,
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import thriveHeader from "../components/thriveHeader";
 interface BusinessItemProps {
   name: string;
   description: string;
   initial: string;
 }
-
+import * as Font from 'expo-font';
+const loadFonts = async () => {
+    await Font.loadAsync({
+      'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'), // Make sure the path is correct
+    });
+  };
 const BusinessItem: React.FC<BusinessItemProps> = ({
   name,
   description,
@@ -48,17 +59,108 @@ const SeeMoreButton: React.FC = () => (
 );
 
 interface followingItemProps {
-  businessName: string;
-  profileColor: string;
-  initial: string;
+  name: string;
+  description: string;
+  color: string;
 }
 
+const Following: React.FC<followingItemProps> = ({
+  name,
+  description,
+  color
+}) => (
+    
+  <TouchableOpacity style={styles.itemContainer}>
+    <View
+      style={[
+        styles.initialCircle,
+        { backgroundColor: color},
+      ]}
+    >
+      <Text style={styles.initialText}>{name.slice(0,1)}</Text>
+    </View>
+    <View style={styles.notificationPing}>
+
+    </View>
+    <View style={styles.itemTextContainer}>
+      <Text style={styles.itemName}>{name}</Text>
+      <Text style={styles.itemDescription}>{description}</Text>
+    </View>
+    <Text style={styles.arrowRight}>
+      <Feather name="arrow-right-circle" size={32} color="black" />
+    </Text>
+  </TouchableOpacity>
+);
+interface reccommendedItemProps {
+  name: string;
+  description: string;
+  color: string;
+}
+
+const Reccommended: React.FC<reccommendedItemProps> = ({
+  name,
+  description,
+  color
+}) => (
+  <TouchableOpacity style={styles.itemContainer}>
+    <View
+      style={[
+        styles.initialCircle,
+        { backgroundColor: color},
+      ]}
+    >
+      <Text style={styles.initialText}>{name.slice(0,1)}</Text>
+    </View>
+    <View style={styles.itemTextContainer}>
+      <Text style={styles.itemName}>{name}</Text>
+      <Text style={styles.itemDescription}>{description}</Text>
+    </View>
+    <Text style={styles.arrowRight}>
+      <Feather name="arrow-right-circle" size={32} color="black" />
+    </Text>
+  </TouchableOpacity>
+);
+
 const ClientDashboard: React.FC = () => {
+    useEffect(() => {
+        loadFonts();
+      }, []);
   return (
     <>
       {thriveHeader({})}
-      <Text>Hello World!</Text>
-      <SectionHeader title="Following"></SectionHeader>
+      <Text style={{ fontFamily: "Outfit-Bold"}}>
+        Hello World!
+      </Text>
+      <View style={styles.container}>
+        <ScrollView style={styles.content}>
+          <SectionHeader title="Following">
+            
+          </SectionHeader>
+          <Following
+            name="Hyderbad Spice"
+            color= "#2196F3"
+            description="New Spicy Kurma Dish!"
+          />
+          <Following
+            name="Ganga"
+            color= "rgb(20 184 166)"
+            description="New Spicy Kurma Dish!"
+          />
+          <SectionHeader title="Recommended">
+            
+          </SectionHeader>
+          <Reccommended
+            name="Livito's"
+            color= "#F69D61"
+            description="Italian Cuisine since 1994"
+          />
+          <Reccommended
+            name="Pine Tavern"
+            color= "#F6E061"
+            description="World's Best Burgers"
+          />
+        </ScrollView>
+      </View>
     </>
   );
 };
@@ -76,6 +178,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
   },
+  notificationPing: {
+    backgroundColor: "#EE4957",
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    position: "absolute",
+    top: 17,
+    left: 45,
+  },
   headerText: {
     marginLeft: 8,
     fontSize: 20,
@@ -90,8 +201,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#1F2937",
     marginTop: 24,
-    marginBottom: 8,
-    marginLeft: 16,
+    backgroundColor: "white",
+    paddingLeft: 16,
+    paddingVertical: 10,
+    fontFamily: "Outfit-Medium",
+
   },
   itemContainer: {
     flexDirection: "row",
@@ -99,7 +213,10 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: "#DDDDDD",
+    borderTopColor: "#DDDDDD",
+    borderTopWidth: 1,
+    fontFamily: "Outfit-Bold",
   },
   initialCircle: {
     width: 40,
@@ -124,7 +241,8 @@ const styles = StyleSheet.create({
   },
   itemDescription: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#618BDB",
+    fontWeight: "600",
   },
   arrowRight: {
     fontSize: 20,

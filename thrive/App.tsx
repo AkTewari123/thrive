@@ -13,6 +13,7 @@ function HomeScreen({ navigation }: any) {
     <View style={styles.container}>
       <Text>Open up App.tsx to start working on your app!</Text>
       <Button
+
         title="Go to messages"
         onPress={() => navigation.navigate('Messages')}
       />
