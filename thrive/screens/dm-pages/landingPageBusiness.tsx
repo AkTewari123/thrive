@@ -27,7 +27,7 @@ interface RatingStarProps{
     stars:number; 
 }
 
-const RatingStars: React.FC<RatingStarProps> = ( {stars} ) => {
+export const RatingStars: React.FC<RatingStarProps> = ( {stars} ) => {
     return (
         <View style={{flexDirection: 'row'}}>
             {Array.from({ length: 5 }, (_, index) => (
@@ -43,7 +43,6 @@ interface CompanyProps {
     name: string; 
     rating: number; 
     initial: string; 
-    //orders: number; 
 }
 
 const CompanyHeader: React.FC<CompanyProps> = ({name, rating, initial}) => {
@@ -158,7 +157,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         gap: 8,
         justifyContent: 'flex-start',
-        height: 175,
+
         width: '100%',
     },
     headerTextContainer: {
@@ -250,3 +249,4 @@ const styles = StyleSheet.create({
 });
 
 export default LandingPageBusiness;
+
