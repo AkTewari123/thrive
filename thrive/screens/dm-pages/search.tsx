@@ -4,7 +4,7 @@ import { Feather } from '@expo/vector-icons';
 
 const SearchResults: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredResults, setFilteredResults] = useState(data); // 'data' would be your list of results
+  const [filteredResults, setFilteredResults] = useState(data);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -31,15 +31,15 @@ const SearchResults: React.FC = () => {
       <ScrollView style={styles.resultsList}>
         {filteredResults.length > 0 ? (
           filteredResults.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.resultItem}>
-              <View style={styles.resultIconContainer}>
-                <Text style={styles.resultIcon}>{item.initial}</Text>
+            <TouchableOpacity key={index} style={styles.itemContainer}>
+              <View style={[styles.initialCircle, { backgroundColor: item.initial === 'H' ? '#8B5CF6' : '#22C55E' }]}>
+                <Text style={styles.initialText}>{item.initial}</Text>
               </View>
-              <View style={styles.resultContent}>
-                <Text style={styles.resultName}>{item.name}</Text>
-                <Text style={styles.resultDescription}>{item.description}</Text>
+              <View style={styles.itemTextContainer}>
+                <Text style={styles.itemName}>{item.name}</Text>
+                <Text style={styles.itemDescription}>{item.description}</Text>
               </View>
-              <Feather name="arrow-right" size={24} color="#6B7280" />
+              <Feather name="arrow-right-circle" size={32} color="black" />
             </TouchableOpacity>
           ))
         ) : (
@@ -85,42 +85,41 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   resultsList: {
+    marginTop: 16,
     flex: 1,
-    padding: 16,
+    padding: 0,
   },
-  resultItem: {
+  itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'white',
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderColor: '#E5E7EB',
-    borderWidth: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+
   },
-  resultIconContainer: {
+  initialCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#8B5CF6',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
   },
-  resultIcon: {
+  initialText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
   },
-  resultContent: {
+  itemTextContainer: {
     flex: 1,
+    marginLeft: 12,
   },
-  resultName: {
+  itemName: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1F2937',
   },
-  resultDescription: {
+  itemDescription: {
     fontSize: 14,
     color: '#6B7280',
   },
