@@ -5,6 +5,8 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import DMList from './screens/dm-pages/dm-list';
 import SpecificDM from './screens/dm-pages/dm';
+import LandingPageBusiness from './screens/dm-pages/landingPageBusiness';
+import SearchResults from './screens/dm-pages/search';
 
 const Stack = createStackNavigator();
 
@@ -24,6 +26,10 @@ function HomeScreen({ navigation }) {
         title="Go to landing page (business)"
         onPress={() => navigation.navigate('landing-page-business')}
       />
+      <Button 
+        title="Go to search"
+        onPress={() => navigation.navigate('SearchResults')}
+      />
       <StatusBar style="auto" />
       <StatusBar style="auto" />
     </View>
@@ -37,6 +43,8 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Messages" component={DMList} />
         <Stack.Screen name="SpecificDM" component={SpecificDM} />
+        <Stack.Screen name="landing-page-business" component={LandingPageBusiness} />
+        <Stack.Screen name="SearchResults" component={SearchResults} />
       </Stack.Navigator>
     </NavigationContainer>
   );
