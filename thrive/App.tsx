@@ -20,6 +20,11 @@ function HomeScreen({ navigation }) {
         title="Go to specificMD"
         onPress={() => navigation.navigate('SpecificDM')}
       />
+      <Button
+        title="Go to landing page (business)"
+        onPress={() => navigation.navigate('landing-page-business')}
+      />
+      <StatusBar style="auto" />
       <StatusBar style="auto" />
     </View>
   );
