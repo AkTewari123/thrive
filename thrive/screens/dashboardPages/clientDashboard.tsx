@@ -13,12 +13,12 @@ interface BusinessItemProps {
   description: string;
   initial: string;
 }
-import * as Font from 'expo-font';
+import * as Font from "expo-font";
 const loadFonts = async () => {
-    await Font.loadAsync({
-      'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'), // Make sure the path is correct
-    });
-  };
+  await Font.loadAsync({
+    "Outfit-Medium": require("../../assets/fonts/Outfit-Medium.ttf"), // Make sure the path is correct
+  });
+};
 const BusinessItem: React.FC<BusinessItemProps> = ({
   name,
   description,
@@ -67,21 +67,13 @@ interface followingItemProps {
 const Following: React.FC<followingItemProps> = ({
   name,
   description,
-  color
+  color,
 }) => (
-    
   <TouchableOpacity style={styles.itemContainer}>
-    <View
-      style={[
-        styles.initialCircle,
-        { backgroundColor: color},
-      ]}
-    >
-      <Text style={styles.initialText}>{name.slice(0,1)}</Text>
+    <View style={[styles.initialCircle, { backgroundColor: color }]}>
+      <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
     </View>
-    <View style={styles.notificationPing}>
-
-    </View>
+    <View style={styles.notificationPing}></View>
     <View style={styles.itemTextContainer}>
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemDescription}>{description}</Text>
@@ -100,16 +92,11 @@ interface reccommendedItemProps {
 const Reccommended: React.FC<reccommendedItemProps> = ({
   name,
   description,
-  color
+  color,
 }) => (
   <TouchableOpacity style={styles.itemContainer}>
-    <View
-      style={[
-        styles.initialCircle,
-        { backgroundColor: color},
-      ]}
-    >
-      <Text style={styles.initialText}>{name.slice(0,1)}</Text>
+    <View style={[styles.initialCircle, { backgroundColor: color }]}>
+      <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
     </View>
     <View style={styles.itemTextContainer}>
       <Text style={styles.itemName}>{name}</Text>
@@ -125,35 +112,29 @@ const ClientDashboard: React.FC = () => {
   return (
     <>
       {thriveHeader({})}
-      <Text style={{ fontFamily: "Outfit-Bold"}}>
-        Hello World!
-      </Text>
+      <Text style={{ fontFamily: "Outfit-Bold" }}>Hello World!</Text>
       <View style={styles.container}>
         <ScrollView style={styles.content}>
-          <SectionHeader title="Following">
-            
-          </SectionHeader>
+          <SectionHeader title="Following"></SectionHeader>
           <Following
             name="Hyderbad Spice"
-            color= "#2196F3"
+            color="#2196F3"
             description="New Spicy Kurma Dish!"
           />
           <Following
             name="Ganga"
-            color= "rgb(20 184 166)"
+            color="rgb(20 184 166)"
             description="New Spicy Kurma Dish!"
           />
-          <SectionHeader title="Recommended">
-            
-          </SectionHeader>
+          <SectionHeader title="Recommended"></SectionHeader>
           <Reccommended
             name="Livito's"
-            color= "#F69D61"
+            color="#F69D61"
             description="Italian Cuisine since 1994"
           />
           <Reccommended
             name="Pine Tavern"
-            color= "#F6E061"
+            color="#F6E061"
             description="World's Best Burgers"
           />
         </ScrollView>
@@ -202,7 +183,6 @@ const styles = StyleSheet.create({
     paddingLeft: 16,
     paddingVertical: 10,
     fontFamily: "Outfit-Medium",
-
   },
   itemContainer: {
     flexDirection: "row",
