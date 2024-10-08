@@ -122,9 +122,6 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
 );
 
 const ClientDashboard: React.FC = () => {
-    useEffect(() => {
-        loadFonts();
-      }, []);
   return (
     <>
       {thriveHeader({})}
