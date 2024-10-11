@@ -8,7 +8,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import DMList from "./screens/dm-pages/dm-list";
 import ClientDashboard from "./screens/dashboardPages/clientDashboard";
-import SpecificBusinessPage from "./screens/specificBusinessPage";
+import SpecificBusinessPage from "./screens/dm-pages/specificBusinessPage";
+import LoginPage from "./screens/dm-pages/login";
+import SignUpPage from "./screens/dm-pages/sign-up";
 
 const Stack = createStackNavigator();
 
@@ -61,6 +63,14 @@ function HomeScreen({ navigation }: any) {
         title="Go to example business page"
         onPress={() => navigation.navigate("Example-business-page")}
       />
+      <Button
+        title="Go to login page"
+        onPress={() => navigation.navigate("LoginPage")}
+      />
+      <Button
+        title="Go to sign up page"
+        onPress={() => navigation.navigate("SignUpPage")}
+      />
       <StatusBar style="auto" />
       <StatusBar style="auto" />
     </View>
@@ -85,6 +95,12 @@ export default function App() {
         />
         <Stack.Screen name="Dashboard" component={ClientDashboard} />
         <Stack.Screen name="Business Page" component={SpecificBusinessPage} />
+        <Stack.Screen
+          name="Example-business-page"
+          component={SpecificBusinessPage}
+        />
+        <Stack.Screen name="LoginPage" component={LoginPage} />
+        <Stack.Screen name="SignUpPage" component={SignUpPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
