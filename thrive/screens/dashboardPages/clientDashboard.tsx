@@ -69,20 +69,23 @@ const Following: React.FC<followingItemProps> = ({
   description,
   color,
 }) => (
-  <TouchableOpacity style={styles.itemContainer}>
-    <View style={[styles.initialCircle, { backgroundColor: color }]}>
-      <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
-    </View>
-    <View style={styles.notificationPing}></View>
-    <View style={styles.itemTextContainer}>
-      <Text style={styles.itemName}>{name}</Text>
-      <Text style={styles.itemDescription}>{description}</Text>
-    </View>
-    <Text style={styles.arrowRight}>
-      <Feather name="arrow-right-circle" size={32} color="black" />
-    </Text>
-  </TouchableOpacity>
+  <>
+    <TouchableOpacity style={styles.itemContainer}>
+      <View style={[styles.initialCircle, { backgroundColor: color }]}>
+        <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
+      </View>
+      <View style={styles.notificationPing}></View>
+      <View style={styles.itemTextContainer}>
+        <Text style={styles.itemName}>{name}</Text>
+        <Text style={styles.itemDescription}>{description}</Text>
+      </View>
+      <Text style={styles.arrowRight}>
+        <Feather name="arrow-right-circle" size={32} color="black" />
+      </Text>
+    </TouchableOpacity>
+  </>
 );
+
 interface reccommendedItemProps {
   name: string;
   description: string;
@@ -126,6 +129,7 @@ const ClientDashboard: React.FC = () => {
             color="rgb(20 184 166)"
             description="New Spicy Kurma Dish!"
           />
+          <SeeMoreButton />
           <SectionHeader title="Recommended"></SectionHeader>
           <Reccommended
             name="Livito's"
@@ -137,6 +141,7 @@ const ClientDashboard: React.FC = () => {
             color="#F6E061"
             description="World's Best Burgers"
           />
+          <SeeMoreButton />
         </ScrollView>
       </View>
     </>
@@ -147,6 +152,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E4E8EE",
+    padding: 10,
   },
   header: {
     flexDirection: "row",
@@ -175,14 +181,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   sectionHeader: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 35,
+    fontWeight: "800",
     color: "#1F2937",
+    textAlign: "center",
     marginTop: 24,
     backgroundColor: "white",
-    paddingLeft: 16,
     paddingVertical: 10,
-    fontFamily: "Outfit-Medium",
+    borderTopLeftRadius: 100,
+    borderTopRightRadius: 10,
   },
   itemContainer: {
     flexDirection: "row",
