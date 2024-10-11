@@ -1,190 +1,416 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import Feather from '@expo/vector-icons/Feather';
-import { RatingStars } from './landingPageBusiness';
-import { FontAwesome } from '@expo/vector-icons';
+import React from "react";
+import Feather from "@expo/vector-icons/Feather";
+import { Text, StyleSheet, Dimensions } from "react-native";
+import {
+  Carousel,
+  Image,
+  View,
+  ProgressBar,
+  Colors,
+} from "react-native-ui-lib";
+import { FontAwesome } from "@expo/vector-icons";
+import { useRoute } from "@react-navigation/native";
+import thriveHeader from "../components/thriveHeader";
+import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
+import AntDesign from "@expo/vector-icons/AntDesign";
+import Entypo from "@expo/vector-icons/Entypo";
+import { faLocationDot } from "@fortawesome/free-solid-svg-icons/faLocationDot";
+import { faClock } from "@fortawesome/free-solid-svg-icons/faClock";
+import { format } from "date-fns";
+import { ScrollView } from "react-native-gesture-handler";
+import * as Progress from "react-native-progress";
 
-interface CompanyProps {
-    name: string; 
-    rating: number; 
-    initial: string; 
-    phoneNumber: string;
-    address: string;
-    timeStart: string; 
-    timeEnd: string; 
+interface ReviewProps {
+  username: string;
+  rating: number;
+  review: string;
 }
 
-const CompanyHeader: React.FC<CompanyProps> = ({name, rating, initial, phoneNumber, address, timeStart, timeEnd}) => {
-    return(
-        <View style={styles.companyHeader}>
-            <View style={styles.profileCircle}>
-                <Text style={styles.initialText}>{initial}</Text>
-            </View>
-            <View style={styles.headerTextContainer}>
-                <Text style={styles.companyHeaderNameText}>{name}</Text>
-                <RatingStars stars={rating}/>
-            </View>
-
-            {/* Divide icons vertically */}
-            <View style = {styles.informationContainer}>                                                  
-                <View style={styles.information}>
-                    <Feather name="phone-call" size={24} color="#C2C0C0" style={styles.informationIcon} />
-                    <Text style={styles.informationText}>{phoneNumber}</Text>
-                </View>
-                <View style={styles.information}>
-                    <Feather name="map-pin" size={24}  color="#C2C0C0" style={styles.informationIcon}  />
-                    <Text style={styles.informationText}>{address}</Text>
-                </View>
-                <View style={styles.information}>
-                    <Feather name="clock" size={24} color="#C2C0C0" style={styles.informationIcon}  />
-                    <Text style={styles.informationText}>{timeStart + ' - ' + timeEnd}</Text>
-                </View>
-            </View>
-        </View>
-    );
+const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
+  const starHollowed = Array.from({ length: 5 }, (_, i) =>
+    i < rating ? "star" : "star-o"
+  );
+  return (
+    <>
+      <View
+        style={{
+          padding: 15,
+          borderRadius: 20,
+          backgroundColor: "#F9F9F9",
+          shadowOffset: { width: -2, height: 4 },
+          shadowOpacity: 0.2,
+          shadowRadius: 3,
+          width: "95%",
+          marginHorizontal: "auto",
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 28,
+            fontWeight: 700,
+          }}
+        >
+          {username}
+        </Text>
+        <Text>
+          {starHollowed.map((star, index) => (
+            <FontAwesome key={index} name={star} size={20} />
+          ))}
+        </Text>
+        <Text style={{}}>{review}</Text>
+      </View>
+    </>
+  );
 };
 
-const DescriptionBox: React.FC = () => {
-
-    const images = [
-        require('./images/example1.png'),
-        require('./images/example2.png')
-    ];
-
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [opaque, setOpaque] = useState(false);
-
-    const switchImageNext = () => {
-        setCurrentIndex(prevIndex => (prevIndex + 1) % images.length);
-    };
-    const switchImagePrev = () => {
-        setCurrentIndex(prevIndex => (prevIndex - 1 + images.length) % images.length);
-    };
-
-    return(
-        <View style={styles.descriptionBox}>
-            <Text style={styles.descriptionTitle}>Description</Text>
-            <View style={styles.imageBox}>
-                <Image style = {styles.image} source={images[currentIndex]}/>
-                
-            </View>
-            <View>
-                <Pressable 
-                        style={({ pressed }) => [{ opacity: pressed ? 0.5 : 1 }, styles.button]}
-                        onPress={switchImagePrev}
-                >
-                        <FontAwesome  name="caret-left" size={32} color="#D9D9D9" />
-                </Pressable>
-                <Pressable 
-                        onPress={switchImageNext}
-                >
-                    <FontAwesome  name="caret-right" size={32} color="#D9D9D9" />
-                </Pressable>
-            </View>
-        </View>
-    )
+interface SpecificBusinessItemProps {
+  businessName: string;
+  businessDescription: string;
+  numStars: number;
+  phoneNumber: string;
+  address: string;
+  schedule: { [key: string]: [string, string] };
 }
 
+const SpecificBusinessPage: React.FC = () => {
+  const route = useRoute();
+  const { width } = Dimensions.get("window");
+  let scale = width / 35;
+  const IMAGES = [
+    "https://images.pexels.com/photos/2529146/pexels-photo-2529146.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+    "https://images.pexels.com/photos/2529159/pexels-photo-2529159.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+    "https://images.pexels.com/photos/2529158/pexels-photo-2529158.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+  ];
 
+  const {
+    businessName,
+    businessDescription,
+    numStars,
+    phoneNumber,
+    address,
+    schedule,
+  } = route.params as SpecificBusinessItemProps;
 
-const LandingPageBusiness: React.FC = () => {
-    return(
-        <View>
-            <CompanyHeader name="Hyderabad Spice" rating={4} initial="H" phoneNumber="111-222-3333" address="40 Edgerow Lane" timeStart="9:00 AM" timeEnd="5:00 PM"/>
-            <DescriptionBox></DescriptionBox>
+  let displayDate: string = "0";
+  let tdy = format(new Date(), "iiii");
+  for (let i = 0; i < Object.keys(schedule).length; i++) {
+    if (Object.keys(schedule)[i] === tdy) {
+      displayDate = `${Object.values(schedule)[i][0]}-${
+        Object.values(schedule)[i][1]
+      }`;
+    }
+  }
+
+  const starHollowed = Array.from({ length: 5 }, (_, i) =>
+    i < numStars ? "star" : "star-o"
+  );
+
+  return (
+    <>
+      <ScrollView style={styles.pageContainer}>
+        {thriveHeader({})}
+        <View style={[styles.childContainer, styles.topContainer]}>
+          <View style={styles.businessInfoContainer}>
+            <View
+              style={[styles.initialCircle, { backgroundColor: "#6096F7" }]}
+            >
+              <Text style={styles.initialText}>{businessName.slice(0, 1)}</Text>
+            </View>
+            <View style={styles.businessDetails}>
+              <Text style={styles.businessName}>{businessName}</Text>
+              <Text style={styles.businessDescription}>
+                {businessDescription}
+              </Text>
+              <Text>
+                {starHollowed.map((star, index) => (
+                  <FontAwesome
+                    key={index}
+                    name={star}
+                    size={15}
+                    color="black"
+                  />
+                ))}
+              </Text>
+            </View>
+          </View>
         </View>
-    );
+        <View style={styles.childContainer}>
+          <Text style={[{ textAlign: "center" }, styles.sectionTitle]}>
+            Contact Info
+          </Text>
+          <View style={styles.contactInfo}>
+            <Text style={styles.contactText}>
+              <Feather name="phone-outgoing" size={34} />
+              {"\n "}
+              {"\n "}
+              {phoneNumber}
+            </Text>
+            <Text style={styles.contactText}>
+              <Entypo name="location" size={34} />
+
+              {"\n "}
+              {"\n "}
+              {address}
+            </Text>
+            <Text style={styles.contactText}>
+              <AntDesign name="clockcircle" size={34} />
+              {"\n "}
+              {"\n "}
+              {displayDate}
+            </Text>
+          </View>
+        </View>
+        <View style={[styles.childContainer, styles.middleContainer]}>
+          <Text style={[styles.sectionTitle, { paddingBottom: 10 }]}>
+            Our Business
+          </Text>
+          <Carousel
+            containerStyle={styles.carouselContainer}
+            loop
+            pageControlPosition={Carousel.pageControlPositions.OVER}
+            showCounter
+            autoplay
+          >
+            {IMAGES.map((image, index) => (
+              <View flex centerV key={index}>
+                <Image
+                  overlayType={Image.overlayTypes.BOTTOM}
+                  style={styles.carouselImage}
+                  source={{ uri: image }}
+                  resizeMode="cover"
+                  borderRadius={30}
+                />
+              </View>
+            ))}
+          </Carousel>
+          <ScrollView style={styles.businessDescriptionScroll}>
+            <Text style={styles.businessDescriptionText}>
+              &nbsp; &nbsp; &nbsp; I was with Kendrick Lamar back in Compton,
+              USA. You know how hard it is to make it here? It's very hard, just
+              so you know. It's important to keep an open mind since anything is
+              possible blah blah blahblah blah blahblah blah blahblah blah
+              blahblah blah blahblah blah blah
+            </Text>
+          </ScrollView>
+        </View>
+        <View style={[styles.childContainer]}>
+          <Text
+            style={{
+              fontWeight: 800,
+              fontSize: 35,
+              textAlign: "center",
+            }}
+          >
+            Ratings & Reviews
+          </Text>
+          <View
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              marginTop: 15,
+              marginHorizontal: "auto",
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  fontWeight: 800,
+                  fontSize: 50,
+                  textAlign: "center",
+                }}
+              >
+                4.3
+              </Text>
+              <Text style={{ textAlign: "center" }}>out of 5 stars</Text>
+            </View>
+            <View style={{ marginLeft: 10 }}>
+              <Text>
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+              </Text>
+              <Text>
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+              </Text>
+              <Text>
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+              </Text>
+              <Text>
+                <FontAwesome name="star" size={15} color="black" />
+                <FontAwesome name="star" size={15} color="black" />
+              </Text>
+              <Text>
+                <FontAwesome name="star" size={15} color="black" />
+              </Text>
+            </View>
+            <View style={{ marginHorizontal: 5 }}>
+              <Text style={styles.ratingNum}>(89)</Text>
+              <Text style={styles.ratingNum}>(34)</Text>
+              <Text style={styles.ratingNum}>(2)</Text>
+              <Text style={styles.ratingNum}>(12)</Text>
+              <Text style={styles.ratingNum}>(1)</Text>
+            </View>
+            <View style={{ marginLeft: 5, width: scale * 10 }}>
+              <ProgressBar
+                progress={55}
+                progressColor="#1415D0"
+                style={{ height: 13 }}
+              />
+              <ProgressBar
+                progress={10}
+                progressColor="#1415D0"
+                style={styles.progressBars}
+              />
+              <ProgressBar
+                progress={10}
+                progressColor="#1415D0"
+                style={styles.progressBars}
+              />
+              <ProgressBar
+                progress={2 / 0.75}
+                progressColor="#1415D0"
+                style={styles.progressBars}
+              />
+              <ProgressBar
+                progress={30}
+                progressColor="#1415D0"
+                style={styles.progressBars}
+              />
+              <Progress.Bar
+                progress={0.2}
+                borderRadius={30}
+                color="transparent"
+              />
+            </View>
+          </View>
+        </View>
+        <View style={[styles.childContainer]}>
+          <Text
+            style={{
+              fontWeight: 800,
+              fontSize: 35,
+              textAlign: "center",
+            }}
+          >
+            Customers
+          </Text>
+          <Review
+            username="rtenacity"
+            rating={4}
+            review="good product, overall W"
+          />
+        </View>
+      </ScrollView>
+    </>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#E4E8EE',
-        flexDirection: 'column',
-    },
-    companyHeader: {
-        backgroundColor: '#FFFFFF',
-        padding: 20,
-        margin: 0,
-        marginTop: 25,
-        borderRadius: 4,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
-        justifyContent: 'flex-start',
-        marginLeft: -15, 
- 
-        width: '110%',
-    },
-    headerTextContainer: {
-        flexDirection: 'column',
-        marginLeft: 5,
-    },
-    companyHeaderNameText: {
-        color: 'black',
-        fontSize: 20,
-        fontWeight: 'bold',
-        marginBottom: 6,
-    },
-    profileCircle: {
-        backgroundColor: '#8B5CF6',
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 5,
-    },
-    initialText: {
-        color: 'white',
-        fontSize: 22,
-        fontWeight: 'bold',
-    },
-    informationContainer: {
-        flexDirection: 'column',
-    }, 
-    informationIcon: {
-        marginBottom: 5,
-    }, 
-    information: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start', 
-    }, 
-    informationText: {
-        marginLeft: 5,
-        marginTop: 3,
-        color: "#C2C0C0",
-        fontSize: 12,
-        fontWeight: 'bold'
-    },
-    descriptionBox: {
-        backgroundColor: 'white',
-        marginTop: 30,
-        flexDirection: 'column'
-    },
-    descriptionTitle: {
-        fontWeight: 'bold',
-        fontSize: 40,
-        marginLeft: 25
-    },
-    imageBox: {
-        borderWidth: 5,
-        width: 200, 
-        height: 200,
-        overflow: 'hidden'
-    },
-
-    image: {
-        width: '100%',
-        height: '100%'
-    },
-
-    button: {
-
-    }
-
-
+  pageContainer: {
+    flex: 1,
+    backgroundColor: "transparent",
+    padding: 25,
+  },
+  childContainer: {
+    backgroundColor: "white",
+    width: "100%",
+    borderRadius: 20,
+    marginBottom: 25,
+    shadowColor: "#171717",
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    padding: 25,
+    flexShrink: 1,
+  },
+  topContainer: {},
+  middleContainer: {
+    alignItems: "center",
+  },
+  bottomContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  businessInfoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  progressBars: {
+    height: 13,
+    marginTop: 2.3,
+  },
+  initialCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  initialText: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "700",
+  },
+  ratingNum: {
+    fontWeight: "bold",
+    color: "black",
+    textAlign: "center",
+    display: "flex",
+    fontSize: 13,
+  },
+  businessDetails: {
+    marginLeft: 15,
+  },
+  businessName: {
+    fontWeight: "700",
+    fontSize: 21,
+  },
+  businessDescription: {
+    fontWeight: "800",
+    color: "grey",
+    fontSize: 15,
+  },
+  contactInfo: {
+    display: "flex",
+    color: "black",
+    marginTop: 15,
+    flexDirection: "row",
+  },
+  contactText: {
+    fontWeight: "300",
+    textAlign: "center",
+    width: "33%",
+  },
+  sectionTitle: {
+    fontWeight: "800",
+    fontSize: 35,
+    marginBottom: 10,
+    paddingTop: 10,
+  },
+  carouselContainer: {
+    height: 150,
+    width: "100%",
+  },
+  carouselImage: {
+    flex: 1,
+    width: "100%",
+  },
+  businessDescriptionScroll: {
+    maxHeight: 100,
+    width: "100%",
+    marginTop: 10,
+  },
+  businessDescriptionText: {
+    fontWeight: "700",
+    width: "90%",
+    marginHorizontal: "auto",
+  },
 });
-
-export default LandingPageBusiness;
-
+export default SpecificBusinessPage;

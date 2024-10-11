@@ -60,10 +60,6 @@ function HomeScreen({ navigation }: any) {
         onPress={() => navigation.navigate("SearchResults")}
       />
       <Button
-        title="Go to example business page"
-        onPress={() => navigation.navigate("Example-business-page")}
-      />
-      <Button
         title="Go to login page"
         onPress={() => navigation.navigate("LoginPage")}
       />
@@ -95,10 +91,6 @@ export default function App() {
         />
         <Stack.Screen name="Dashboard" component={ClientDashboard} />
         <Stack.Screen name="Business Page" component={SpecificBusinessPage} />
-        <Stack.Screen
-          name="Example-business-page"
-          component={SpecificBusinessPage}
-        />
         <Stack.Screen name="LoginPage" component={LoginPage} />
         <Stack.Screen name="SignUpPage" component={SignUpPage} />
       </Stack.Navigator>
