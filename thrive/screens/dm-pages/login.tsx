@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
+import thriveHeader from '../components/thriveHeader';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,8 +15,7 @@ const LoginPage: React.FC = () => {
   return (
     <View style={styles.container}>
       <View style={styles.loginContainer}>
-        {/* <Image source={require('./path/to/rocket_icon.png')} style={styles.logo} /> */}
-        <Text style={styles.title}>thrive</Text>
+      {thriveHeader({})}
         <Text style={styles.subtitle}>Log In/Sign Up</Text>
 
         <TextInput
