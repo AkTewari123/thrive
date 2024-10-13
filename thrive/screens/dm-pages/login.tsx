@@ -1,21 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { signInWithEmailAndPassword } from 'firebase/auth'; // Import signInWithEmailAndPassword
+import { FIREBASE_AUTH } from '../../FirebaseConfig'; // Import your Firebase config
 import thriveHeader from '../components/thriveHeader';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false); // Optional: handle loading state
 
-  const handleLogin = () => {
-    // Add your login logic here
-    console.log('Email:', email);
-    console.log('Password:', password);
+  const handleLogin = async () => {
+    setLoading(true); // Start loading
+    try {
+      // Use Firebase signInWithEmailAndPassword function
+      const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      const user = userCredential.user;
+      console.log('User signed in:', user);
+      // Handle successful login, such as navigation to the main page
+    } catch (error: any) {
+      console.error('Error during login:', error.message);
+      Alert.alert('Login Failed', error.message); // Show error message to user
+    } finally {
+      setLoading(false); // Stop loading
+    }
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.loginContainer}>
-      {thriveHeader({})}
+        {thriveHeader({})}
         <Text style={styles.subtitle}>Log In/Sign Up</Text>
 
         <TextInput
@@ -37,8 +50,12 @@ const LoginPage: React.FC = () => {
           secureTextEntry
         />
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Continue</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.5 }]} // Disable button during loading
+          onPress={handleLogin}
+          disabled={loading} // Disable button during loading
+        >
+          <Text style={styles.buttonText}>{loading ? 'Logging in...' : 'Continue'}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -53,22 +70,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginContainer: {
-
     padding: 32,
     borderRadius: 10,
     width: '80%',
     alignItems: 'center',
-  },
-  logo: {
-    width: 50,
-    height: 50,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginBottom: 8,
   },
   subtitle: {
     fontSize: 18,

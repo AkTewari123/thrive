@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth'; // Import signOut
 import { FIREBASE_AUTH } from './FirebaseConfig';
 import { User } from 'firebase/auth';
 import { View, Text, Button, StyleSheet } from 'react-native';
@@ -34,6 +34,17 @@ function AuthLayout() {
 
 // Define the HomeScreen function
 function HomeScreen({ navigation }: any) {
+  // Function to handle log out
+  const handleLogout = () => {
+    signOut(FIREBASE_AUTH)
+      .then(() => {
+        console.log('User signed out');
+      })
+      .catch((error) => {
+        console.error('Error signing out: ', error);
+      });
+  };
+
   return (
     <View style={styles.container}>
       <Text>Welcome to the App!</Text>
@@ -85,6 +96,10 @@ function HomeScreen({ navigation }: any) {
       <Button
         title="Go to sign up page"
         onPress={() => navigation.navigate('SignUpPage')}
+      />
+      <Button
+        title="Log Out" // Add log out button
+        onPress={handleLogout}
       />
       <StatusBar style="auto" />
     </View>
