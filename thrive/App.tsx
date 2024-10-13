@@ -1,7 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, Button } from "react-native";
 import SpecificDM from "./screens/dm-pages/dm";
-import LandingPageBusiness from "./screens/dm-pages/landingPageBusiness";
 import SearchResults from "./screens/dm-pages/search";
 import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
@@ -11,6 +10,7 @@ import ClientDashboard from "./screens/dashboardPages/clientDashboard";
 import SpecificBusinessPage from "./screens/dm-pages/specificBusinessPage";
 import LoginPage from "./screens/dm-pages/login";
 import SignUpPage from "./screens/dm-pages/sign-up";
+import BusinessAnalytics from "./screens/dm-pages/businessAnalytics";
 
 const Stack = createStackNavigator();
 
@@ -52,10 +52,6 @@ function HomeScreen({ navigation }: any) {
         onPress={() => navigation.navigate("SpecificDM")}
       />
       <Button
-        title="Go to landing page (business)"
-        onPress={() => navigation.navigate("Landing-page-business")}
-      />
-      <Button
         title="Go to search"
         onPress={() => navigation.navigate("SearchResults")}
       />
@@ -66,6 +62,10 @@ function HomeScreen({ navigation }: any) {
       <Button
         title="Go to sign up page"
         onPress={() => navigation.navigate("SignUpPage")}
+      />
+      <Button
+        title="Go to business analytics"
+        onPress={() => navigation.navigate("BusinessAnalytics")}
       />
       <StatusBar style="auto" />
       <StatusBar style="auto" />
@@ -80,10 +80,6 @@ export default function App() {
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Messages" component={DMList} />
         <Stack.Screen name="SpecificDM" component={SpecificDM} />
-        <Stack.Screen
-          name="Landing-page-business"
-          component={LandingPageBusiness}
-        />
         <Stack.Screen name="SearchResults" component={SearchResults} />
         <Stack.Screen
           name="Example-business-page"
@@ -93,6 +89,7 @@ export default function App() {
         <Stack.Screen name="Business Page" component={SpecificBusinessPage} />
         <Stack.Screen name="LoginPage" component={LoginPage} />
         <Stack.Screen name="SignUpPage" component={SignUpPage} />
+        <Stack.Screen name="BusinessAnalytics" component={BusinessAnalytics} />
       </Stack.Navigator>
     </NavigationContainer>
   );
