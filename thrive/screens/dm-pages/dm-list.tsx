@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import thriveHeader from "../components/thriveHeader";
-import { SafeAreaSpacerView } from 'react-native-ui-lib';
 
 interface BusinessItemProps {
   name: string;
@@ -38,14 +37,20 @@ const SeeMoreButton: React.FC = () => (
   </TouchableOpacity>
 );
 
+
+const FloatingActionButton: React.FC = () => (
+  <TouchableOpacity style={styles.fab}>
+    <View style={styles.fabIconContainer}>
+      <Feather name="message-square" size={24} color="white" />
+    </View>
+    <Text style={styles.fabText}>New Chat</Text>
+  </TouchableOpacity>
+);
+
 const DMList: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
-      <TouchableOpacity style={styles.startChatButton}>
-        <Feather name="plus" size={32} color="white" />
-        <Text style={styles.startChatButtonText}>Start Chat</Text>
-      </TouchableOpacity>
       
       <ScrollView style={styles.content}>
         <SectionHeader title="Businesses" />
@@ -57,8 +62,9 @@ const DMList: React.FC = () => {
         <BusinessItem name="Henry Bagdasarov" description="Can I ask what was so good?" initial="H" />
         <BusinessItem name="Gestapo" description="How's the sushi?" initial="G" />
         <SeeMoreButton />
-        
       </ScrollView>
+
+      <FloatingActionButton />
     </SafeAreaView>
   );
 };
@@ -67,6 +73,33 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#E4E8EE',
+  },
+  content: {
+    flex: 1,
+  },
+  fab: {
+    position: 'absolute',
+    right: 20,
+    bottom: 20,
+    backgroundColor: '#5A5D9D',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 30,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+  },
+  fabIconContainer: {
+    marginRight: 8,
+  },
+  fabText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   header: {
     flexDirection: 'row',
@@ -82,9 +115,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
   },
-  content: {
-    flex: 1,
-  },
+
   sectionHeader: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -145,16 +176,26 @@ const styles = StyleSheet.create({
   startChatButton: {
     backgroundColor: '#5A5D9D',
     margin: 16,
-    padding: 16,
-    borderRadius: 8,
+    padding: 12,
+    borderRadius: 30,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
     justifyContent: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  startChatIcon: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 20,
+    padding: 8,
+    marginRight: 12,
   },
   startChatButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });
