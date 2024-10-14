@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
 } from "react-native";
 import thriveHeader from "../components/thriveHeader";
 import { useFonts } from 'expo-font';
@@ -128,10 +129,10 @@ const ClientDashboard: React.FC = () => {
   }
 
   return (
-    <>
+    <SafeAreaView style={styles.safeArea}>
       {thriveHeader({})}
-      <View style={styles.container}>
-        <ScrollView style={styles.content}>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.content}>
           <SectionHeader title="Following" />
           <Following
             name="Hyderbad Spice"
@@ -156,20 +157,28 @@ const ClientDashboard: React.FC = () => {
             description="World's Best Burgers"
           />
           <SeeMoreButton />
-        </ScrollView>
-      </View>
-    </>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#E4E8EE",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    padding: 10,
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: "#E4E8EE",
     padding: 10,
-  },
-  content: {
-    flex: 1,
   },
   sectionHeader: {
     fontFamily: 'Outfit-Medium',

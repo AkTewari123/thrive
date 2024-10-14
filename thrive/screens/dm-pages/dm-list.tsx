@@ -1,6 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
+import thriveHeader from "../components/thriveHeader";
+import { SafeAreaSpacerView } from 'react-native-ui-lib';
 
 interface BusinessItemProps {
   name: string;
@@ -38,7 +40,8 @@ const SeeMoreButton: React.FC = () => (
 
 const DMList: React.FC = () => {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {thriveHeader({})}
       <TouchableOpacity style={styles.startChatButton}>
         <Feather name="plus" size={32} color="white" />
         <Text style={styles.startChatButtonText}>Start Chat</Text>
@@ -56,7 +59,7 @@ const DMList: React.FC = () => {
         <SeeMoreButton />
         
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
