@@ -8,17 +8,16 @@ import {
   ScrollView,
 } from "react-native";
 import thriveHeader from "../components/thriveHeader";
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+
 interface BusinessItemProps {
   name: string;
   description: string;
   initial: string;
 }
-import * as Font from "expo-font";
-const loadFonts = async () => {
-  await Font.loadAsync({
-    "Outfit-Medium": require("../../assets/fonts/Outfit-Medium.ttf"), // Make sure the path is correct
-  });
-};
+
+
 const BusinessItem: React.FC<BusinessItemProps> = ({
   name,
   description,
@@ -112,13 +111,28 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
 );
 
 const ClientDashboard: React.FC = () => {
+  const [fontsLoaded, fontError] = useFonts({
+    'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'),
+    'Outfit-Bold': require('../../assets/fonts/Outfit-Bold.ttf'),
+    'Outfit-SemiBold': require('../../assets/fonts/Outfit-SemiBold.ttf'),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <>
       {thriveHeader({})}
-      <Text style={{ fontFamily: "Outfit-Bold" }}>Hello World!</Text>
       <View style={styles.container}>
         <ScrollView style={styles.content}>
-          <SectionHeader title="Following"></SectionHeader>
+          <SectionHeader title="Following" />
           <Following
             name="Hyderbad Spice"
             color="#2196F3"
@@ -130,7 +144,7 @@ const ClientDashboard: React.FC = () => {
             description="New Spicy Kurma Dish!"
           />
           <SeeMoreButton />
-          <SectionHeader title="Recommended"></SectionHeader>
+          <SectionHeader title="Recommended" />
           <Reccommended
             name="Livito's"
             color="#F69D61"
@@ -154,33 +168,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#E4E8EE",
     padding: 10,
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#E5E7EB",
-  },
-  notificationPing: {
-    backgroundColor: "#EE4957",
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    position: "absolute",
-    top: 17,
-    left: 45,
-  },
-  headerText: {
-    marginLeft: 8,
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#1F2937",
-  },
   content: {
     flex: 1,
   },
   sectionHeader: {
+    fontFamily: 'Outfit-Medium',
     fontSize: 35,
     fontWeight: "800",
     color: "#1F2937",
@@ -200,7 +192,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#DDDDDD",
     borderTopColor: "#DDDDDD",
     borderTopWidth: 1,
-    fontFamily: "Outfit-Bold",
   },
   initialCircle: {
     width: 40,
@@ -210,20 +201,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   initialText: {
+    fontFamily: 'Outfit-Bold',
     color: "white",
     fontSize: 18,
-    fontWeight: "bold",
   },
   itemTextContainer: {
     flex: 1,
     marginLeft: 12,
   },
   itemName: {
+    fontFamily: 'Outfit-SemiBold',
     fontSize: 16,
-    fontWeight: "bold",
     color: "#1F2937",
   },
   itemDescription: {
+    fontFamily: 'Outfit-Bold',
     fontSize: 14,
     color: "#618BDB",
     fontWeight: "600",
@@ -241,25 +233,22 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   seeMoreText: {
+    fontFamily: 'Outfit-SemiBold',
     color: "#3B82F6",
     fontSize: 16,
   },
-  startChatButton: {
-    backgroundColor: "#5A5D9D",
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    justifyContent: "center",
-  },
-  startChatButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
+  notificationPing: {
+    backgroundColor: "#EE4957",
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    position: "absolute",
+    top: 17,
+    left: 45,
   },
 });
+
+
 // const styles = StyleSheet.create({
 //   container: {
 //     flex: 1,
