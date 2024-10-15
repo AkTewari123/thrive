@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Touchable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Image, Touchable, ScrollView, SafeAreaView } from 'react-native';
+import { useFonts } from 'expo-font';
+import { BusinessFooter } from './footers';
 
 
 
-interface StatisticProps{
-    text: string;
-    value: string;
-    reviews?: string; 
-}
+
 
 
 
@@ -65,17 +63,21 @@ const ChartBox: React.FC = () => {
             <View style={styles.imageBox}>
                 <Image style={styles.image} source={images[imgNumber]} />
             </View>
+
         </View>
     );
     
 }    
-    
-
-
-
 
 
 const BusinessAnalytics: React.FC = () => {
+    const [fontsLoaded, fontError] = useFonts({
+        'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'),
+        'Outfit-Bold': require('../../assets/fonts/Outfit-Bold.ttf'),
+        'Outfit-SemiBold': require('../../assets/fonts/Outfit-SemiBold.ttf'),
+    });    
+    
+
     const data = [
         { impressions: 15, orders: 15, views: '2.5k', ratings: '4.7/5', numRatings: 7 },
         { impressions: 30, orders: 30, views: '5k', ratings: '4.6/5', numRatings: 14 },
@@ -102,61 +104,64 @@ const BusinessAnalytics: React.FC = () => {
     const currentData = data[getDataIndex(selectedChoice)];
 
     return(
-        <View style={styles.parentContainer}>
-            <ChartBox/>
+        <View style = {styles.container}>
+            <SafeAreaView>
+                <ScrollView>
+                    <ChartBox/>
 
-            
-            <View style={styles.statSelect}> 
-                <Text style={styles.topHeaderText}>Select Timeframe</Text>
-                <View style={styles.selectRow}>                             
-                    <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Day')}>
-                       <Text style = {styles.buttonText}>Day</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Week')}>
-                        <Text style = {styles.buttonText}>Week</Text>
-                    </TouchableOpacity>
-                </View> 
-
-                <View style={styles.selectRow}> 
-                    <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Month')}>
-                       <Text style = {styles.buttonText}>Month</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Year')}>
-                        <Text style = {styles.buttonText}>Year</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-            
-            <View style={styles.statisticBox}>
-
-                <View>
-                    <View style={styles.statTextContainer}>
-                        <Text style={styles.statType} numberOfLines={1}>Impressions</Text>
-                        <Text style={styles.statValue}>{currentData.impressions}</Text>
-                    </View>
-                    <View style={styles.statTextContainer}>
-                        <Text style={styles.statType} >Views</Text>
-                        <Text style={styles.statValue}>{currentData.views}</Text>
-                    </View>
-                </View>
                     
-                <View style={[{marginRight: 15}]}>
-                    <View style={styles.statTextContainer}>
-                        <Text style={styles.statType}>Orders</Text>
-                        <Text style={styles.statValue}>{currentData.orders}</Text>
-                    </View>
-                    <View style={styles.statTextContainer}>
-                        <Text style={styles.statType}>Ratings</Text>
-                        <Text style={styles.statValue}>{currentData.ratings}</Text>
-                        <Text style={styles.reviewText}>
-                            from <Text style={{ color: '#618BDB' }}>{currentData.numRatings}</Text> reviews
-                        </Text>
-                    </View>
-                </View>
+                    <View style={styles.statSelect}> 
+                        <Text style={styles.topHeaderText}>Select Timeframe</Text>
+                        <View style={styles.selectRow}>                             
+                            <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Day')}>
+                            <Text style = {styles.buttonText}>Day</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Week')}>
+                                <Text style = {styles.buttonText}>Week</Text>
+                            </TouchableOpacity>
+                        </View> 
 
-            </View>
+                        <View style={styles.selectRow}> 
+                            <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Month')}>
+                            <Text style = {styles.buttonText}>Month</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.button} onPress={() => setSelectedChoice('Year')}>
+                                <Text style = {styles.buttonText}>Year</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    
+                    <View style={styles.statisticBox}>
 
-            
+                        <View>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statType} numberOfLines={1}>Impressions</Text>
+                                <Text style={styles.statValue}>{currentData.impressions}</Text>
+                            </View>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statType} >Views</Text>
+                                <Text style={styles.statValue}>{currentData.views}</Text>
+                            </View>
+                        </View>
+                            
+                        <View style={[{marginRight: 15}]}>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statType}>Orders</Text>
+                                <Text style={styles.statValue}>{currentData.orders}</Text>
+                            </View>
+                            <View style={styles.statTextContainer}>
+                                <Text style={styles.statType}>Ratings</Text>
+                                <Text style={styles.statValue}>{currentData.ratings}</Text>
+                                <Text style={styles.reviewText}>
+                                    from <Text style={{ color: '#618BDB' }}>{currentData.numRatings}</Text> reviews
+                                </Text>
+                            </View>
+                        </View>
+
+                    </View>
+                </ScrollView>
+            </SafeAreaView>
+            <BusinessFooter/>
         </View>
     )
 };
@@ -165,9 +170,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#E5E7EB', 
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf:'center',
+        
     },
     parentContainer: {
         shadowColor: "#171717",
@@ -189,19 +192,22 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 32,
         marginTop: 5,
-        marginBottom: 5
+        marginBottom: 5,
+        fontFamily: 'Outfit-Bold'
     },
     topText: {
         textAlign: 'center',
         fontSize: 30,
         fontWeight: 'bold',
+        fontFamily: 'Outfit-Bold'
     },
     topTextBlue: {
         textAlign: 'center',
         fontSize: 30,
         fontWeight: 'bold',
         color: 'white',
-        alignContent: 'center'
+        alignContent: 'center',
+        fontFamily: 'Outfit-Bold'
         
     },
     chartBox: {
@@ -224,22 +230,25 @@ const styles = StyleSheet.create({
     statType: {
         fontWeight: 'bold',
         fontSize: 24,
-        marginTop: 5
+        marginTop: 5,
+        fontFamily: "Outdfjasdwqeqeasd"
     },
     statValue: {
         fontSize: 50,
         fontWeight: 'bold',
-        color: '#618BDB'
+        color: '#618BDB',
+        fontFamily: 'Outfit-Bold'
     },
     reviewText: {
         fontSize: 12,
         fontWeight: 'bold',
         alignSelf: 'flex-end',
-        marginRight: 5
+        marginRight: 5,
+        fontFamily: 'Outfit-Bold'
     },
     imageBox: {
-        marginTop: 10, 
-        borderWidth: 5,
+        marginTop: 10,
+        borderWidth: 1,  
         width: 281, 
         height: 220,
         overflow: 'hidden',
@@ -252,12 +261,13 @@ const styles = StyleSheet.create({
     select: {
         fontWeight: 'bold',
         fontSize: 32, 
-        marginTop: 5
+        marginTop: 5,
+        fontFamily: 'Outfit-Bold'
     },
     chartText: {
         flexDirection: 'column',
         alignItems  : 'center',
-        alignSelf: 'center'
+        alignSelf: 'center',
     },
     row: {
         flexDirection: 'row',
@@ -265,11 +275,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-evenly',
         alignItems: 'center',
 
-    },
-    selectBlue: {
-        fontWeight: 'bold',
-        fontSize: 24, 
-        color: '#618BDB'
     },
     statTextContainer: {
         flexDirection: 'column',
@@ -279,7 +284,6 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: '#618BDB',
         alignItems: 'center',
-        borderRadius: 5,
         width: '40%',
         marginTop: 5,
         shadowColor: "#618BDB",
@@ -302,15 +306,15 @@ const styles = StyleSheet.create({
     buttonText: {
         color: 'white',
         fontWeight: 'bold',
-        fontSize: 28
+        fontSize: 28,
+        fontFamily: 'Outfit-Bold'
     },
     selectRow: {
         flexDirection: 'row',
         justifyContent: 'space-evenly',
         alignSelf: 'center',
         width: '100%'
-    }
-
+    },
   },
 );
 
