@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
-import { Text, StyleSheet, Dimensions } from "react-native";
+import { Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
 import {
   Carousel,
   Image,
@@ -19,6 +19,7 @@ import { faClock } from "@fortawesome/free-solid-svg-icons/faClock";
 import { format } from "date-fns";
 import { ScrollView } from "react-native-gesture-handler";
 import * as Progress from "react-native-progress";
+import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 
 interface ReviewProps {
   username: string;
@@ -40,7 +41,7 @@ const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
           shadowOffset: { width: -2, height: 4 },
           shadowOpacity: 0.2,
           shadowRadius: 3,
-          width: "95%",
+          width: "85%",
           marginHorizontal: "auto",
         }}
       >
@@ -73,6 +74,19 @@ interface SpecificBusinessItemProps {
 }
 
 const SpecificBusinessPage: React.FC = () => {
+  const reviews = [
+    { username: "rtenacity", rating: 4, review: "Good product, overall W" },
+    { username: "user123", rating: 5, review: "Amazing quality!" },
+    { username: "john_doe", rating: 3, review: "Decent but could be better." },
+  ];
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIdx((prevIdx) => (prevIdx < reviews.length - 1 ? prevIdx + 1 : 0));
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval); // Clear the interval when component unmounts
+  }, [reviews.length]);
   const route = useRoute();
   const { width } = Dimensions.get("window");
   let scale = width / 35;
@@ -253,9 +267,9 @@ const SpecificBusinessPage: React.FC = () => {
             <View style={{ marginHorizontal: 5 }}>
               <Text style={styles.ratingNum}>(89)</Text>
               <Text style={styles.ratingNum}>(34)</Text>
-              <Text style={styles.ratingNum}>(2)</Text>
               <Text style={styles.ratingNum}>(12)</Text>
-              <Text style={styles.ratingNum}>(1)</Text>
+              <Text style={styles.ratingNum}>(2)</Text>
+              <Text style={styles.ratingNum}>(19)</Text>
             </View>
             <View style={{ marginLeft: 5, width: scale * 10 }}>
               <ProgressBar
@@ -264,7 +278,7 @@ const SpecificBusinessPage: React.FC = () => {
                 style={{ height: 13 }}
               />
               <ProgressBar
-                progress={10}
+                progress={20}
                 progressColor="#1415D0"
                 style={styles.progressBars}
               />
@@ -274,7 +288,7 @@ const SpecificBusinessPage: React.FC = () => {
                 style={styles.progressBars}
               />
               <ProgressBar
-                progress={2 / 0.75}
+                progress={2}
                 progressColor="#1415D0"
                 style={styles.progressBars}
               />
@@ -292,20 +306,42 @@ const SpecificBusinessPage: React.FC = () => {
           </View>
         </View>
         <View style={[styles.childContainer]}>
-          <Text
-            style={{
-              fontWeight: 800,
-              fontSize: 35,
-              textAlign: "center",
-            }}
-          >
-            Customers
-          </Text>
-          <Review
-            username="rtenacity"
-            rating={4}
-            review="good product, overall W"
-          />
+          <View>
+            <Text
+              style={{
+                fontWeight: 800,
+                fontSize: 35,
+                textAlign: "center",
+              }}
+            >
+              Customers
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginTop: 5,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setIdx(idx > 0 ? idx - 1 : reviews.length - 1)}
+                style={{ marginTop: "13%" }}
+              >
+                <FontAwesomeIcon icon={faArrowLeft} size={20} />
+              </TouchableOpacity>
+              <Review
+                username={reviews[idx].username}
+                rating={reviews[idx].rating}
+                review={reviews[idx].review}
+              />
+              <TouchableOpacity
+                onPress={() => setIdx((idx + 1) % reviews.length)}
+                style={{ marginTop: "13%" }}
+              >
+                <FontAwesomeIcon icon={faArrowRight} size={20} />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </>
