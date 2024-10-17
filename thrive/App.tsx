@@ -17,6 +17,7 @@ import SearchResults from './screens/dm-pages/search';
 import AuthLandingPage from './screens/dm-pages/auth-landing';
 import SpecificDM from './screens/dm-pages/dm';
 import LandingPageBusiness from './screens/dm-pages/landingPageBusiness';
+import BusinessSignUpPage from './screens/dm-pages/businessSignUp';
 
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
@@ -101,6 +102,9 @@ function HomeScreen({ navigation }: any) {
         title="Log Out" // Add log out button
         onPress={handleLogout}
       />
+      <Button 
+        title="Go to Business Sign Up Page"
+        onPress={() => navigation.navigate('BusinessSignUpPage')} />
       <StatusBar style="auto" />
     </View>
   );
@@ -117,6 +121,7 @@ function MainLayout() {
       <MainStack.Screen name="Messages" component={DMList} />
       <MainStack.Screen name="SpecificDM" component={SpecificDM} />
       <MainStack.Screen name="LandingPageBusiness" component={LandingPageBusiness} />
+      <MainStack.Screen name="BusinessSignUpPage" component={BusinessSignUpPage} />
     </MainStack.Navigator>
   );
 }
