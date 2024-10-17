@@ -124,7 +124,6 @@ function MainLayout() {
       <MainStack.Screen name="Messages" component={DMList} />
       <MainStack.Screen name="SpecificDM" component={SpecificDM} />
       <MainStack.Screen name="LandingPageBusiness" component={LandingPageBusiness} />
-      <MainStack.Screen name="BusinessSignUpPage" component={BusinessSignUpPage} />
     </MainStack.Navigator>
   );
 }
@@ -146,7 +145,6 @@ function BusinessLayout() {
     <BusinessStack.Navigator screenOptions={{ headerShown: false }}>
       <BusinessStack.Screen name="HomeScreen" component={HomeScreen} />
       <BusinessStack.Screen name="Business Page" component={SpecificBusinessPage} />
-      <BusinessStack.Screen name="BusinessSignUpPage" component={BusinessSignUpPage} />
       {/* Add more Business-specific screens here */}
     </BusinessStack.Navigator>
   );
