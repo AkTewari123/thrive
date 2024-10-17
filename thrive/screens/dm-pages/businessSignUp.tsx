@@ -10,6 +10,7 @@ interface BusinessDetails {
     establishmentDate: string;
     services: string;
     menuPdf: any;
+    phoneNumber: string; // New field for phone number
 }
 
 const BusinessSignUpPage: React.FC = ({ navigation }) => {
@@ -19,6 +20,7 @@ const BusinessSignUpPage: React.FC = ({ navigation }) => {
         establishmentDate: '',
         services: '',
         menuPdf: null,
+        phoneNumber: '', // Initialize phone number field
     });
 
     const handleInputChange = (name: keyof BusinessDetails, value: string) => {
@@ -73,6 +75,13 @@ const BusinessSignUpPage: React.FC = ({ navigation }) => {
                     placeholder="Date of Establishment"
                     value={businessDetails.establishmentDate}
                     onChangeText={(value) => handleInputChange('establishmentDate', value)}
+                />
+                <TextInput
+                    style={styles.input}
+                    placeholder="Contact Phone Number"
+                    value={businessDetails.phoneNumber}
+                    onChangeText={(value) => handleInputChange('phoneNumber', value)}
+                    keyboardType="phone-pad"
                 />
 
                 <TouchableOpacity style={styles.uploadButton} onPress={handlePdfUpload}>
