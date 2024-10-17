@@ -1,15 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { setDoc, doc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE } from '../../FirebaseConfig';
 import thriveHeader from '../components/thriveHeader';
+import BusinessSignUpPage from './businessSignUp'; // Import the BusinessSignUpPage
 
 const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [userType, setUserType] = useState(''); // Track selected user type
   const [isLoading, setIsLoading] = useState(false);
+
+  // State for business data
+  const [businessDetails, setBusinessDetails] = useState({
+    businessName: '',
+    location: '',
+    establishmentDate: '',
+    services: '',
+    menuPdf: null,
+    phoneNumber: '',
+  });
 
   const handleUserTypeSelection = (type: string) => {
     setUserType(type);
@@ -24,19 +35,28 @@ const SignUpPage: React.FC = () => {
     try {
       setIsLoading(true);
       // Create the user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        FIREBASE_AUTH,
-        email,
-        password
-      );
+      const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
       const user = userCredential.user;
 
-      // Store additional user data in Firestore
+      // Store the base user data in Firestore
       await setDoc(doc(FIRESTORE, 'users', user.uid), {
         email: user.email,
         userType: userType,
         createdAt: new Date(),
       });
+
+      // If the user selected 'Business', store the business details as well
+      if (userType === 'Business') {
+        await setDoc(doc(FIRESTORE, 'businessData', user.uid), {
+          businessName: businessDetails.businessName,
+          location: businessDetails.location,
+          establishmentDate: businessDetails.establishmentDate,
+          services: businessDetails.services,
+          menuPdf: businessDetails.menuPdf,
+          phoneNumber: businessDetails.phoneNumber,
+          createdAt: new Date(),
+        });
+      }
 
       Alert.alert('Success', `Account created as ${userType}!`);
     } catch (error: any) {
@@ -47,7 +67,7 @@ const SignUpPage: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.signupContainer}>
         {thriveHeader({})}
         <Text style={styles.welcomeText}>Welcome</Text>
@@ -109,19 +129,23 @@ const SignUpPage: React.FC = () => {
           secureTextEntry
         />
 
+        {userType === 'Business' && (
+          <BusinessSignUpPage businessDetails={businessDetails} setBusinessDetails={setBusinessDetails} />
+        )}
+
         <TouchableOpacity style={styles.actionButton} onPress={handleSignUp} disabled={isLoading}>
           <Text style={styles.actionButtonText}>
             {isLoading ? 'Signing Up...' : 'Sign Up'}
           </Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#E5E7EB', // Light grey background
     justifyContent: 'center',
     alignItems: 'center',
