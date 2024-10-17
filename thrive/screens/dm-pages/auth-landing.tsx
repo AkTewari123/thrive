@@ -1,9 +1,12 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import thriveHeader from '../components/thriveHeader'; // Assuming this component exists
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AuthLandingPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   return (
+    <>
+    <SafeAreaView></SafeAreaView>
     <View style={styles.container}>
       <View style={styles.authContainer}>
         {thriveHeader({})}
@@ -27,6 +30,7 @@ const AuthLandingPage: React.FC<{ navigation: any }> = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     </View>
+    </>
   );
 };
 
@@ -38,7 +42,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   authContainer: {
-    padding: 32,
+    paddingHorizontal: 32,
+    paddingBottom: 32,
     borderRadius: 10,
     width: '80%',
     alignItems: 'center',

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView } from 
 import * as DocumentPicker from 'expo-document-picker';
 import { FontAwesome } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { SafeAreaView } from 'react-native';
 
 interface BusinessDetails {
     businessName: string;
@@ -54,6 +55,8 @@ const BusinessSignUpPage: React.FC = ({ navigation }) => {
     };
 
     return (
+        <>
+        <SafeAreaView></SafeAreaView>
         <View style={styles.container}>
             <View style={styles.formContainer}>
                 <Text style={styles.title}>Business Sign-Up</Text>
@@ -102,6 +105,7 @@ const BusinessSignUpPage: React.FC = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
         </View>
+        </>
     );
 };
 
