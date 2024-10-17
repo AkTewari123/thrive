@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
-import { Text, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import { Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView } from "react-native";
 import {
   Carousel,
   Image,
@@ -121,6 +121,7 @@ const SpecificBusinessPage: React.FC = () => {
 
   return (
     <>
+      <SafeAreaView></SafeAreaView>
       <ScrollView style={styles.pageContainer}>
         {thriveHeader({})}
         <View style={[styles.childContainer, styles.topContainer]}>
@@ -344,6 +345,7 @@ const SpecificBusinessPage: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+
     </>
   );
 };
@@ -352,7 +354,7 @@ const styles = StyleSheet.create({
   pageContainer: {
     flex: 1,
     backgroundColor: "transparent",
-    padding: 25,
+    paddingHorizontal: 25,
   },
   childContainer: {
     backgroundColor: "white",
