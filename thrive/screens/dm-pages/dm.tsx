@@ -15,6 +15,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  SafeAreaView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { setDoc, doc, getDoc, updateDoc } from "firebase/firestore";
@@ -147,6 +148,9 @@ const SpecificDM: React.FC = () => {
   }, [messages]); // Memoize when `messages` array changes
 
   return (
+    <>
+    <SafeAreaView>
+      </SafeAreaView>
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -189,6 +193,7 @@ const SpecificDM: React.FC = () => {
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
+    </>
   );
 };
 

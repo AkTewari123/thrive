@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { onAuthStateChanged, signOut } from 'firebase/auth'; // Import signOut
-import { FIREBASE_AUTH } from './FirebaseConfig';
+import { FIREBASE_AUTH, FIRESTORE } from './FirebaseConfig';
 import { User } from 'firebase/auth';
 import { View, Text, Button, StyleSheet } from 'react-native';
+import { doc, getDoc } from 'firebase/firestore';
 
 // Import screens for Auth and Main flows
 import LoginPage from './screens/dm-pages/login';
@@ -22,6 +23,8 @@ import BusinessSignUpPage from './screens/dm-pages/businessSignUp';
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
 const MainStack = createStackNavigator();
+const CustomerStack = createStackNavigator();
+const BusinessStack = createStackNavigator();
 
 function AuthLayout() {
   return (
@@ -126,28 +129,71 @@ function MainLayout() {
   );
 }
 
+function CustomerLayout() {
+  return (
+    <CustomerStack.Navigator screenOptions={{ headerShown: false }}>
+      <CustomerStack.Screen name="HomeScreen" component={HomeScreen} />
+      <CustomerStack.Screen name="Dashboard" component={ClientDashboard} />
+      <CustomerStack.Screen name="SearchResults" component={SearchResults} />
+      <CustomerStack.Screen name="Messages" component={DMList} />
+      <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
+    </CustomerStack.Navigator>
+  );
+}
+
+function BusinessLayout() {
+  return (
+    <BusinessStack.Navigator screenOptions={{ headerShown: false }}>
+      <BusinessStack.Screen name="HomeScreen" component={HomeScreen} />
+      <BusinessStack.Screen name="Business Page" component={SpecificBusinessPage} />
+      <BusinessStack.Screen name="BusinessSignUpPage" component={BusinessSignUpPage} />
+      {/* Add more Business-specific screens here */}
+    </BusinessStack.Navigator>
+  );
+}
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [userType, setUserType] = useState<string | null>(null);
+
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, (user) => {
-      setUser(user);
+    const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
+      if (user) {
+        setUser(user);
+        
+        // Fetch user type from Firestore
+        const userDoc = await getDoc(doc(FIRESTORE, 'users', user.uid));
+        if (userDoc.exists()) {
+          setUserType(userDoc.data().userType);
+        } else {
+          console.log("No such document!");
+        }
+      } else {
+        setUserType(null); // Reset userType if user is not logged in
+      }
     });
     return unsubscribe;
   }, []);
+
 
   return (
     <NavigationContainer>
       <StatusBar style="dark" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          <Stack.Screen name="MainLayout" component={MainLayout} />
+          userType === 'Business' ? (
+            <Stack.Screen name="BusinessLayout" component={BusinessLayout} />
+          ) : (
+            <Stack.Screen name="CustomerLayout" component={CustomerLayout} />
+          )
         ) : (
           <Stack.Screen name="AuthLayout" component={AuthLayout} />
         )}
       </Stack.Navigator>
     </NavigationContainer>
   );
+
 }
 
 const styles = StyleSheet.create({
