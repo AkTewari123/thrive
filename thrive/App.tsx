@@ -9,16 +9,16 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { doc, getDoc } from 'firebase/firestore';
 
 // Import screens for Auth and Main flows
-import LoginPage from './screens/dm-pages/login';
-import SignUpPage from './screens/dm-pages/sign-up';
+import LoginPage from './screens/auth-pages/login';
+import SignUpPage from './screens/auth-pages/sign-up';
 import ClientDashboard from './screens/dashboardPages/clientDashboard';
-import SpecificBusinessPage from './screens/dm-pages/specificBusinessPage';
+import SpecificBusinessPage from './screens/find-company/specificBusinessPage';
 import DMList from './screens/dm-pages/dm-list';
-import SearchResults from './screens/dm-pages/search';
-import AuthLandingPage from './screens/dm-pages/auth-landing';
+import SearchResults from './screens/find-company/search';
+import AuthLandingPage from './screens/auth-pages/auth-landing';
 import SpecificDM from './screens/dm-pages/dm';
-import LandingPageBusiness from './screens/dm-pages/landingPageBusiness';
-import BusinessSignUpPage from './screens/dm-pages/businessSignUp';
+import LandingPageBusiness from './screens/dashboardPages/landingPageBusiness';
+import BusinessSignUpPage from './screens/auth-pages/businessSignUp';
 
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
