@@ -1,10 +1,4 @@
-import React, {
-  useRef,
-  useEffect,
-  useCallback,
-  useState,
-  useMemo,
-} from "react";
+import React, { useRef, useEffect, useCallback, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -18,7 +12,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { setDoc, doc, getDoc, updateDoc } from "firebase/firestore";
+import { setDoc, getDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getAuth } from "firebase/auth"; // Firebase auth for current user
@@ -70,34 +64,23 @@ const SpecificDM: React.FC = () => {
   const docRef = doc(FIRESTORE, "messages", docId || "default");
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const [messages, setMessages] = useState<Array<{ [key: string]: string }>>(
-    []
-  );
+  const [messages, setMessages] = useState<Array<{ [key: string]: string }>>([]);
   const [text, setText] = useState("");
 
   useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const docSnap = await getDoc(docRef);
-
+    if (docId) {
+      const unsubscribe = onSnapshot(docRef, (docSnap) => {
         if (docSnap.exists()) {
           const chatData = docSnap.data().chat || [];
           setMessages(chatData);
           scrollToBottom();
         }
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    };
+      });
 
-    const intervalId = setInterval(() => {
-      fetchMessages();
-    }, 15000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
+      // Cleanup the listener when the component unmounts
+      return () => unsubscribe();
+    }
+  }, [docId]);
 
   const scrollToBottom = useCallback(() => {
     setTimeout(() => {
@@ -146,7 +129,6 @@ const SpecificDM: React.FC = () => {
       }
     }
   };
-  
 
   const renderMessages = useMemo(() => {
     return messages.map((messageMap, index) => {
@@ -209,6 +191,7 @@ const SpecificDM: React.FC = () => {
     </>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

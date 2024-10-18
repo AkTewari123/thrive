@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Modal, ActivityIndicator } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import thriveHeader from "../components/thriveHeader";
 import { useNavigation } from '@react-navigation/native';
 import BusinessNavBar from '../components/businessNavbar';
 import { RouteProp, ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { getAuth } from 'firebase/auth';
+import { collection, query, getDocs } from "firebase/firestore";
+import { FIRESTORE } from "../../FirebaseConfig";
 
 // Define the param list for your stack
 type RootStackParamList = {
@@ -50,9 +53,15 @@ const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) =>
 type DMListNavigationProp = StackNavigationProp<RootStackParamList, 'DMList'>;
 
 const DMList: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+  const [dmList, setDmList] = useState<{ name: string; email: string }[]>([]);
+
   const navigation = useNavigation<DMListNavigationProp>(); // Type the useNavigation hook
   const [modalVisible, setModalVisible] = useState(false);
   const [email, setEmail] = useState("");
+  const auth = getAuth();
+  const user = auth.currentUser;
+
 
   const handleNewChat = () => {
     setModalVisible(true); // Show the modal to enter an email
@@ -67,37 +76,67 @@ const DMList: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchDMs = async () => {
+      if (!user?.email) return;
+
+      try {
+        const q = query(collection(FIRESTORE, "messages"));
+        const querySnapshot = await getDocs(q);
+        const dmData: { name: string; email: string }[] = [];
+
+        querySnapshot.forEach((doc) => {
+          const docId = doc.id;
+          if (docId.includes(user.email!)) {
+            const participants = docId.split("&");
+            const otherUserEmail =
+              participants[0] === user.email ? participants[1] : participants[0];
+            dmData.push({
+              name: otherUserEmail.split("@")[0], // You can adjust this to fetch name from a different field
+              email: otherUserEmail,
+            });
+          }
+        });
+
+        setDmList(dmData);
+      } catch (error) {
+        console.error("Error fetching DMs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDMs();
+  }, [user]);
+
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+
+
+
 
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
 
       <ScrollView style={styles.content}>
-        {/* List of Businesses and Customers */}
-        <BusinessItem
-          name="Hyderabad Spice"
-          description="Yes, we have Paneer."
-          initial="H"
-          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'hyderabad@spice.com' })}
-        />
-        <BusinessItem
-          name="Ganga"
-          description="Happy hour is 5-6pm."
-          initial="G"
-          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'ganga@happyhour.com' })}
-        />
-        <BusinessItem
-          name="Henry Bagdasarov"
-          description="Can I ask what was so good?"
-          initial="H"
-          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'henry@example.com' })}
-        />
-        <BusinessItem
-          name="Gestapo"
-          description="How's the sushi?"
-          initial="G"
-          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'gestapo@sushi.com' })}
-        />
+      {dmList.map((dm) => (
+          <BusinessItem
+            key={dm.email}
+            name={dm.name}
+            description={`Chat with ${dm.name}`}
+            initial={dm.name.charAt(0).toUpperCase()}
+            onPress={() =>
+              navigation.navigate("SpecificDM", { otherUserEmail: dm.email })
+            }
+          />
+        ))}
       </ScrollView>
 
       {/* New Chat Floating Button */}
