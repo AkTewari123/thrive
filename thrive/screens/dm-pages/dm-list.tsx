@@ -1,19 +1,28 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, TextInput, Modal } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import thriveHeader from "../components/thriveHeader";
-import { useNavigation } from '@react-navigation/native'
-import SpecificDM from './dm';
+import { useNavigation } from '@react-navigation/native';
 import BusinessNavBar from '../components/businessNavbar';
+import { RouteProp, ParamListBase } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+
+// Define the param list for your stack
+type RootStackParamList = {
+  DMList: undefined; // No params for DMList
+  SpecificDM: { otherUserEmail: string }; // Pass otherUserEmail param
+};
+
 
 interface BusinessItemProps {
   name: string;
   description: string;
   initial: string;
+  onPress: () => void;
 }
 
-const BusinessItem: React.FC<BusinessItemProps> = ({ name, description, initial }) => (
-  <TouchableOpacity style={styles.itemContainer}>
+const BusinessItem: React.FC<BusinessItemProps> = ({ name, description, initial, onPress }) => (
+  <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
     <View style={[styles.initialCircle, { backgroundColor: initial === 'H' ? '#8B5CF6' : '#22C55E' }]}>
       <Text style={styles.initialText}>{initial}</Text>
     </View>
@@ -21,34 +30,15 @@ const BusinessItem: React.FC<BusinessItemProps> = ({ name, description, initial 
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemDescription}>{description}</Text>
     </View>
-    <Text style={styles.arrowRight}><Feather name="arrow-right-circle" size={32} color='black' /></Text>
+    <Text style={styles.arrowRight}>
+      <Feather name="arrow-right-circle" size={32} color='black' />
+    </Text>
   </TouchableOpacity>
 );
 
-interface SectionHeaderProps {
-  title: string;
-}
-
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
-  <Text style={styles.sectionHeader}>{title}</Text>
-);
-
-const SeeMoreButton: React.FC = () => (
-  <TouchableOpacity style={styles.seeMoreButton}>
-    <Text style={styles.seeMoreText}>See More</Text>
-    <Feather name="arrow-down-circle" size={32} color='#3B82F6' />
-  </TouchableOpacity>
-);
-
-const FloatingActionButton: React.FC = () => {
-  const navigation = useNavigation();
-
-  const handlePress = () => {
-    navigation.navigate('SpecificDM' as never);
-  };
-
+const FloatingActionButton: React.FC<{ onPress: () => void }> = ({ onPress }) => {
   return (
-    <TouchableOpacity style={styles.fab} onPress={handlePress}>
+    <TouchableOpacity style={styles.fab} onPress={onPress}>
       <View style={styles.fabIconContainer}>
         <Feather name="message-square" size={24} color="white" />
       </View>
@@ -57,26 +47,92 @@ const FloatingActionButton: React.FC = () => {
   );
 };
 
+type DMListNavigationProp = StackNavigationProp<RootStackParamList, 'DMList'>;
+
 const DMList: React.FC = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<DMListNavigationProp>(); // Type the useNavigation hook
+  const [modalVisible, setModalVisible] = useState(false);
+  const [email, setEmail] = useState("");
+
+  const handleNewChat = () => {
+    setModalVisible(true); // Show the modal to enter an email
+  };
+
+  const startChatWithEmail = () => {
+    if (email.trim()) {
+      setModalVisible(false);
+      setEmail(""); // Clear the input
+      // Navigate to SpecificDM with the entered email
+      navigation.navigate('SpecificDM', { otherUserEmail: email.trim() });
+    }
+  };
+
+
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
 
       <ScrollView style={styles.content}>
-        <SectionHeader title="Businesses" />
-        <BusinessItem name="Hyderabad Spice" description="Yes, we have Paneer." initial="H" />
-        <BusinessItem name="Ganga" description="Happy hour is 5-6pm." initial="G" />
-        <SeeMoreButton />
-
-        <SectionHeader title="Other Customers" />
-        <BusinessItem name="Henry Bagdasarov" description="Can I ask what was so good?" initial="H" />
-        <BusinessItem name="Gestapo" description="How's the sushi?" initial="G" />
-        <SeeMoreButton />
+        {/* List of Businesses and Customers */}
+        <BusinessItem
+          name="Hyderabad Spice"
+          description="Yes, we have Paneer."
+          initial="H"
+          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'hyderabad@spice.com' })}
+        />
+        <BusinessItem
+          name="Ganga"
+          description="Happy hour is 5-6pm."
+          initial="G"
+          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'ganga@happyhour.com' })}
+        />
+        <BusinessItem
+          name="Henry Bagdasarov"
+          description="Can I ask what was so good?"
+          initial="H"
+          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'henry@example.com' })}
+        />
+        <BusinessItem
+          name="Gestapo"
+          description="How's the sushi?"
+          initial="G"
+          onPress={() => navigation.navigate('SpecificDM', { otherUserEmail: 'gestapo@sushi.com' })}
+        />
       </ScrollView>
 
-      <FloatingActionButton />
+      {/* New Chat Floating Button */}
+      <FloatingActionButton onPress={handleNewChat} />
+
+      {/* Navigation Bar */}
       <BusinessNavBar navigation={navigation} />
+
+      {/* Modal for Email Input */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Enter Email to Start Chat</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <TouchableOpacity style={styles.modalButton} onPress={startChatWithEmail}>
+              <Text style={styles.modalButtonText}>Start Chat</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setModalVisible(false)}>
+              <Feather name="x" size={24} color="#000" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -112,28 +168,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  headerText: {
-    marginLeft: 8,
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 24,
-    marginBottom: 8,
-    marginLeft: 16,
   },
   itemContainer: {
     flexDirection: 'row',
@@ -172,42 +206,50 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: '#9CA3AF',
   },
-  seeMoreButton: {
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalView: {
+    width: 300,
     backgroundColor: 'white',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
+    borderRadius: 10,
+    padding: 20,
     alignItems: 'center',
-    padding: 2,
-  },
-  seeMoreText: {
-    color: '#3B82F6',
-    fontSize: 16,
-  },
-  startChatButton: {
-    backgroundColor: '#5A5D9D',
-    margin: 16,
-    padding: 12,
-    borderRadius: 30,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 4,
   },
-  startChatIcon: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 20,
-    padding: 8,
-    marginRight: 12,
-  },
-  startChatButtonText: {
-    color: 'white',
+  modalText: {
     fontSize: 18,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  input: {
+    width: '100%',
+    padding: 12,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  modalButton: {
+    backgroundColor: '#5A5D9D',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 30,
+  },
+  modalButtonText: {
+    color: 'white',
+    fontSize: 16,
     fontWeight: 'bold',
+  },
+  modalCloseButton: {
+    marginTop: 12,
+    padding: 8,
   },
 });
 

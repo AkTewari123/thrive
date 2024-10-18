@@ -20,7 +20,9 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { setDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import { getAuth } from "firebase/auth"; // Firebase auth for current user
+
 interface MessageProps {
   content?: string;
   isUser: boolean;
@@ -28,7 +30,6 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ content, isUser, attachment }) => (
-  
   <View
     style={[
       styles.messageContainer,
@@ -55,40 +56,40 @@ const Message: React.FC<MessageProps> = ({ content, isUser, attachment }) => (
 );
 
 const SpecificDM: React.FC = () => {
-  const docRef = doc(FIRESTORE, "messages", "henry&Ak");
+  const auth = getAuth();
+  const currentUserEmail = auth.currentUser?.email; // Get the current user's email
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { otherUserEmail } = route.params as { otherUserEmail: string }; // Get the other user's email from route params
+
+  // Use both emails to create the Firestore document ID (sort alphabetically to ensure consistency)
+  const docId =
+    currentUserEmail && otherUserEmail
+      ? [currentUserEmail, otherUserEmail].sort().join("&")
+      : null;
+  const docRef = doc(FIRESTORE, "messages", docId || "default");
+
   const scrollViewRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Array<{ [key: string]: string }>>(
     []
   );
   const [text, setText] = useState("");
-  const yourTexts = useRef(0);
-  const rendered = useRef("false");
+
   useEffect(() => {
     const fetchMessages = async () => {
       try {
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          const chatData = docSnap.data().chat || []; // Retrieve chat data as an array of maps
-          setMessages(chatData); // Set the messages state with the data
-          console.log(messages);
-          console.log("messages");
-          scrollToBottom(); // Scroll to bottom after fetching messages
-          for (var i = 0; i < messages.length; i++) {
-            if (
-              Object.keys(messages)[i].includes("ak") &&
-              rendered.current == "false"
-            ) {
-              yourTexts.current++;
-            }
-          }
-          rendered.current = "true";
-          console.log(`Your texts: ${yourTexts.current}`);
+          const chatData = docSnap.data().chat || [];
+          setMessages(chatData);
+          scrollToBottom();
         }
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
     };
+
     const intervalId = setInterval(() => {
       fetchMessages();
     }, 15000);
@@ -109,7 +110,7 @@ const SpecificDM: React.FC = () => {
       "keyboardDidShow",
       scrollToBottom
     );
-    scrollToBottom(); // Scroll when component mounts
+    scrollToBottom();
 
     return () => {
       keyboardDidShowListener.remove();
@@ -117,83 +118,94 @@ const SpecificDM: React.FC = () => {
   }, [scrollToBottom]);
 
   const handleSend = async (text: string) => {
-    if (text.trim()) {
+    if (text.trim() && currentUserEmail) {
       text = text.trim();
-
-      const newMessage = { [`ak${Math.floor(Math.random() * 100000)}`]: text }; // Construct the new message
-      setMessages((prevMessages) => [...prevMessages, newMessage]); // Update local state
-      setText(""); // Clear the input field
+  
+      // Dynamically generate the message key using the current user's email
+      const newMessage = { [currentUserEmail]: text };
+  
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+      setText("");
+  
       try {
-        // Update Firestore document with the new message (appending it to the existing chat array)
-        await updateDoc(docRef, {
-          chat: [...messages, newMessage], // Append the new message to the existing chat array
-        });
-        scrollToBottom(); // Scroll to the bottom after sending the message
+        const docSnap = await getDoc(docRef); // Check if the document exists
+        if (docSnap.exists()) {
+          // If document exists, update the chat
+          await updateDoc(docRef, {
+            chat: [...messages, newMessage],
+          });
+        } else {
+          // If document does not exist, create a new one with setDoc
+          await setDoc(docRef, {
+            chat: [...messages, newMessage],
+          });
+        }
+        scrollToBottom();
       } catch (error) {
         console.error("Error sending message:", error);
       }
     }
   };
+  
 
   const renderMessages = useMemo(() => {
     return messages.map((messageMap, index) => {
       const [sender, message] = Object.entries(messageMap)[0];
-      const isUser = sender.includes("ak"); // Check if it's the user
+      const isUser = sender === currentUserEmail; // Check if it's the current user
       let hasAttachment = message.includes("attachment908(");
       return !hasAttachment ? (
-        <Message key={sender} content={message} isUser={isUser} />
+        <Message key={index} content={message} isUser={isUser} />
       ) : (
-        <Message key={sender} isUser={isUser} attachment="Menu.pdf" />
+        <Message key={index} isUser={isUser} attachment="Menu.pdf" />
       );
     });
-  }, [messages]); // Memoize when `messages` array changes
+  }, [messages, currentUserEmail]);
 
   return (
     <>
-    <SafeAreaView>
-      </SafeAreaView>
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
-    >
-      <View style={styles.header}>
-        <TouchableOpacity>
-          <Feather name="arrow-left" size={24} color="#1F2937" />
-        </TouchableOpacity>
-        <View style={styles.headerProfile}>
-          <View style={styles.avatarContainer}>
-            <Text style={styles.avatarText}>H</Text>
-          </View>
-          <Text style={styles.headerName}>Henry Bagdasarov</Text>
-        </View>
-      </View>
-
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.messageList}
-        contentContainerStyle={styles.messageListContent}
-        onContentSizeChange={scrollToBottom}
+      <SafeAreaView></SafeAreaView>
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        {renderMessages}
-      </ScrollView>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Feather name="arrow-left" size={24} color="#1F2937" />
+          </TouchableOpacity>
+          <View style={styles.headerProfile}>
+            <View style={styles.avatarContainer}>
+              <Text style={styles.avatarText}>H</Text>
+            </View>
+            <Text style={styles.headerName}>{otherUserEmail}</Text>
+          </View>
+        </View>
 
-      <View style={styles.inputContainer}>
-        <TextInput
-          value={text}
-          onChangeText={(text) => setText(text)}
-          style={styles.input}
-          placeholder="Enter Message"
-          placeholderTextColor="#9CA3AF"
-        />
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={() => handleSend(text)}
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messageList}
+          contentContainerStyle={styles.messageListContent}
+          onContentSizeChange={scrollToBottom}
         >
-          <Feather name="send" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+          {renderMessages}
+        </ScrollView>
+
+        <View style={styles.inputContainer}>
+          <TextInput
+            value={text}
+            onChangeText={(text) => setText(text)}
+            style={styles.input}
+            placeholder="Enter Message"
+            placeholderTextColor="#9CA3AF"
+          />
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={() => handleSend(text)}
+          >
+            <Feather name="send" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </>
   );
 };
