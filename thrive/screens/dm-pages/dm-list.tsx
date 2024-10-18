@@ -2,6 +2,9 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import thriveHeader from "../components/thriveHeader";
+import { useNavigation } from '@react-navigation/native'
+import SpecificDM from './dm';
+import BusinessNavBar from '../components/businessNavbar';
 
 interface BusinessItemProps {
   name: string;
@@ -37,21 +40,29 @@ const SeeMoreButton: React.FC = () => (
   </TouchableOpacity>
 );
 
+const FloatingActionButton: React.FC = () => {
+  const navigation = useNavigation();
 
-const FloatingActionButton: React.FC = () => (
-  <TouchableOpacity style={styles.fab}>
-    <View style={styles.fabIconContainer}>
-      <Feather name="message-square" size={24} color="white" />
-    </View>
-    <Text style={styles.fabText}>New Chat</Text>
-  </TouchableOpacity>
-);
+  const handlePress = () => {
+    navigation.navigate('SpecificDM' as never);
+  };
+
+  return (
+    <TouchableOpacity style={styles.fab} onPress={handlePress}>
+      <View style={styles.fabIconContainer}>
+        <Feather name="message-square" size={24} color="white" />
+      </View>
+      <Text style={styles.fabText}>New Chat</Text>
+    </TouchableOpacity>
+  );
+};
 
 const DMList: React.FC = () => {
+  const navigation = useNavigation();
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
-      
+
       <ScrollView style={styles.content}>
         <SectionHeader title="Businesses" />
         <BusinessItem name="Hyderabad Spice" description="Yes, we have Paneer." initial="H" />
@@ -65,6 +76,7 @@ const DMList: React.FC = () => {
       </ScrollView>
 
       <FloatingActionButton />
+      <BusinessNavBar navigation={navigation} />
     </SafeAreaView>
   );
 };
@@ -80,7 +92,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 20,
+    bottom: 80, // Adjust this value to move it above the navbar
     backgroundColor: '#5A5D9D',
     flexDirection: 'row',
     alignItems: 'center',
@@ -115,7 +127,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1F2937',
   },
-
   sectionHeader: {
     fontSize: 18,
     fontWeight: 'bold',

@@ -54,7 +54,7 @@ function HomeScreen({ navigation }: any) {
       <Text>Welcome to the App!</Text>
       <Button
         title="Go to messages"
-        onPress={() => navigation.navigate('Messages')}
+        onPress={() => navigation.navigate('DMList')}
       />
       <Button
         title="Go to client dashboard"
@@ -145,6 +145,8 @@ function BusinessLayout() {
     <BusinessStack.Navigator screenOptions={{ headerShown: false }}>
       <BusinessStack.Screen name="HomeScreen" component={HomeScreen} />
       <BusinessStack.Screen name="Business Page" component={SpecificBusinessPage} />
+      <BusinessStack.Screen name="DMList" component={DMList} />
+      <BusinessStack.Screen name="SpecificDM" component={SpecificDM} />
       {/* Add more Business-specific screens here */}
     </BusinessStack.Navigator>
   );

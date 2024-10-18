@@ -20,7 +20,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { setDoc, doc, getDoc, updateDoc } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
-
+import { useNavigation } from "@react-navigation/native";
 interface MessageProps {
   content?: string;
   isUser: boolean;
@@ -28,6 +28,7 @@ interface MessageProps {
 }
 
 const Message: React.FC<MessageProps> = ({ content, isUser, attachment }) => (
+  
   <View
     style={[
       styles.messageContainer,
