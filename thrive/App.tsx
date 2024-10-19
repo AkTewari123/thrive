@@ -145,6 +145,7 @@ function BusinessLayout() {
   return (
     <BusinessStack.Navigator screenOptions={{ headerShown: false }}>
       <BusinessStack.Screen name="HomeScreen" component={HomeScreen} />
+      <BusinessStack.Screen name="Dashboard" component={LandingPageBusiness} />
       <BusinessStack.Screen name="Business Page" component={SpecificBusinessPage} />
       <BusinessStack.Screen name="DMList" component={DMList} />
       <BusinessStack.Screen name="SpecificDM" component={SpecificDM} />
