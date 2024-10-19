@@ -134,7 +134,7 @@ function CustomerLayout() {
       <CustomerStack.Screen name="HomeScreen" component={HomeScreen} />
       <CustomerStack.Screen name="Dashboard" component={ClientDashboard} />
       <CustomerStack.Screen name="SearchResults" component={SearchResults} />
-      <CustomerStack.Screen name="Messages" component={DMList} />
+      <CustomerStack.Screen name="DMList" component={DMList} />
       <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
     </CustomerStack.Navigator>
   );
