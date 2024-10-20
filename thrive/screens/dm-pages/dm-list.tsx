@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Tex
 import Feather from '@expo/vector-icons/Feather';
 import thriveHeader from "../components/thriveHeader";
 import { useNavigation } from '@react-navigation/native';
-import BusinessNavBar from '../components/businessNavbar';
 import { RouteProp, ParamListBase } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getAuth } from 'firebase/auth';
@@ -141,9 +140,6 @@ const DMList: React.FC = () => {
 
       {/* New Chat Floating Button */}
       <FloatingActionButton onPress={handleNewChat} />
-
-      {/* Navigation Bar */}
-      <BusinessNavBar navigation={navigation} />
 
       {/* Modal for Email Input */}
       <Modal

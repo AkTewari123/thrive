@@ -1,14 +1,18 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { onAuthStateChanged, signOut } from 'firebase/auth'; // Import signOut
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { FIREBASE_AUTH, FIRESTORE } from './FirebaseConfig';
 import { User } from 'firebase/auth';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { doc, getDoc } from 'firebase/firestore';
+import Feather from '@expo/vector-icons/Feather';
+import { UserProvider, UserContext } from './UserContext'; // Import the provider
 
-// Import screens for Auth and Main flows
+
+// Import your screens here
 import LoginPage from './screens/auth-pages/login';
 import SignUpPage from './screens/auth-pages/sign-up';
 import ClientDashboard from './screens/dashboardPages/clientDashboard';
@@ -18,13 +22,90 @@ import SearchResults from './screens/find-company/search';
 import AuthLandingPage from './screens/auth-pages/auth-landing';
 import SpecificDM from './screens/dm-pages/dm';
 import LandingPageBusiness from './screens/dashboardPages/landingPageBusiness';
+import SettingsPage from './screens/Setting';
 import BusinessSignUpPage from './screens/auth-pages/businessSignUp';
 
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
-const MainStack = createStackNavigator();
 const CustomerStack = createStackNavigator();
 const BusinessStack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+const BusinessTab = createBottomTabNavigator();
+
+function BusinessTabNavigator() {
+  return (
+    <BusinessTab.Navigator
+      initialRouteName="Dashboard" // Add this line
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName:any;
+
+          if (route.name === 'Dashboard') {
+            iconName = 'home';
+          } else if (route.name === 'Businesses') {
+            iconName = 'briefcase';
+          } else if (route.name === 'Messages') {
+            iconName = 'message-square';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings';
+          }
+
+          return <Feather name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarStyle: {
+          backgroundColor: '#5A5D9D',
+          borderTopWidth: 0,
+          height: 60,
+          paddingBottom: 5,
+          paddingTop: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+        },
+        headerShown: false,
+      })}
+    >
+      <BusinessTab.Screen name="Dashboard" component={LandingPageBusiness} />
+      <BusinessTab.Screen name="Messages" component={DMList} />
+      <Tab.Screen name="Settings" component={SettingsPage} />
+    </BusinessTab.Navigator>
+  );
+}
+
+
+function BusinessLayout() {
+  return (
+    <BusinessStack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#5A5D9D',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        }
+      }}
+    >
+      <BusinessStack.Screen 
+        name="BusinessTabs" 
+        component={BusinessTabNavigator} 
+        options={{ headerShown: false }}
+      />
+      <BusinessStack.Screen 
+        name="BusinessPage" 
+        component={SpecificBusinessPage} 
+        options={{ title: 'Business Page' }}
+      />
+      <BusinessStack.Screen 
+        name="SpecificDM" 
+        component={SpecificDM} 
+        options={{ title: 'Chat' }}
+      />
+    </BusinessStack.Navigator>
+  );
+}
 
 function AuthLayout() {
   return (
@@ -36,135 +117,67 @@ function AuthLayout() {
   );
 }
 
-// Define the HomeScreen function
-function HomeScreen({ navigation }: any) {
-  // Function to handle log out
-  const handleLogout = () => {
-    signOut(FIREBASE_AUTH)
-      .then(() => {
-        console.log('User signed out');
-      })
-      .catch((error) => {
-        console.error('Error signing out: ', error);
-      });
-  };
-
+function CustomerTabNavigator() {
   return (
-    <View style={styles.container}>
-      <Text>Welcome to the App!</Text>
-      <Button
-        title="Go to messages"
-        onPress={() => navigation.navigate('DMList')}
-      />
-      <Button
-        title="Go to client dashboard"
-        onPress={() => navigation.navigate('Dashboard')}
-      />
-      <Button
-        title="Go to Specific Business Page"
-        onPress={() =>
-          navigation.navigate('Business Page', {
-            businessName: 'Hyderabad Spice',
-            businessDescription: 'Best Indian Food in NJ!',
-            numStars: 4,
-            phoneNumber: '732-526-9081',
-            address: '1008 NJ-34 Suite #8, Matawan, NJ 07747',
-            schedule: {
-              Monday: ['9:00am', '1:00pm'],
-              Tuesday: ['9:00am', '1:00pm'],
-              Wednesday: ['9:00am', '1:00pm'],
-              Thursday: ['9:00am', '1:00pm'],
-              Friday: ['9:00am', '1:00pm'],
-              Saturday: ['9:00am', '1:00pm'],
-              Sunday: ['9:00am', '1:00pm'],
-            },
-          })
-        }
-      />
-      <Button
-        title="Go to specific DM"
-        onPress={() => navigation.navigate('SpecificDM')}
-      />
-      <Button
-        title="Go to landing page (business)"
-        onPress={() => navigation.navigate('LandingPageBusiness')}
-      />
-      <Button
-        title="Go to search"
-        onPress={() => navigation.navigate('SearchResults')}
-      />
-      <Button
-        title="Go to login page"
-        onPress={() => navigation.navigate('LoginPage')}
-      />
-      <Button
-        title="Go to sign up page"
-        onPress={() => navigation.navigate('SignUpPage')}
-      />
-      <Button
-        title="Log Out" // Add log out button
-        onPress={handleLogout}
-      />
-      <Button 
-        title="Go to Business Sign Up Page"
-        onPress={() => navigation.navigate('BusinessSignUpPage')} />
-      <StatusBar style="auto" />
-    </View>
-  );
-}
+    <Tab.Navigator
+      initialRouteName="Dashboard" // Add this line
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: any;
 
-// Main Layout after login
-function MainLayout() {
-  return (
-    <MainStack.Navigator screenOptions={{ headerShown: false }}>
-      <MainStack.Screen name="HomeScreen" component={HomeScreen} />
-      <MainStack.Screen name="Dashboard" component={ClientDashboard} />
-      <MainStack.Screen name="SearchResults" component={SearchResults} />
-      <MainStack.Screen name="Business Page" component={SpecificBusinessPage} />
-      <MainStack.Screen name="Messages" component={DMList} />
-      <MainStack.Screen name="SpecificDM" component={SpecificDM} />
-      <MainStack.Screen name="LandingPageBusiness" component={LandingPageBusiness} />
-    </MainStack.Navigator>
+          if (route.name === 'Dashboard') {
+            iconName = 'home';
+          } else if (route.name === 'Businesses') {
+            iconName = 'briefcase';
+          } else if (route.name === 'Messages') {
+            iconName = 'message-square';
+          } else if (route.name === 'Settings') {
+            iconName = 'settings';
+          }
+
+          return <Feather name={iconName} size={24} color={color} />;
+        },
+        tabBarActiveTintColor: 'white',
+        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarStyle: {
+          backgroundColor: '#5A5D9D',
+          borderTopWidth: 0,
+          height: 60,
+          paddingBottom: 5,
+          paddingTop: 5,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+        },
+        headerShown: false,
+      })}
+    >
+      <Tab.Screen name="Messages" component={DMList} />
+      <Tab.Screen name="Dashboard" component={ClientDashboard} />
+      <Tab.Screen name="Businesses" component={SearchResults} />
+      <Tab.Screen name="Settings" component={SettingsPage} />
+    </Tab.Navigator>
   );
 }
 
 function CustomerLayout() {
   return (
-    <CustomerStack.Navigator screenOptions={{ headerShown: false }}>
-      <CustomerStack.Screen name="HomeScreen" component={HomeScreen} />
-      <CustomerStack.Screen name="Dashboard" component={ClientDashboard} />
-      <CustomerStack.Screen name="SearchResults" component={SearchResults} />
-      <CustomerStack.Screen name="DMList" component={DMList} />
+    <CustomerStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Dashboard">
+      <CustomerStack.Screen name="CustomerTabs" component={CustomerTabNavigator} />
       <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
-      <CustomerStack.Screen name="Business Page" component={SpecificBusinessPage} />
+      <CustomerStack.Screen name="SpecificBusiness" component={SpecificBusinessPage} />
     </CustomerStack.Navigator>
   );
 }
 
-function BusinessLayout() {
-  return (
-    <BusinessStack.Navigator screenOptions={{ headerShown: false }}>
-      <BusinessStack.Screen name="HomeScreen" component={HomeScreen} />
-      <BusinessStack.Screen name="Dashboard" component={LandingPageBusiness} />
-      <BusinessStack.Screen name="Business Page" component={SpecificBusinessPage} />
-      <BusinessStack.Screen name="DMList" component={DMList} />
-      <BusinessStack.Screen name="SpecificDM" component={SpecificDM} />
-      {/* Add more Business-specific screens here */}
-    </BusinessStack.Navigator>
-  );
-}
-
-export default function App() {
-  const [user, setUser] = useState<User | null>(null);
-  const [userType, setUserType] = useState<string | null>(null);
-
+function MainApp() {
+  const { setUser, setUserType, user, userType } = useContext(UserContext);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(FIREBASE_AUTH, async (user) => {
       if (user) {
         setUser(user);
-        
-        // Fetch user type from Firestore
+
         const userDoc = await getDoc(doc(FIRESTORE, 'users', user.uid));
         if (userDoc.exists()) {
           setUserType(userDoc.data().userType);
@@ -172,12 +185,12 @@ export default function App() {
           console.log("No such document!");
         }
       } else {
-        setUserType(null); // Reset userType if user is not logged in
+        setUserType(null);
       }
     });
+
     return unsubscribe;
   }, []);
-
 
   return (
     <NavigationContainer>
@@ -195,8 +208,15 @@ export default function App() {
       </Stack.Navigator>
     </NavigationContainer>
   );
-
 }
+
+export default function App() {
+  return (
+    <UserProvider>
+      <MainApp />
+    </UserProvider>
+  );
+} 
 
 const styles = StyleSheet.create({
   container: {
