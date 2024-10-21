@@ -125,20 +125,27 @@ const DMList: React.FC = () => {
       {thriveHeader({})}
 
       <ScrollView style={styles.content}>
-      {dmList.map((dm) => (
-          <BusinessItem
-            key={dm.email}
-            name={dm.name}
-            description={`Chat with ${dm.name}`}
-            initial={dm.name.charAt(0).toUpperCase()}
-            onPress={() =>
-              navigation.navigate("SpecificDM", { otherUserEmail: dm.email })
-            }
-          />
-        ))}
+        {dmList.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <Feather name="message-square" size={64} color="#CCCCCC" />
+            <Text style={styles.emptyStateText}>No chats yet</Text>
+            <Text style={styles.emptyStateSubText}>Start a new chat to begin messaging</Text>
+          </View>
+        ) : (
+          dmList.map((dm) => (
+            <BusinessItem
+              key={dm.email}
+              name={dm.name}
+              description={`Chat with ${dm.name}`}
+              initial={dm.name.charAt(0).toUpperCase()}
+              onPress={() =>
+                navigation.navigate("SpecificDM", { otherUserEmail: dm.email })
+              }
+            />
+          ))
+        )}
       </ScrollView>
 
-      {/* New Chat Floating Button */}
       <FloatingActionButton onPress={handleNewChat} />
 
       {/* Modal for Email Input */}
@@ -285,6 +292,24 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     marginTop: 12,
     padding: 8,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  emptyStateText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+  },
+  emptyStateSubText: {
+    fontSize: 16,
+    color: '#666',
+    marginTop: 10,
+    textAlign: 'center',
   },
 });
 
