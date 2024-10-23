@@ -80,33 +80,28 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
 );
 interface seeMore {
   businesses?: any[];
+  func: any;
 }
-const SeeMoreButton: React.FC<seeMore> = ({ businesses }) => (
-  <TouchableOpacity
-    style={styles.seeMoreButton}
-    onPress={() => {
-      console.log(businesses);
-      businesses?.map((business: any, idx: number) =>
-        idx > 2 ? (
-          <Reccommended
-            key={business["id"] || idx}
-            name={business["businessName"]}
-            color={
-              business["color"] != null
-                ? business["color"]
-                : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
-                    Math.floor(Math.random() * 4)
-                  ]
-            }
-            description={business["description"] || "Business Near You"}
-            email="myBusiness@gmail.com"
-          />
-        ) : null
-      );
-    }}
-  >
-    <Text style={styles.seeMoreText}>See More</Text>
-    <Feather name="arrow-down-circle" size={32} color="#3B82F6" />
+const SeeMoreButton: React.FC<seeMore> = ({ businesses, func }) => (
+  <TouchableOpacity style={styles.seeMoreButton} onPress={func}>
+    <View
+      style={{
+        width: "30%",
+        backgroundColor: "#5A5D9D",
+        padding: 5,
+        borderRadius: 10,
+      }}
+    >
+      <Text
+        style={[
+          styles.seeMoreText,
+          { textAlign: "center", fontFamily: "Outfit-Medium" },
+        ]}
+      >
+        See More &nbsp;
+        <Feather name="arrow-down-circle" size={18} color="white" />
+      </Text>
+    </View>
   </TouchableOpacity>
 );
 
@@ -129,10 +124,13 @@ const Following: React.FC<followingItemProps> = ({
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => {
-        navigation.navigate("CompanyPostHistory", {companyEmail: email, companyName: name,});
+        navigation.navigate("CompanyPostHistory", {
+          companyEmail: email,
+          companyName: name,
+        });
       }}
     >
-      <View style={[styles.initialCircle, { backgroundColor: color }]}>
+      <View style={[styles.initialCircle, { backgroundColor: "white" }]}>
         <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
       </View>
       <View style={styles.notificationPing}></View>
@@ -141,7 +139,7 @@ const Following: React.FC<followingItemProps> = ({
         <Text style={styles.itemDescription}>{description}</Text>
       </View>
       <Text style={styles.arrowRight}>
-        <Feather name="arrow-right-circle" size={32} color="black" />
+        <Feather name="arrow-right-circle" size={32} color="white" />
       </Text>
     </TouchableOpacity>
   );
@@ -171,7 +169,7 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
         });
       }}
     >
-      <View style={[styles.initialCircle, { backgroundColor: color }]}>
+      <View style={[styles.initialCircle, { backgroundColor: "white" }]}>
         <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
       </View>
       <View style={styles.itemTextContainer}>
@@ -179,7 +177,7 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
         <Text style={styles.itemDescription}>{description}</Text>
       </View>
       <Text style={styles.arrowRight}>
-        <Feather name="arrow-right-circle" size={32} color="black" />
+        <Feather name="arrow-right-circle" size={32} color="white" />
       </Text>
     </TouchableOpacity>
   );
@@ -193,6 +191,26 @@ const ClientDashboard: React.FC = () => {
   });
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  //   console.log(businesses);
+  //   businesses?.map((business: any, idx: number) =>
+  //     idx > 2 ? (
+  //       <Reccommended
+  //         key={business["id"] || idx}
+  //         name={business["businessName"]}
+  //         color={
+  //           business["color"] != null
+  //             ? business["color"]
+  //             : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
+  //                 Math.floor(Math.random() * 4)
+  //               ]
+  //         }
+  //         description={business["description"] || "Business Near You"}
+  //         email="myBusiness@gmail.com"
+  //       />
+  //     ) : null
+  //   );
+  // }
+
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
@@ -237,50 +255,74 @@ const ClientDashboard: React.FC = () => {
   if (!fontsLoaded && !fontError) {
     return null;
   }
+  const [bool, setBool] = useState(2);
+  function handleSeeMore() {
+    console.log("REMY MANDER 857");
+    setBool((prev) => {
+      return prev + 2;
+    });
+  }
+
+  const renderBusinessItems = () => {
+    return businesses.map((business, idx) =>
+      idx < bool ? (
+        <Reccommended
+          key={business["id"] || idx}
+          name={business["businessName"]}
+          color={
+            business["color"] != null
+              ? business["color"]
+              : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
+                  Math.floor(Math.random() * 3)
+                ]
+          }
+          description={business["description"] || "Business Near You"}
+          email="myBusiness@gmail.com"
+        />
+      ) : null
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       {thriveHeader({})}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          <SectionHeader title="Following" />
-          <Following
-            name="Hyderbad Spice"
-            color="#2196F3"
-            description="New Spicy Kurma Dish!"
-            email="hyderabadspice@example.com"
-          />
-          <Following
-            name="Ganga"
-            color="rgb(20 184 166)"
-            description="New Spicy Kurma Dish!"
-            email="ganga@example.com"
-          />
-          <SeeMoreButton />
-          <SectionHeader title="Recommended" />
-          {loading ? ( // Show loading indicator if loading
-            <ActivityIndicator size="large" color="#0000ff" />
-          ) : (
-            businesses.map((business, idx) =>
-              idx < 2 ? (
-                <Reccommended
-                  key={business["id"] || idx}
-                  name={business["businessName"]}
-                  color={
-                    business["color"] != null
-                      ? business["color"]
-                      : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
-                          Math.floor(Math.random() * 3)
-                        ]
-                  }
-                  description={business["description"] || "Business Near You"}
-                  email="myBusiness@gmail.com"
-                />
-              ) : null
-            )
-          )}
-          {/* {followingElements()} */}
-          <SeeMoreButton businesses={businesses} />
+          <View
+            style={{ backgroundColor: "white", borderRadius: 20, padding: 0 }}
+          >
+            <SectionHeader title="Following" />
+            <Following
+              name="Hyderbad Spice"
+              color="#2196F3"
+              description="New Spicy Kurma Dish!"
+              email="hyderabadspice@example.com"
+            />
+            <Following
+              name="Ganga"
+              color="rgb(20 184 166)"
+              description="New Spicy Kurma Dish!"
+              email="ganga@example.com"
+            />
+            <SeeMoreButton func={handleSeeMore} />
+          </View>
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 20,
+              padding: 0,
+              marginTop: 20,
+            }}
+          >
+            <SectionHeader title="Recommended" />
+            {loading ? (
+              <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+              renderBusinessItems() // Call a separate function to render business items
+            )}
+            {/* {followingElements()} */}
+            <SeeMoreButton businesses={businesses} func={handleSeeMore} />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -309,21 +351,29 @@ const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#1F2937",
     textAlign: "center",
-    marginTop: 24,
-    backgroundColor: "white",
     paddingVertical: 10,
     borderTopLeftRadius: 100,
     borderTopRightRadius: 10,
+    fontFamily: "Outfit-Medium",
+    backgroundColor: "transparent",
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#5A5D9D",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#DDDDDD",
     borderTopColor: "#DDDDDD",
     borderTopWidth: 1,
+    marginHorizontal: 10,
+    marginVertical: 5,
+    borderRadius: 20,
+    color: "white",
+    shadowColor: "#171717",
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   initialCircle: {
     width: 40,
@@ -333,8 +383,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   initialText: {
-    color: "white",
+    color: "#5A5D9D",
     fontSize: 18,
+    fontWeight: "700",
   },
   itemTextContainer: {
     flex: 1,
@@ -342,28 +393,33 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    color: "#1F2937",
+    color: "white",
+    fontFamily: "Outfit-Medium",
   },
   itemDescription: {
     fontSize: 14,
-    color: "#618BDB",
-    fontWeight: "600",
+    color: "white",
+    fontFamily: "Outfit-Bold",
   },
   arrowRight: {
     fontSize: 20,
-    color: "#9CA3AF",
+    color: "white",
   },
   seeMoreButton: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
     flexDirection: "row",
     justifyContent: "center",
     gap: 8,
     alignItems: "center",
     padding: 2,
+    paddingBottom: 10,
+    color: "white",
+    borderRadius: 15,
   },
   seeMoreText: {
-    color: "#3B82F6",
+    color: "white",
     fontSize: 16,
+    padding: 5,
   },
   notificationPing: {
     backgroundColor: "#EE4957",

@@ -1,10 +1,18 @@
-import React, { useContext } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, SafeAreaView, Image } from 'react-native';
+import React, { useContext } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  SafeAreaView,
+  Image,
+} from "react-native";
 import Feather from "@expo/vector-icons/Feather";
-import { FIREBASE_AUTH } from '../FirebaseConfig';
-import { signOut } from 'firebase/auth';
-import { UserContext } from '../UserContext';
-import thriveHeader from './components/thriveHeader';
+import { FIREBASE_AUTH } from "../FirebaseConfig";
+import { signOut } from "firebase/auth";
+import { UserContext } from "../UserContext";
+import thriveHeader from "./components/thriveHeader";
 
 const SettingsPage = () => {
   const { user, setUser, userType, setUserType } = useContext(UserContext);
@@ -12,12 +20,12 @@ const SettingsPage = () => {
   const handleLogout = () => {
     signOut(FIREBASE_AUTH)
       .then(() => {
-        console.log('User signed out');
+        console.log("User signed out");
         setUser(null);
         setUserType(null);
       })
       .catch((error) => {
-        console.error('Error signing out: ', error);
+        console.error("Error signing out: ", error);
       });
   };
 
@@ -35,19 +43,23 @@ const SettingsPage = () => {
         {thriveHeader({})}
         <View style={styles.userInfoSection}>
           <View style={styles.profileCircle}>
-            <Text style={styles.initialText}>{user?.email[0]}</Text>
+            <Text style={styles.initialText}>
+              {user?.email[0].toUpperCase()}
+            </Text>
           </View>
           <View style={styles.userDetails}>
             <Text style={styles.userEmail}>{user?.email}</Text>
-            <Text style={styles.userType}>{userType || 'User Type'} Account</Text>
+            <Text style={styles.userType}>
+              {userType || "User Type"} Account
+            </Text>
           </View>
         </View>
 
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>Account</Text>
-          <SettingItem icon="user" title="Edit Profile" onPress={() => { }} />
-          <SettingItem icon="lock" title="Change Password" onPress={() => { }} />
-          <SettingItem icon="bell" title="Notifications" onPress={() => { }} />
+          <SettingItem icon="user" title="Edit Profile" onPress={() => {}} />
+          <SettingItem icon="lock" title="Change Password" onPress={() => {}} />
+          <SettingItem icon="bell" title="Notifications" onPress={() => {}} />
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
@@ -69,14 +81,14 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: "Outfit-Bold",
     fontSize: 24,
     color: "white",
   },
   userInfoSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#5A5D9D',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#5A5D9D",
     padding: 16,
     marginBottom: 20,
   },
@@ -89,30 +101,30 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   userName: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: "Outfit-Bold",
     fontSize: 18,
     color: "#1F2937",
   },
   userEmail: {
-    fontFamily: 'Outfit-Medium',
+    fontFamily: "Outfit-Medium",
     fontSize: 14,
     color: "white",
   },
   userType: {
-    fontFamily: 'Outfit-Medium',
+    fontFamily: "Outfit-Medium",
     fontSize: 14,
     color: "white",
     marginTop: 4,
   },
   settingsSection: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 10,
     marginBottom: 20,
     marginHorizontal: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   sectionTitle: {
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: "Outfit-SemiBold",
     fontSize: 18,
     color: "#374151",
     padding: 16,
@@ -120,16 +132,15 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
   },
   settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
   },
   settingItemText: {
-    fontFamily: 'Outfit-Medium',
+    fontFamily: "Outfit-Medium",
     fontSize: 16,
-    color: "#1F2937",
     flex: 1,
     marginLeft: 16,
   },
@@ -144,20 +155,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   profileCircle: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     width: 60,
     height: 60,
     borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   initialText: {
-    color: '#8B5CF6',
+    color: "#5A5D9D",
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    fontFamily: "Outfit",
   },
   logoutText: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: "Outfit-Bold",
     color: "white",
     fontSize: 16,
     marginLeft: 8,
