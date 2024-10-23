@@ -7,24 +7,32 @@ import {
 	Button,
 	Alert,
 	FlatList,
-	Touchable,
 } from "react-native";
-import { Image, TouchableOpacity, View } from "react-native-ui-lib";
-import { useRoute } from "@react-navigation/native";
+import { Image, View } from "react-native-ui-lib";
+import { useRoute, useNavigation } from "@react-navigation/native";
 import { ScrollView } from "react-native-gesture-handler";
-import {
-	updateDoc,
-	getDocs,
-	query,
-	where,
-	collection,
-} from "firebase/firestore";
+import { updateDoc, getDocs, query, where, collection } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
-import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../FirebaseConfig";
 import { Picker } from "@react-native-picker/picker";
+
+const COLORS = {
+	primary: '#6366F1', // Main brand color (purple)
+	secondary: '#4F46E5', // Darker purple for hover states
+	background: '#F3F4F6', // Light grey background
+	surface: '#FFFFFF', // White surface
+	text: {
+		primary: '#1F2937', // Dark grey for primary text
+		secondary: '#6B7280', // Medium grey for secondary text
+		inverse: '#FFFFFF', // White text
+	},
+	border: '#E5E7EB', // Light grey for borders
+	error: '#EF4444', // Red for errors
+	success: '#10B981', // Green for success states
+};
+
 
 const EditBusinessPage: React.FC = () => {
 	const [businessData, setBusinessData] = useState<any>(null);
@@ -37,8 +45,9 @@ const EditBusinessPage: React.FC = () => {
 		image: "",
 	});
 	const [uploading, setUploading] = useState(false);
-	const [transferred, setTransferred] = useState(0); // Track upload progress
-	const [imageUrl, setImageUrl] = useState<string>(""); // For URL input
+	const [transferred, setTransferred] = useState(0);
+	const [imageUrl, setImageUrl] = useState<string>("");
+	const [selectedCategory, setSelectedCategory] = useState<string>("food");
 
 	const route = useRoute();
 	const { id } = route.params as { id: string };
@@ -64,7 +73,7 @@ const EditBusinessPage: React.FC = () => {
 				if (!querySnapshot.empty) {
 					const doc = querySnapshot.docs[0];
 					setBusinessData(doc.data());
-					setProducts(doc.data()?.products || []); // Set initial products
+					setProducts(doc.data()?.products || []);
 				} else {
 					console.log("No such document with the given businessID!");
 					setBusinessData(null);
@@ -89,11 +98,13 @@ const EditBusinessPage: React.FC = () => {
 
 			if (!querySnapshot.empty) {
 				const docRef = querySnapshot.docs[0].ref;
-				await updateDoc(docRef, { ...businessData, products, category: selectedCategory });
-				Alert.alert(
-					"Success",
-					"Business information updated successfully!"
-				);
+				await updateDoc(docRef, {
+					...businessData,
+					products,
+					longDescription: businessData.longDescription,
+					category: selectedCategory,
+				});
+				Alert.alert("Success", "Business information updated successfully!");
 			} else {
 				Alert.alert("Error", "No business found with the given ID.");
 			}
@@ -102,8 +113,6 @@ const EditBusinessPage: React.FC = () => {
 			console.error("Error updating business data: ", error);
 		}
 	};
-
-
 
 	const handleInputChange = (field: string, value: any) => {
 		setBusinessData((prevData: any) => ({
@@ -114,24 +123,10 @@ const EditBusinessPage: React.FC = () => {
 
 	const handleRemoveImage = (index: number) => {
 		const updatedImages = [...businessData.images];
-		updatedImages.splice(index, 1); // Remove the selected image
-		handleInputChange("images", updatedImages); // Update the business data with new images
+		updatedImages.splice(index, 1);
+		handleInputChange("images", updatedImages);
 	};
 
-	// Function to handle URL image upload
-	const handleUrlUpload = async () => {
-		if (!imageUrl.trim()) {
-			Alert.alert("Error", "Please enter a valid image URL.");
-			return;
-		}
-
-		// Add URL to images array
-		handleInputChange("images", [...(businessData.images || []), imageUrl.trim()]);
-		setImageUrl(""); // Clear the input field after adding the URL
-		Alert.alert("Success", "Image URL added!");
-	};
-
-	// Function to pick an image from the library or camera for business images
 	const handlePickImage = async () => {
 		const result = await ImagePicker.launchImageLibraryAsync({
 			mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -141,111 +136,39 @@ const EditBusinessPage: React.FC = () => {
 		});
 
 		if (!result.canceled) {
-			const uri = result.assets[0].uri; // Get the image URI
-
+			const uri = result.assets[0].uri;
 			try {
 				const response = await fetch(uri);
-				const blob = await response.blob(); // Convert to blob
-
-				// Reference to Firebase Storage
+				const blob = await response.blob();
 				const storageRef = ref(storage, `businessImages/${Date.now()}.jpg`);
-
-				// Create the upload task
 				const uploadTask = uploadBytesResumable(storageRef, blob);
 
 				uploadTask.on(
 					"state_changed",
 					(snapshot) => {
-						// Track upload progress
-						const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+						const progress =
+							(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
 						setTransferred(progress);
-
-						switch (snapshot.state) {
-							case "paused":
-								console.log("Upload is paused");
-								break;
-							case "running":
-								console.log("Upload is running");
-								break;
-						}
 					},
 					(error) => {
-						// Handle unsuccessful uploads
 						console.error("Upload failed: ", error);
 						Alert.alert("Error", `Image upload failed: ${error.message}`);
 					},
 					async () => {
-						// Handle successful uploads
 						const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-						handleInputChange("images", [...(businessData.images || []), downloadUrl]);
+						handleInputChange("images", [
+							...(businessData.images || []),
+							downloadUrl,
+						]);
 						Alert.alert("Success", "Image uploaded successfully!");
 					}
 				);
-			} catch (error: any) {
+			} catch (error:any) {
 				console.error("Upload failed: ", error);
 				Alert.alert("Error", `Image upload failed: ${error.message}`);
 			}
 		}
 	};
-
-	// Function to pick an image from the library or camera for product images
-	const handlePickProductImage = async () => {
-		const result = await ImagePicker.launchImageLibraryAsync({
-			mediaTypes: ImagePicker.MediaTypeOptions.Images,
-			allowsEditing: true,
-			aspect: [4, 3],
-			quality: 1,
-		});
-
-		if (!result.canceled) {
-			const uri = result.assets[0].uri; // Get the image URI
-
-			try {
-				const response = await fetch(uri);
-				const blob = await response.blob(); // Convert to blob
-
-				// Reference to Firebase Storage
-				const storageRef = ref(storage, `productImages/${Date.now()}.jpg`);
-
-				// Create the upload task
-				const uploadTask = uploadBytesResumable(storageRef, blob);
-
-				uploadTask.on(
-					"state_changed",
-					(snapshot) => {
-						// Track upload progress
-						const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-						setTransferred(progress);
-
-						switch (snapshot.state) {
-							case "paused":
-								console.log("Upload is paused");
-								break;
-							case "running":
-								console.log("Upload is running");
-								break;
-						}
-					},
-					(error) => {
-						// Handle unsuccessful uploads
-						console.error("Upload failed: ", error);
-						Alert.alert("Error", `Image upload failed: ${error.message}`);
-					},
-					async () => {
-						// Handle successful uploads
-						const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-						setNewProduct({ ...newProduct, image: downloadUrl });
-						Alert.alert("Success", "Product image uploaded successfully!");
-					}
-				);
-			} catch (error: any) {
-				console.error("Upload failed: ", error);
-				Alert.alert("Error", `Product image upload failed: ${error.message}`);
-			}
-		}
-	};
-	const [selectedCategory, setSelectedCategory] = useState<string>("food"); // State for selected category
-
 
 	const handleAddProduct = () => {
 		if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.image) {
@@ -259,11 +182,10 @@ const EditBusinessPage: React.FC = () => {
 		Alert.alert("Success", "Product added successfully!");
 	};
 
-	// Function to remove a product by index
 	const handleRemoveProduct = (index: number) => {
 		const updatedProducts = [...products];
-		updatedProducts.splice(index, 1); // Remove the selected product
-		setProducts(updatedProducts); // Update the state with new product list
+		updatedProducts.splice(index, 1);
+		setProducts(updatedProducts);
 		Alert.alert("Success", "Product removed successfully!");
 	};
 
@@ -289,58 +211,49 @@ const EditBusinessPage: React.FC = () => {
 				</Text>
 
 				{/* Business Information Fields */}
-				<View style={styles.inputContainer}>
-					
-				</View>
-
-				<View style={styles.inputContainer}>
-					
-				</View>
-
 				<View style={[styles.inputContainer, styles.childContainer]}>
-                <Text style={styles.label}>Business Name</Text>
+					<Text style={styles.label}>Business Name</Text>
 					<TextInput
 						style={styles.input}
 						value={businessData?.businessName || ""}
-						onChangeText={(text) =>
-							handleInputChange("businessName", text)
-						}
+						onChangeText={(text) => handleInputChange("businessName", text)}
 					/>
-                <Text style={styles.label}>Description</Text>
+
+					<Text style={styles.label}>Description</Text>
 					<TextInput
-						style={[styles.input, styles.descriptionInput]}
+						style={[styles.input]}
 						value={businessData?.description || ""}
-						onChangeText={(text) =>
-							handleInputChange("description", text)
-						}
+						onChangeText={(text) => handleInputChange("description", text)}
+					/>
+
+					<Text style={styles.label}>Long Description</Text>
+					<TextInput
+						style={[styles.input, styles.longDescriptionInput]}
+						value={businessData?.longDescription || ""}
+						onChangeText={(text) => handleInputChange("longDescription", text)}
 						multiline
 					/>
+
 					<Text style={styles.label}>Phone Number</Text>
 					<TextInput
 						style={styles.input}
 						value={businessData?.phoneNumber || ""}
-						onChangeText={(text) =>
-							handleInputChange("phoneNumber", text)
-						}
+						onChangeText={(text) => handleInputChange("phoneNumber", text)}
 						keyboardType="phone-pad"
 					/>
-                    <Text style={styles.label}>Location</Text>
+
+					<Text style={styles.label}>Location</Text>
 					<TextInput
 						style={styles.input}
 						value={businessData?.location || ""}
-						onChangeText={(text) =>
-							handleInputChange("location", text)
-						}
+						onChangeText={(text) => handleInputChange("location", text)}
 					/>
 
-					{/* Category Selection */}
 					<Text style={styles.label}>Business Category</Text>
 					<Picker
 						selectedValue={selectedCategory}
-						onValueChange={(itemValue) =>
-							setSelectedCategory(itemValue)
-						}
-						style={styles.picker} // Add some styling to the picker
+						onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+						style={styles.picker}
 					>
 						<Picker.Item label="Food" value="food" />
 						<Picker.Item label="Service" value="service" />
@@ -350,12 +263,8 @@ const EditBusinessPage: React.FC = () => {
 					</Picker>
 				</View>
 
-				<View style={styles.inputContainer}>
-					
-				</View>
-
 				{/* Image picker and upload section */}
-				<View style={[styles.inputContainer, styles.childContainer, {alignItems:"center"}]}>
+				<View style={[styles.inputContainer, styles.childContainer]}>
 					<Text style={styles.label}>Current Images</Text>
 					{businessData?.images?.length > 0 ? (
 						<FlatList
@@ -363,14 +272,8 @@ const EditBusinessPage: React.FC = () => {
 							keyExtractor={(item, index) => `image-${index}`}
 							renderItem={({ item, index }) => (
 								<View style={styles.imageItem}>
-									<Image
-										source={{ uri: item }}
-										style={styles.image}
-									/>
-									<Button
-										title="Remove"
-										onPress={() => handleRemoveImage(index)}
-									/>
+									<Image source={{ uri: item }} style={styles.image} />
+									<Button title="Remove" onPress={() => handleRemoveImage(index)} />
 								</View>
 							)}
 							horizontal
@@ -378,10 +281,7 @@ const EditBusinessPage: React.FC = () => {
 					) : (
 						<Text>No images available</Text>
 					)}
-                    <Button
-						title="Add Image from Camera Roll"
-						onPress={handlePickImage}
-					/>
+					<Button title="Add Image from Camera Roll" onPress={handlePickImage} />
 					{uploading && (
 						<Text style={styles.uploadingText}>
 							Uploading... {transferred}% completed
@@ -391,11 +291,10 @@ const EditBusinessPage: React.FC = () => {
 
 				{/* Products Section */}
 				<View style={[styles.inputContainer, styles.childContainer]}>
-					<Text style={[styles.label, {alignSelf:"center"}]}>Products</Text>
-
+					<Text style={[styles.label, { alignSelf: "center" }]}>Products</Text>
 					{products.length > 0 ? (
 						products.map((product, index) => (
-							<View key={product.productID} style={[styles.productItem, {alignSelf:"center", alignItems:"center"}]}>
+							<View key={product.productID} style={styles.productItem}>
 								<Text style={styles.productText}>Name: {product.name}</Text>
 								<Text style={styles.productText}>Description: {product.description}</Text>
 								<Text style={styles.productText}>Price: ${product.price}</Text>
@@ -429,7 +328,7 @@ const EditBusinessPage: React.FC = () => {
 						placeholder="Product Price"
 						keyboardType="numeric"
 					/>
-					<Button title="Add Product Image" onPress={handlePickProductImage} />
+					<Button title="Add Product Image" onPress={handlePickImage} />
 					<Button title="Add Product" onPress={handleAddProduct} />
 				</View>
 
@@ -469,6 +368,10 @@ const styles = StyleSheet.create({
 		height: 120,
 		textAlignVertical: "top",
 	},
+	longDescriptionInput: {
+		height: 150,
+		textAlignVertical: "top",
+	},
 	buttonContainer: {
 		marginTop: 20,
 		marginBottom: 30,
@@ -501,8 +404,7 @@ const styles = StyleSheet.create({
 		marginTop: 10,
 		borderRadius: 5,
 	},
-
-    childContainer: {
+	childContainer: {
 		backgroundColor: "white",
 		width: "100%",
 		borderRadius: 20,
@@ -512,7 +414,6 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.2,
 		shadowRadius: 3,
 		padding: 25,
-		flexShrink: 1,
 	},
 });
 

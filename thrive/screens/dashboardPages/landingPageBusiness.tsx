@@ -80,10 +80,13 @@ interface CompanyProps {
   name: string;
   rating: number;
   initial: string;
+  landing: boolean
 }
 
-const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial }) => (
-  <View style={styles.companyHeader}>
+export const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial, landing }) => {
+  let marginHoriz = landing ? 15 : 0;
+  return (
+  <View style={[styles.companyHeader, {marginHorizontal: marginHoriz}]}>
     <View style={styles.profileCircle}>
       <Text style={styles.initialText}>{initial}</Text>
     </View>
@@ -92,7 +95,8 @@ const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial }) => (
       <RatingStars stars={rating} />
     </View>
   </View>
-);
+  );
+};
 
 interface OrderProps {
   orders: number;
@@ -311,6 +315,7 @@ interface BusinessData {
   phoneNumber: string;
   businessID: string;
   orders: Array<any>;
+  reviews: Array<any>;
 }
 
 const LandingPageBusiness: React.FC = () => {
@@ -361,14 +366,20 @@ const LandingPageBusiness: React.FC = () => {
     );
   }
 
+  let sum = 0;
+	for (let i = 0; i < businessData?.reviews.length; i++) {
+		sum += businessData?.reviews[i].rating;
+	}
+
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <CompanyHeader
           name={businessData?.businessName || "Business Name"}
-          rating={4}
+          rating={businessData?.reviews.length > 0 ? sum / businessData?.reviews.length : 0}
           initial={businessData?.businessName?.[0] || "B"}
+          landing={true}
         />
         <View style={[styles.contentContainer]}>
           <EditButtons businessID={businessData?.businessID || ""} />
@@ -386,7 +397,7 @@ const LandingPageBusiness: React.FC = () => {
         </View>
         <Button
           label="View Graphs"
-          style={{ margin: 20, backgroundColor: "#5A5D9D" }}
+          style={{ margin: 20, backgroundColor: "#5A5D9D", marginBottom: 45 }}
           onPress={handleGraphsPress}
         />
       </ScrollView>
@@ -415,8 +426,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#5A5D9D",
-    padding: 20,
-    marginHorizontal: 15,
+    padding: 25,
     borderRadius: 20,
   },
   profileCircle: {

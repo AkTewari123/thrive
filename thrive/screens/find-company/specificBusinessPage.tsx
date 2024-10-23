@@ -47,6 +47,7 @@ import {
 	doc,
 } from "firebase/firestore"; // Adjust this according to your Firestore setup
 import { TextInput } from "react-native-gesture-handler";
+import { CompanyHeader } from "../dashboardPages/landingPageBusiness";
 
 LogBox.ignoreLogs(["Warning: Encountered two children with the same key"]);
 
@@ -107,47 +108,47 @@ const SpecificBusinessPage: React.FC = () => {
 	const [newRating, setNewRating] = useState<number>(0);
 	const [submitting, setSubmitting] = useState(false); // For form submission state
 
-  const fetchBusinessData = async () => {
-    setLoading(true);
-    try {
-      const q = query(
-        collection(FIRESTORE, "businessData"),
-        where("businessID", "==", id)
-      );
-  
-      const querySnapshot = await getDocs(q);
-  
-      if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        const data = doc.data();
-        setBusinessData(data);
-      } else {
-        console.log("No such document with the given businessID!");
-        setBusinessData(null);
-      }
-    } catch (error) {
-      console.error("Error fetching business data: ", error);
-      setBusinessData(null);
-    }
-    setLoading(false);
-  };
+	const fetchBusinessData = async () => {
+		setLoading(true);
+		try {
+			const q = query(
+				collection(FIRESTORE, "businessData"),
+				where("businessID", "==", id)
+			);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchBusinessData();
-  
-      return () => {
-        setBusinessData(null); // Reset business data when leaving the screen if needed
-      };
-    }, [id])
-  );
-  
-  
+			const querySnapshot = await getDocs(q);
+
+			if (!querySnapshot.empty) {
+				const doc = querySnapshot.docs[0];
+				const data = doc.data();
+				setBusinessData(data);
+			} else {
+				console.log("No such document with the given businessID!");
+				setBusinessData(null);
+			}
+		} catch (error) {
+			console.error("Error fetching business data: ", error);
+			setBusinessData(null);
+		}
+		setLoading(false);
+	};
+
+	useFocusEffect(
+		useCallback(() => {
+			fetchBusinessData();
+
+			return () => {
+				setBusinessData(null); // Reset business data when leaving the screen if needed
+			};
+		}, [id])
+	);
+
+
 
 	const navigation = useNavigation();
 
 	const businessName = businessData?.businessName || "Not defined";
-	const businessDescription = businessData?.description || "Not defined";
+	const businessDescription = businessData?.longDescription || "Not defined";
 	const phoneNumber = businessData?.phoneNumber || "Not defined";
 	const address = businessData?.location || "Not defined";
 	const schedule = businessData?.schedule || {};
@@ -194,57 +195,56 @@ const SpecificBusinessPage: React.FC = () => {
 	}
 
 	const handleSubmitReview = async () => {
-    const user = FIREBASE_AUTH.currentUser;
-    if (!newReview || newRating === 0) {
-      alert("Please fill in all fields before submitting.");
-      return;
-    }
-  
-    setSubmitting(true); // Set submitting state to true to show a loading spinner
-  
-    const reviewData = {
-      // set username to the user email before the @ symbol
-      username: user?.email?.split("@")[0] || newUsername,
-      rating: newRating,
-      review: newReview,
-    };
-  
-    try {
-      const q = query(
-        collection(FIRESTORE, "businessData"),
-        where("businessID", "==", id)
-      );
-  
-      const querySnapshot = await getDocs(q);
-  
-      if (!querySnapshot.empty) {
-        const businessDoc = querySnapshot.docs[0];
-        const businessDocRef = businessDoc.ref;
-  
-        await updateDoc(businessDocRef, {
-          reviews: arrayUnion(reviewData),
-        });
-  
-        alert("Review submitted successfully!");
-  
-        // Reset the form after successful submission
-        setNewReview("");
-        setNewUsername("");
-        setNewRating(0);
-  
-        // Fetch the updated business data
-        await fetchBusinessData();
-      } else {
-        alert("Business not found.");
-      }
-    } catch (error) {
-      console.error("Error submitting review: ", error);
-      alert("Failed to submit review. Please try again.");
-    }
-  
-    setSubmitting(false); // Stop the loading spinner
-  };
-  
+		const user = FIREBASE_AUTH.currentUser;
+		if (!newReview || newRating === 0) {
+			alert("Please fill in all fields before submitting.");
+			return;
+		}
+
+		setSubmitting(true); // Set submitting state to true to show a loading spinner
+
+		const reviewData = {
+			// set username to the user email before the @ symbol
+			username: user?.email?.split("@")[0] || newUsername,
+			rating: newRating,
+			review: newReview,
+		};
+
+		try {
+			const q = query(
+				collection(FIRESTORE, "businessData"),
+				where("businessID", "==", id)
+			);
+
+			const querySnapshot = await getDocs(q);
+
+			if (!querySnapshot.empty) {
+				const businessDoc = querySnapshot.docs[0];
+				const businessDocRef = businessDoc.ref;
+
+				await updateDoc(businessDocRef, {
+					reviews: arrayUnion(reviewData),
+				});
+
+				alert("Review submitted successfully!");
+
+				// Reset the form after successful submission
+				setNewReview("");
+				setNewUsername("");
+				setNewRating(0);
+
+				// Fetch the updated business data
+				await fetchBusinessData();
+			} else {
+				alert("Business not found.");
+			}
+		} catch (error) {
+			console.error("Error submitting review: ", error);
+			alert("Failed to submit review. Please try again.");
+		}
+
+		setSubmitting(false); // Stop the loading spinner
+	};
 
 	const starHollowed = Array.from({ length: 5 }, (_, i) =>
 		i < numStars ? "star" : "star-o"
@@ -323,82 +323,9 @@ const SpecificBusinessPage: React.FC = () => {
 		<>
 			<SafeAreaView></SafeAreaView>
 			<ScrollView style={styles.pageContainer}>
-				<View style={[styles.childContainer, styles.topContainer]}>
-					<View style={styles.businessInfoContainer}>
-						<View
-							style={[
-								styles.initialCircle,
-								{ backgroundColor: "#6096F7" },
-							]}
-						>
-							<Text style={styles.initialText}>
-								{businessName.slice(0, 1)}
-							</Text>
-						</View>
-						<View style={styles.businessDetails}>
-							<Text style={styles.businessName}>
-								{businessName}
-							</Text>
-							<Text>
-								{starHollowed.map((star, index) => (
-									<FontAwesome
-										key={index}
-										name={star}
-										size={15}
-										color="black"
-									/>
-								))}{" "}
-								{numStars} stars
-							</Text>
-						</View>
-					</View>
-				</View>
+				<View style = {[styles.dropShadow, {marginBottom: 20}]}> 
 
-				<View
-					style={[
-						styles.childContainer,
-						styles.middleContainer,
-						{ flex: 1 },
-					]}
-				>
-					<Text style={styles.sectionTitle}>Our Business</Text>
-					<ScrollView
-						style={styles.businessDescriptionScroll}
-						contentContainerStyle={{ flexGrow: 1 }}
-					>
-						<Text style={styles.businessDescriptionText}>
-							{businessDescription}
-						</Text>
-					</ScrollView>
-				</View>
-
-				<View style={styles.childContainer}>
-					<Text
-						style={[{ textAlign: "center" }, styles.sectionTitle]}
-					>
-						Contact Info
-					</Text>
-					<View style={styles.contactInfo}>
-						<Text style={styles.contactText}>
-							<Feather name="phone-outgoing" size={34} />
-							{"\n "}
-							{"\n "}
-							{phoneNumber}
-						</Text>
-						<Text style={styles.contactText}>
-							<Entypo name="location" size={34} />
-
-							{"\n "}
-							{"\n "}
-							{address}
-						</Text>
-						<Text style={styles.contactText}>
-							<AntDesign name="clockcircle" size={34} />
-							{"\n "}
-							{"\n "}
-							{displayDate}
-						</Text>
-					</View>
+					<CompanyHeader name = {businessName} rating={numStars} initial = {businessName.slice(0, 1)} landing={false} />
 				</View>
 
 				<View style={[styles.childContainer, styles.middleContainer]}>
@@ -429,6 +356,35 @@ const SpecificBusinessPage: React.FC = () => {
 						})}
 					</Carousel>
 				</View>
+				
+				<View style={[styles.childContainer, styles.topContainer]}>
+					{/* Business Info Section */}
+
+					{/* Business Description Section */}
+					<View style={[styles.businessDescriptionScroll, {paddingBottom:20}]}>
+						<Text style={styles.businessDescriptionText}>
+							{businessDescription}
+						</Text>
+					</View>
+
+					{/* Contact Info Section */}
+					<View style={[styles.contactInfo, {marginHorizontal:"auto"}]}>
+						<Text style={[styles.contactText, {}]}>
+							<Feather name="phone-outgoing" size={34} />
+							{"\n "}
+							{"\n "}
+							{phoneNumber}
+						</Text>
+						<Text style={styles.contactText}>
+							<Entypo name="location" size={34} />
+							{"\n "}
+							{"\n "}
+							{address}
+						</Text>
+					</View>
+				</View>
+
+				
 
 				{/* Products Section */}
 				<View style={[styles.childContainer, styles.middleContainer]}>
@@ -616,6 +572,13 @@ const styles = StyleSheet.create({
 		padding: 25,
 		flexShrink: 1,
 	},
+	dropShadow: {
+		shadowColor: "#171717",
+		shadowOffset: { width: -2, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 3,
+		flexShrink: 1,
+	},
 	topContainer: {
 		marginBottom: 20,
 	},
@@ -645,6 +608,12 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		fontWeight: "500",
 		fontSize: 25,
+		marginBottom: 10,
+		paddingTop: 10,
+	},
+	descriptionText: {
+		fontWeight: "500",
+		fontSize: 20,
 		marginBottom: 10,
 		paddingTop: 10,
 	},
@@ -721,7 +690,7 @@ const styles = StyleSheet.create({
 	contactText: {
 		fontWeight: "500",
 		textAlign: "center",
-		width: "33%",
+		width: "50%",
 	},
 	reviewContainer: {
 		padding: 15,

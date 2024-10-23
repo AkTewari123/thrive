@@ -11,6 +11,11 @@ import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import thriveHeader from "../components/thriveHeader";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
+
+
+
 
 // Consistent color palette (matching signup page)
 const COLORS = {
@@ -29,6 +34,7 @@ const COLORS = {
 };
 
 const LoginPage: React.FC = () => {
+  const navigation = useNavigation<StackNavigationProp<any>>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -160,7 +166,7 @@ const LoginPage: React.FC = () => {
 
         <TouchableOpacity
           style={styles.signUpButton}
-          onPress={() => Alert.alert("Info", "Navigate to sign up page")}
+          onPress={() => navigation.navigate("SignUpPage")}
         >
           <Text style={styles.signUpButtonText}>Create New Account</Text>
         </TouchableOpacity>

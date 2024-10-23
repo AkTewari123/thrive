@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   actionButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.secondary,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
