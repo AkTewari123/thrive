@@ -101,17 +101,14 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   userName: {
-    fontFamily: "Outfit-Bold",
     fontSize: 18,
     color: "#1F2937",
   },
   userEmail: {
-    fontFamily: "Outfit-Medium",
     fontSize: 14,
     color: "white",
   },
   userType: {
-    fontFamily: "Outfit-Medium",
     fontSize: 14,
     color: "white",
     marginTop: 4,
@@ -124,7 +121,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   sectionTitle: {
-    fontFamily: "Outfit-SemiBold",
     fontSize: 18,
     color: "#374151",
     padding: 16,
@@ -139,7 +135,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#E5E7EB",
   },
   settingItemText: {
-    fontFamily: "Outfit-Medium",
     fontSize: 16,
     flex: 1,
     marginLeft: 16,
@@ -169,7 +164,6 @@ const styles = StyleSheet.create({
     fontFamily: "Outfit",
   },
   logoutText: {
-    fontFamily: "Outfit-Bold",
     color: "white",
     fontSize: 16,
     marginLeft: 8,

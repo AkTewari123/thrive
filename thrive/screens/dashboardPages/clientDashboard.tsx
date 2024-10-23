@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
 } from "react-native";
 import thriveHeader from "../components/thriveHeader";
-import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { collection, getDocs, query } from "firebase/firestore";
@@ -92,12 +91,7 @@ const SeeMoreButton: React.FC<seeMore> = ({ businesses, func }) => (
         borderRadius: 10,
       }}
     >
-      <Text
-        style={[
-          styles.seeMoreText,
-          { textAlign: "center", fontFamily: "Outfit-Medium" },
-        ]}
-      >
+      <Text style={[styles.seeMoreText, { textAlign: "center" }]}>
         See More &nbsp;
         <Feather name="arrow-down-circle" size={18} color="white" />
       </Text>
@@ -184,11 +178,6 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
 };
 
 const ClientDashboard: React.FC = () => {
-  const [fontsLoaded, fontError] = useFonts({
-    "Outfit-Medium": require("../../assets/fonts/Outfit-Medium.ttf"),
-    "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
-    "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
-  });
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   //   console.log(businesses);
@@ -247,14 +236,7 @@ const ClientDashboard: React.FC = () => {
       }
     };
     fetchBusinesses();
-
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
+  });
   const [bool, setBool] = useState(2);
   function handleSeeMore() {
     console.log("REMY MANDER 857");
@@ -282,7 +264,6 @@ const ClientDashboard: React.FC = () => {
       ) : null
     );
   };
-
   return (
     <SafeAreaView style={styles.safeArea}>
       {thriveHeader({})}
@@ -354,7 +335,6 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderTopLeftRadius: 100,
     borderTopRightRadius: 10,
-    fontFamily: "Outfit-Medium",
     backgroundColor: "transparent",
   },
   itemContainer: {
@@ -394,12 +374,10 @@ const styles = StyleSheet.create({
   itemName: {
     fontSize: 16,
     color: "white",
-    fontFamily: "Outfit-Medium",
   },
   itemDescription: {
     fontSize: 14,
     color: "white",
-    fontFamily: "Outfit-Bold",
   },
   arrowRight: {
     fontSize: 20,
@@ -444,7 +422,7 @@ const styles = StyleSheet.create({
 //     backgroundColor: 'white',
 //     borderBottomWidth: 1,
 //     borderBottomColor: '#E5E7EB',
-//   },
+//   },s
 //   headerText: {
 //     marginLeft: 8,
 //     fontSize: 20,

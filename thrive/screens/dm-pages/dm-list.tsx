@@ -332,13 +332,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#1F2937",
-    fontFamily: "Outfit-Semibold",
   },
   itemDescription: {
     fontSize: 14,
     color: "#5A5D9D",
     fontWeight: "bold",
-    fontFamily: "Outfit-Semibold",
   },
   arrowRight: {
     fontSize: 20,
@@ -372,7 +370,6 @@ const styles = StyleSheet.create({
     color: "#1F2937",
     marginLeft: 16,
     marginVertical: 16,
-    fontFamily: "Outfit-Medium",
     textAlign: "center",
   },
   input: {

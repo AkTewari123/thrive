@@ -17,6 +17,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Button } from "react-native-ui-lib";
 
 type RootStackParamList = {
   LandingPageBusiness: undefined;
@@ -170,6 +172,11 @@ const LandingPageBusiness: React.FC = () => {
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const handleGraphsPress = () => {
+    navigation.navigate('Graphs');
+  }
+
   useFocusEffect(
     useCallback(() => {
       const fetchBusinessData = async () => {
@@ -250,7 +257,6 @@ const LandingPageBusiness: React.FC = () => {
                   <Text
                     style={{
                       fontSize: 8,
-                      fontFamily: "Outfit-Medium",
                     }}
                   >
                     {"\n"}
@@ -278,7 +284,6 @@ const LandingPageBusiness: React.FC = () => {
                     <Text
                       style={{
                         fontSize: 8,
-                        fontFamily: "Outfit-Medium",
                       }}
                     >
                       {"\n"}
@@ -302,7 +307,6 @@ const LandingPageBusiness: React.FC = () => {
                   <Text
                     style={{
                       fontSize: 8,
-                      fontFamily: "Outfit-Medium",
                     }}
                   >
                     {"\n"}
@@ -326,7 +330,6 @@ const LandingPageBusiness: React.FC = () => {
                   <Text
                     style={{
                       fontSize: 8,
-                      fontFamily: "Outfit-Medium",
                     }}
                   >
                     {"\n"}
@@ -341,6 +344,10 @@ const LandingPageBusiness: React.FC = () => {
           </View>
           <AIInsights />
         </View>
+        <Button
+          label="View Graphs"
+          style={{ margin: 20 }}
+          onPress={handleGraphsPress}/>
       </ScrollView>
     </SafeAreaView>
   );
@@ -455,14 +462,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: "#1F2937",
     textAlign: "center",
-    fontFamily: "Outfit-Semibold",
   },
   insightSubtitle: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 8,
     color: "#0f172a",
-    fontFamily: "Outfit-Semibold",
   },
   insightItem: {
     flexDirection: "row",
@@ -476,7 +481,6 @@ const styles = StyleSheet.create({
   insightText: {
     fontSize: 14,
     color: "#4B5563",
-    fontFamily: "Outfit-Medium",
     flex: 1,
   },
   loadingContainer: {
@@ -500,7 +504,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     color: "#1F2937",
     textAlign: "center",
-    fontFamily: "Outfit-Bold",
   },
   infoText: {
     fontSize: 16,

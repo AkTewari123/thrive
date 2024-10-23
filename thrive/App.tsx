@@ -13,6 +13,7 @@ import { UserProvider, UserContext } from "./UserContext"; // Import the provide
 import { CompanyPosts } from "./screens/posts/createPosts";
 import { CompanyPostHistory } from "./screens/posts/viewCompanyPosts";
 import BusinessOrdersPage from "./screens/dashboardPages/businessOrdersPage";
+import { CombinedCharts } from "./screens/dashboardPages/graphs";
 
 // Import your screens here
 import LoginPage from "./screens/auth-pages/login";
@@ -120,6 +121,11 @@ function BusinessLayout() {
         name="SpecificDM"
         component={SpecificDM}
         options={{ title: "Chat" }}
+      />
+      <BusinessStack.Screen
+        name="Graphs"
+        component={CombinedCharts}
+        options={{ title: 'Graphs' }}
       />
     </BusinessStack.Navigator>
   );

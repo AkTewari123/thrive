@@ -301,7 +301,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#333",
     marginTop: 20,
-    fontFamily: "Outfit-Medium",
   },
   emptyStateSubText: {
     fontSize: 16,
@@ -309,7 +308,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     textAlign: "center",
     paddingHorizontal: 40,
-    fontFamily: "Outfit",
   },
   categoryScroll: {
     marginTop: 10,
