@@ -14,6 +14,7 @@ type RootStackParamList = {
     LandingPageBusiness: undefined;
     BusinessPage: { id: string }; // `id` parameter added
     EditBusinessPage: { id: string }; // `id` parameter added
+    BusinessOrdersPage: { id: string }; // `id` parameter added
 };
 
 
@@ -80,19 +81,21 @@ const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial }) => (
     </View>
 );
 
-interface OrderProps { orders: number }
+interface OrderProps { orders: number; businessID: any; }
 
-const OrdersBox: React.FC<OrderProps> = ({ orders }) => (
+const OrdersBox: React.FC<OrderProps> = ({ orders, businessID }) => {
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    return (
     <View style={styles.ordersBoxContainer}>
         <View style={styles.ordersInfo}>
             <Text style={styles.ordersNumberText}>{orders}</Text>
             <Text style={styles.ordersText}>New Orders</Text>
         </View>
-        <Pressable style={styles.fulfillOrdersButton}>
+        <Pressable style={styles.fulfillOrdersButton} onPress={() => navigation.navigate('BusinessOrdersPage', { id: businessID })}>
             <Text style={styles.fulfillOrdersText}>Fulfill Orders</Text>
         </Pressable>
-    </View>
-);
+    </View>);
+}
 
 const AIInsights: React.FC = () => (
     <View style={styles.insightContainer}>
@@ -172,7 +175,7 @@ const LandingPageBusiness: React.FC = () => {
                 />
                 <View style={styles.contentContainer}>
                 <EditButtons businessID={businessData?.businessID || ""} />
-                    <OrdersBox orders={3} />
+                    <OrdersBox orders={3} businessID={businessData?.businessID} />
                     <View style={styles.businessInfoContainer}>
                         <Text style={styles.sectionTitle}>Business Information</Text>
                         <Text style={styles.infoText}>Location: {businessData?.location}</Text>

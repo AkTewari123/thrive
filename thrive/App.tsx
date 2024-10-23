@@ -12,6 +12,7 @@ import Feather from "@expo/vector-icons/Feather";
 import { UserProvider, UserContext } from "./UserContext"; // Import the provider
 import { CompanyPosts } from "./screens/posts/createPosts";
 import { CompanyPostHistory } from "./screens/posts/viewCompanyPosts";
+import BusinessOrdersPage from "./screens/dashboardPages/businessOrdersPage";
 
 // Import your screens here
 import LoginPage from './screens/auth-pages/login';
@@ -103,6 +104,11 @@ function BusinessLayout() {
       <BusinessStack.Screen 
         name="EditBusinessPage" 
         component={EditBusinessPage} 
+        options={{ title: 'Business Page' }}
+      />
+      <BusinessStack.Screen 
+        name="BusinessOrdersPage" 
+        component={BusinessOrdersPage} 
         options={{ title: 'Business Page' }}
       />
       <BusinessStack.Screen 

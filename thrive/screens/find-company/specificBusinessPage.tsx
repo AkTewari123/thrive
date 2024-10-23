@@ -32,10 +32,10 @@ import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import BusinessNavBar from "../components/businessNavbar";
 import { LogBox } from "react-native";
-
+import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-import { collection, query, where, getDocs } from "firebase/firestore"; // Adjust this according to your Firestore setup
+import { collection, query, where, getDocs, addDoc, Timestamp, arrayUnion, updateDoc, doc } from "firebase/firestore"; // Adjust this according to your Firestore setup
 
 LogBox.ignoreLogs(["Warning: Encountered two children with the same key"]);
 
@@ -182,6 +182,52 @@ const SpecificBusinessPage: React.FC = () => {
 	const starHollowed = Array.from({ length: 5 }, (_, i) =>
 		i < numStars ? "star" : "star-o"
 	);
+
+  const handleOrder = async (productId: string, productImage: string, productPrice: number, productName: string) => {
+    const user = FIREBASE_AUTH.currentUser;
+    const userId = user?.email; // Replace this with actual user ID from authentication
+    const orderData = {
+      productId: productId,
+      userId: userId,
+      productImage: productImage, // Add the product image URL to the order data
+      productPrice: productPrice, // Add the product price to the order data
+      productName: productName, // Add the product name to the order data
+      timestamp: Timestamp.now(),
+      fulfilled: false,
+    };
+  
+    try {
+      // Query to find the specific business document by ID, similar to useFocusEffect
+      const q = query(
+        collection(FIRESTORE, 'businessData'),
+        where('businessID', '==', id)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        const businessDoc = querySnapshot.docs[0]; // Get the document reference
+        const businessDocRef = businessDoc.ref; // Reference to the current business document
+  
+        // Update the 'orders' array by adding the new order
+        await updateDoc(businessDocRef, {
+          orders: arrayUnion(orderData), // Add new order to the 'orders' array field
+        });
+  
+        alert('Order placed successfully!');
+      } else {
+        console.error('No such document with the given businessID!');
+        alert('Failed to place order: business not found.');
+      }
+    } catch (error) {
+      console.error('Error placing order: ', error);
+      alert('Failed to place the order. Please try again.');
+    }
+  };
+  
+  
+
+
 
 	if (loading) {
 		return (
@@ -335,7 +381,7 @@ const SpecificBusinessPage: React.FC = () => {
 								<Text style={styles.productPrice}>
 									${product.price}
 								</Text>
-								<Button title="Order" onPress={() => {}} />
+								<Button title="Order" onPress={() => handleOrder(product.productID, product.image, product.price, product.name)}  />
 							</View>
 						))
 					) : (
