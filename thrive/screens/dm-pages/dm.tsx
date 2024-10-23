@@ -1,4 +1,10 @@
-import React, { useRef, useEffect, useCallback, useState, useMemo } from "react";
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useState,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -12,7 +18,17 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { setDoc, getDoc, doc, onSnapshot, updateDoc } from "firebase/firestore";
+
+import {
+  setDoc,
+  getDoc,
+  doc,
+  onSnapshot,
+  updateDoc,
+  collection,
+  query,
+  getDocs,
+} from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { getAuth } from "firebase/auth"; // Firebase auth for current user
@@ -55,7 +71,7 @@ const SpecificDM: React.FC = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { otherUserEmail } = route.params as { otherUserEmail: string }; // Get the other user's email from route params
-
+  const { color } = route.params as { color: string }; // Get the other user's email from route params
   // Use both emails to create the Firestore document ID (sort alphabetically to ensure consistency)
   const docId =
     currentUserEmail && otherUserEmail
@@ -64,7 +80,9 @@ const SpecificDM: React.FC = () => {
   const docRef = doc(FIRESTORE, "messages", docId || "default");
 
   const scrollViewRef = useRef<ScrollView>(null);
-  const [messages, setMessages] = useState<Array<{ [key: string]: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ [key: string]: string }>>(
+    []
+  );
   const [text, setText] = useState("");
 
   useEffect(() => {
@@ -103,13 +121,13 @@ const SpecificDM: React.FC = () => {
   const handleSend = async (text: string) => {
     if (text.trim() && currentUserEmail) {
       text = text.trim();
-  
+
       // Dynamically generate the message key using the current user's email
       const newMessage = { [currentUserEmail]: text };
-  
+
       setMessages((prevMessages) => [...prevMessages, newMessage]);
       setText("");
-  
+
       try {
         const docSnap = await getDoc(docRef); // Check if the document exists
         if (docSnap.exists()) {
@@ -156,8 +174,10 @@ const SpecificDM: React.FC = () => {
             <Feather name="arrow-left" size={24} color="#1F2937" />
           </TouchableOpacity>
           <View style={styles.headerProfile}>
-            <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>H</Text>
+            <View style={[styles.avatarContainer, { backgroundColor: color }]}>
+              <Text style={styles.avatarText}>
+                {otherUserEmail.slice(0, 1).toUpperCase()}
+              </Text>
             </View>
             <Text style={styles.headerName}>{otherUserEmail}</Text>
           </View>
@@ -192,7 +212,6 @@ const SpecificDM: React.FC = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -225,7 +244,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#8B5CF6",
     justifyContent: "center",
     alignItems: "center",
   },

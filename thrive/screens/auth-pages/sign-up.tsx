@@ -1,25 +1,33 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { setDoc, doc } from 'firebase/firestore';
-import { FIREBASE_AUTH, FIRESTORE } from '../../FirebaseConfig';
-import thriveHeader from '../components/thriveHeader';
-import BusinessSignUpPage from './businessSignUp'; // Import the BusinessSignUpPage
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  ScrollView,
+} from "react-native";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { setDoc, doc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE } from "../../FirebaseConfig";
+import thriveHeader from "../components/thriveHeader";
+import BusinessSignUpPage from "./businessSignUp"; // Import the BusinessSignUpPage
 
 const SignUpPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [userType, setUserType] = useState(''); // Track selected user type
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState(""); // Track selected user type
   const [isLoading, setIsLoading] = useState(false);
 
   // State for business data
   const [businessDetails, setBusinessDetails] = useState({
-    businessName: '',
-    location: '',
-    establishmentDate: '',
-    services: '',
+    businessName: "",
+    location: "",
+    establishmentDate: "",
+    services: "",
     menuPdf: null,
-    phoneNumber: '',
+    phoneNumber: "",
   });
 
   const handleUserTypeSelection = (type: string) => {
@@ -28,26 +36,31 @@ const SignUpPage: React.FC = () => {
 
   const handleSignUp = async () => {
     if (!email || !password || !userType) {
-      Alert.alert('Error', 'Please fill in all fields and select a user type.');
+      Alert.alert("Error", "Please fill in all fields and select a user type.");
       return;
     }
 
     try {
       setIsLoading(true);
       // Create the user with email and password
-      const userCredential = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
       const user = userCredential.user;
-
+      const colors = ["green", "red", "yellow", "blue"];
       // Store the base user data in Firestore
-      await setDoc(doc(FIRESTORE, 'users', user.uid), {
+      await setDoc(doc(FIRESTORE, "users", user.uid), {
         email: user.email,
         userType: userType,
         createdAt: new Date(),
+        col: colors[Math.floor(Math.random() * colors.length)],
       });
 
       // If the user selected 'Business', store the business details as well
-      if (userType === 'Business') {
-        await setDoc(doc(FIRESTORE, 'businessData', user.uid), {
+      if (userType === "Business") {
+        await setDoc(doc(FIRESTORE, "businessData", user.uid), {
           businessName: businessDetails.businessName,
           location: businessDetails.location,
           establishmentDate: businessDetails.establishmentDate,
@@ -58,9 +71,9 @@ const SignUpPage: React.FC = () => {
         });
       }
 
-      Alert.alert('Success', `Account created as ${userType}!`);
+      Alert.alert("Success", `Account created as ${userType}!`);
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
     } finally {
       setIsLoading(false);
     }
@@ -77,14 +90,14 @@ const SignUpPage: React.FC = () => {
           <TouchableOpacity
             style={[
               styles.typeButton,
-              userType === 'Business' && styles.selectedButton,
+              userType === "Business" && styles.selectedButton,
             ]}
-            onPress={() => handleUserTypeSelection('Business')}
+            onPress={() => handleUserTypeSelection("Business")}
           >
             <Text
               style={[
                 styles.typeButtonText,
-                userType === 'Business' && styles.selectedButtonText,
+                userType === "Business" && styles.selectedButtonText,
               ]}
             >
               Business
@@ -93,14 +106,14 @@ const SignUpPage: React.FC = () => {
           <TouchableOpacity
             style={[
               styles.typeButton,
-              userType === 'Customer' && styles.selectedButton,
+              userType === "Customer" && styles.selectedButton,
             ]}
-            onPress={() => handleUserTypeSelection('Customer')}
+            onPress={() => handleUserTypeSelection("Customer")}
           >
             <Text
               style={[
                 styles.typeButtonText,
-                userType === 'Customer' && styles.selectedButtonText,
+                userType === "Customer" && styles.selectedButtonText,
               ]}
             >
               Customer
@@ -129,13 +142,20 @@ const SignUpPage: React.FC = () => {
           secureTextEntry
         />
 
-        {userType === 'Business' && (
-          <BusinessSignUpPage businessDetails={businessDetails} setBusinessDetails={setBusinessDetails} />
+        {userType === "Business" && (
+          <BusinessSignUpPage
+            businessDetails={businessDetails}
+            setBusinessDetails={setBusinessDetails}
+          />
         )}
 
-        <TouchableOpacity style={styles.actionButton} onPress={handleSignUp} disabled={isLoading}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleSignUp}
+          disabled={isLoading}
+        >
           <Text style={styles.actionButtonText}>
-            {isLoading ? 'Signing Up...' : 'Sign Up'}
+            {isLoading ? "Signing Up..." : "Sign Up"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -146,74 +166,74 @@ const SignUpPage: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#E5E7EB', // Light grey background
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#E5E7EB", // Light grey background
+    justifyContent: "center",
+    alignItems: "center",
   },
   signupContainer: {
     padding: 32,
     borderRadius: 10,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   welcomeText: {
     fontSize: 24,
-    fontWeight: 'bold',
-    color: '#374151',
+    fontWeight: "bold",
+    color: "#374151",
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 18,
-    color: '#6B7280',
+    color: "#6B7280",
     marginBottom: 24,
   },
   buttonGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 24,
-    width: '100%',
+    width: "100%",
   },
   typeButton: {
     flex: 1,
-    backgroundColor: '#D1D5DB', // Default grey button color
+    backgroundColor: "#D1D5DB", // Default grey button color
     borderRadius: 10,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginHorizontal: 8,
   },
   selectedButton: {
-    backgroundColor: '#6366F1', // Purple color when selected
+    backgroundColor: "#6366F1", // Purple color when selected
   },
   typeButtonText: {
     fontSize: 16,
-    color: '#1F2937',
-    fontWeight: 'bold',
+    color: "#1F2937",
+    fontWeight: "bold",
   },
   selectedButtonText: {
-    color: 'white', // Text color for selected button
+    color: "white", // Text color for selected button
   },
   input: {
-    width: '100%',
-    backgroundColor: '#F3F4F6',
+    width: "100%",
+    backgroundColor: "#F3F4F6",
     borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: '#1F2937',
+    color: "#1F2937",
     marginBottom: 16,
   },
   actionButton: {
-    backgroundColor: '#6366F1', // Purple button color
+    backgroundColor: "#6366F1", // Purple button color
     borderRadius: 10,
     paddingVertical: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 16,
-    width: '100%',
+    width: "100%",
   },
   actionButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
 
