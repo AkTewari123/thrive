@@ -13,15 +13,8 @@ import thriveHeader from "../components/thriveHeader";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import { FIRESTORE } from "../../FirebaseConfig";
-import { format } from "date-fns";
-import {
-  collection,
-  getDocs,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { color } from "@rneui/themed/dist/config";
+import { collection, getDocs, query } from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
 
 interface BusinessItemProps {
   name: string;
@@ -60,11 +53,8 @@ interface SectionHeaderProps {
 const fetchBusinesses = async () => {
   const businesses: any = [];
   try {
-    // Query to find the user document by email
     const businessQuery = query(collection(FIRESTORE, "businessData"));
-
     const querySnapshot = await getDocs(businessQuery);
-    // Check if we found the user
     if (!querySnapshot.empty) {
       querySnapshot.forEach(async (businessDoc: any) => {
         const businessData = businessDoc.data();
@@ -80,9 +70,10 @@ const fetchBusinesses = async () => {
     console.error("No Businesses found, check api");
     return null;
   }
-  console.log(businesses);
   return businesses;
 };
+fetchBusinesses();
+
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
   <Text style={styles.sectionHeader}>{title}</Text>
 );
@@ -98,15 +89,27 @@ interface followingItemProps {
   name: string;
   description: string;
   color: string;
+  email: string;
 }
 
 const Following: React.FC<followingItemProps> = ({
   name,
   description,
   color,
-}) => (
-  <>
-    <TouchableOpacity style={styles.itemContainer}>
+  email,
+}) => {
+  const navigation = useNavigation();
+
+  return (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        navigation.navigate("CompanyPostHistory", {
+          companyEmail: email,
+          companyName: name,
+        });
+      }}
+    >
       <View style={[styles.initialCircle, { backgroundColor: color }]}>
         <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
       </View>
@@ -119,33 +122,47 @@ const Following: React.FC<followingItemProps> = ({
         <Feather name="arrow-right-circle" size={32} color="black" />
       </Text>
     </TouchableOpacity>
-  </>
-);
+  );
+};
 
 interface reccommendedItemProps {
   name: string;
   description: string;
   color: string;
+  email: string;
 }
 
 const Reccommended: React.FC<reccommendedItemProps> = ({
   name,
   description,
   color,
-}) => (
-  <TouchableOpacity style={styles.itemContainer}>
-    <View style={[styles.initialCircle, { backgroundColor: color }]}>
-      <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
-    </View>
-    <View style={styles.itemTextContainer}>
-      <Text style={styles.itemName}>{name}</Text>
-      <Text style={styles.itemDescription}>{description}</Text>
-    </View>
-    <Text style={styles.arrowRight}>
-      <Feather name="arrow-right-circle" size={32} color="black" />
-    </Text>
-  </TouchableOpacity>
-);
+  email,
+}) => {
+  const navigation = useNavigation();
+
+  return (
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => {
+        navigation.navigate("CompanyPostHistory", {
+          companyEmail: email,
+          companyName: name,
+        });
+      }}
+    >
+      <View style={[styles.initialCircle, { backgroundColor: color }]}>
+        <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
+      </View>
+      <View style={styles.itemTextContainer}>
+        <Text style={styles.itemName}>{name}</Text>
+        <Text style={styles.itemDescription}>{description}</Text>
+      </View>
+      <Text style={styles.arrowRight}>
+        <Feather name="arrow-right-circle" size={32} color="black" />
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 const ClientDashboard: React.FC = () => {
   const [fontsLoaded, fontError] = useFonts({
@@ -210,11 +227,13 @@ const ClientDashboard: React.FC = () => {
             name="Hyderbad Spice"
             color="#2196F3"
             description="New Spicy Kurma Dish!"
+            email="hyderabadspice@example.com"
           />
           <Following
             name="Ganga"
             color="rgb(20 184 166)"
             description="New Spicy Kurma Dish!"
+            email="ganga@example.com"
           />
           <SeeMoreButton />
           <SectionHeader title="Recommended" />
@@ -234,6 +253,7 @@ const ClientDashboard: React.FC = () => {
                         ]
                   }
                   description={business["description"] || "Business Near You"}
+                  email="myBusiness@gmail.com"
                 />
               ) : null
             )

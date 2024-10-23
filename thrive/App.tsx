@@ -10,7 +10,8 @@ import { View, Text, Button, StyleSheet } from 'react-native';
 import { doc, getDoc } from 'firebase/firestore';
 import Feather from '@expo/vector-icons/Feather';
 import { UserProvider, UserContext } from './UserContext'; // Import the provider
-
+import { CompanyPosts } from './screens/posts/createPosts';
+import { CompanyPostHistory } from './screens/posts/viewCompanyPosts';
 
 // Import your screens here
 import LoginPage from './screens/auth-pages/login';
@@ -69,6 +70,7 @@ function BusinessTabNavigator() {
     >
       <BusinessTab.Screen name="Dashboard" component={LandingPageBusiness} />
       <BusinessTab.Screen name="Messages" component={DMList} />
+      <Tab.Screen name="Posts" component={CompanyPosts} />
       <Tab.Screen name="Settings" component={SettingsPage} />
     </BusinessTab.Navigator>
   );
@@ -166,6 +168,7 @@ function CustomerLayout() {
       <CustomerStack.Screen name="CustomerTabs" component={CustomerTabNavigator} />
       <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
       <CustomerStack.Screen name="SpecificBusiness" component={SpecificBusinessPage} />
+      <CustomerStack.Screen name="CompanyPostHistory" component={CompanyPostHistory} />
     </CustomerStack.Navigator>
   );
 }
