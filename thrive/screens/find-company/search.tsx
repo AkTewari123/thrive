@@ -334,13 +334,15 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   dropdownButton: {
-    backgroundColor: "#ddd",
+    backgroundColor: "white",
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
   },
   dropdownButtonText: {
     fontSize: 16,
+    fontFamily: "Outfit-Medium",
+    backgroundColor: "white",
   },
   modalOverlay: {
     flex: 1,
@@ -349,7 +351,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   dropdown: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     width: "80%",
     maxHeight: 300,
     borderRadius: 5,
