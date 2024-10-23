@@ -14,6 +14,15 @@ const BusinessOrdersPage: React.FC = () => {
     const route = useRoute();
     const { id } = route.params as { id: string };
 
+    const navigation = useNavigation();
+    
+    useEffect(() => {
+		navigation.setOptions({
+			headerTitle: "Edit Business Details",
+			headerBackTitle: "Back",
+		});
+	}, [navigation]);
+
     const fetchOrders = async () => {
         try {
             const q = query(collection(FIRESTORE, "businessData"), where("businessID", "==", id));

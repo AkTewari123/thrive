@@ -199,6 +199,7 @@ const DMList: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       {thriveHeader({})}
+      <Text style={styles.headerText}>Direct Messages</Text>
 
       <ScrollView style={styles.content}>
         {dmList.length === 0 ? (
@@ -356,6 +357,15 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 18,
     marginBottom: 16,
+    textAlign: "center",
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1F2937",
+    marginLeft: 16,
+    marginVertical: 16,
+
     textAlign: "center",
   },
   input: {
