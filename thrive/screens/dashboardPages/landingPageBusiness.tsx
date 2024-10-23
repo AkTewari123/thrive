@@ -171,7 +171,7 @@ const AIInsights: React.FC = () => {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer @env`,  //use env but if not just change the api key but make sure not to push it 
+                        Authorization: `Bearer ***REMOVED***`,  //use env but if not just change the api key but make sure not to push it 
                         'Content-Type': 'application/json'
                     }
                 }
@@ -217,31 +217,15 @@ const AIInsights: React.FC = () => {
                     </View>
                 ))
             )}
-    </View>
-    {/*
-    <View style={styles.insightItem}>
-      <Text style={styles.insightNumber}>1.</Text>
-      <Text style={styles.insightText}>
-        Lower the price of Gobhi Manchurian from $5 to $4 to entice more
-        customers.
-      </Text>
-    </View>
-    <View style={styles.insightItem}>
-      <Text style={styles.insightNumber}>2.</Text>
-      <Text style={styles.insightText}>
-        Correct the menu spelling from "paner" to "paneer".
-      </Text>
-    </View>
     <Text style={styles.insightSubtitle}>Competing businesses:</Text>
-    <View style={styles.insightItem}>
-      <Text style={styles.insightNumber}>1.</Text>
-      <Text style={styles.insightText}>
-        Akbar's Kitchen &nbsp;
-        <Feather name="external-link" size={14} color="#618BDB" />
-      </Text>
-      
-    </View>
-    */}
+        <View style={styles.insightItem}>
+        <Text style={styles.insightNumber}>1.</Text>
+        <Text style={styles.insightText}>
+            Akbar's Kitchen &nbsp;
+            <Feather name="external-link" size={14} color="#618BDB" />
+        </Text>
+        </View>
+   </View>
   </View>
 
     );
