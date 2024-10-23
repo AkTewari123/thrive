@@ -6,6 +6,7 @@ import {
 	Dimensions,
 	TouchableOpacity,
 	SafeAreaView,
+	Button,
 } from "react-native";
 import {
 	Carousel,
@@ -27,12 +28,14 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Progress from "react-native-progress";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { ActivityIndicator } from "react-native";
-import { doc, getDoc } from "firebase/firestore";
-import { query, where, getDocs, collection } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import BusinessNavBar from "../components/businessNavbar";
 import { LogBox } from 'react-native';
+
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
+import { collection, query, where, getDocs } from 'firebase/firestore'; // Adjust this according to your Firestore setup
 
 LogBox.ignoreLogs(['Warning: Encountered two children with the same key']);
 
@@ -89,19 +92,20 @@ const SpecificBusinessPage: React.FC = () => {
 	const { id } = route.params as { id: string };
 	let scale = width / 35;
 
-	useEffect(() => {
+
+useFocusEffect(
+	useCallback(() => {
 		const fetchBusinessData = async () => {
 			setLoading(true);
 			try {
 				const q = query(
 					collection(FIRESTORE, "businessData"),
-					where("businessID", "==", id) // 'id' here should be the businessID you are searching for
+					where("businessID", "==", id)
 				);
 
 				const querySnapshot = await getDocs(q);
 
 				if (!querySnapshot.empty) {
-					// Assuming there's only one document per businessID
 					const doc = querySnapshot.docs[0];
 					const data = doc.data();
 					setBusinessData(data);
@@ -117,7 +121,14 @@ const SpecificBusinessPage: React.FC = () => {
 		};
 
 		fetchBusinessData();
-	}, [id]);
+
+		// Optionally return a cleanup function if necessary
+		return () => {
+			setBusinessData(null); // Reset business data when leaving the screen if needed
+		};
+	}, [id]) // The dependency array
+);
+
 
 	const navigation = useNavigation();
 
@@ -126,20 +137,15 @@ const SpecificBusinessPage: React.FC = () => {
 	const phoneNumber = businessData?.phoneNumber || "Not defined";
 	const address = businessData?.location || "Not defined";
 	const schedule = businessData?.schedule || {};
-	const images = businessData?.images || [
-		"https://images.pexels.com/photos/2529146/pexels-photo-2529146.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-		"https://images.pexels.com/photos/2529159/pexels-photo-2529159.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-		"https://images.pexels.com/photos/2529158/pexels-photo-2529158.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-	];
-	const reviews = businessData?.reviews || [
-		{ username: "None", rating: null, review: "No Reviews" },
-	];
+	const images = businessData?.images || [];
+	const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
+	const products = businessData?.products || [];
 
 	useEffect(() => {
 		if (businessData) {
 			navigation.setOptions({
-				headerTitle: businessName, // Sets the business name as title after it's loaded
-				headerBackTitle: "Back", // Shows "Back" next to the back button
+				headerTitle: businessName,
+				headerBackTitle: "Back",
 			});
 		} else {
 			navigation.setOptions({
@@ -160,9 +166,9 @@ const SpecificBusinessPage: React.FC = () => {
 			setIdx((prevIdx) =>
 				prevIdx < reviews.length - 1 ? prevIdx + 1 : 0
 			);
-		}, 10000); // Update every 10 seconds
+		}, 10000);
 
-		return () => clearInterval(interval); // Clear the interval when component unmounts
+		return () => clearInterval(interval);
 	}, [reviews.length]);
 
 	let displayDate: string = "0";
@@ -225,7 +231,26 @@ const SpecificBusinessPage: React.FC = () => {
 						</View>
 					</View>
 				</View>
-				<View style={styles.childContainer}>
+
+        <View
+					style={[
+						styles.childContainer,
+						styles.middleContainer,
+						{ flex: 1 },
+					]}
+				>
+					<Text style={styles.sectionTitle}>Our Business</Text>
+					<ScrollView
+						style={styles.businessDescriptionScroll}
+						contentContainerStyle={{ flexGrow: 1 }}
+					>
+						<Text style={styles.businessDescriptionText}>
+							{businessDescription}
+						</Text>
+					</ScrollView>
+				</View>
+
+        <View style={styles.childContainer}>
 					<Text
 						style={[{ textAlign: "center" }, styles.sectionTitle]}
 					>
@@ -253,6 +278,9 @@ const SpecificBusinessPage: React.FC = () => {
 						</Text>
 					</View>
 				</View>
+
+       
+
 				<View style={[styles.childContainer, styles.middleContainer]}>
 					<Text style={[styles.sectionTitle, { paddingBottom: 10 }]}>
 						Gallery
@@ -281,25 +309,34 @@ const SpecificBusinessPage: React.FC = () => {
 						})}
 					</Carousel>
 				</View>
-				<View
-					style={[
-						styles.childContainer,
-						styles.middleContainer,
-						{ flex: 1 },
-					]}
-				>
-					<Text style={styles.sectionTitle}>Our Business</Text>
-					<ScrollView
-						style={styles.businessDescriptionScroll}
-						contentContainerStyle={{ flexGrow: 1 }}
-					>
-						<Text style={styles.businessDescriptionText}>
-							{businessDescription}
-						</Text>
-					</ScrollView>
-				</View>
 
+				{/* Products Section */}
 				<View style={[styles.childContainer, styles.middleContainer]}>
+					<Text style={styles.sectionTitle}>Products</Text>
+					{products.length > 0 ? (
+						products.map((product:any, index:any) => (
+							<View key={index} style={styles.productItem}>
+								<Text style={styles.productTitle}>
+									{product.name}
+								</Text>
+								<Image
+									source={{ uri: product.image }}
+									style={styles.productImage}
+								/>
+								<Text style={styles.productDescription}>
+									{product.description}
+								</Text>
+								<Text style={styles.productPrice}>
+									${product.price}
+								</Text>
+								<Button title="Order" onPress={() => {}} />
+							</View>
+						))
+					) : (
+						<Text>No products available</Text>
+					)}
+				</View>
+        <View style={[styles.childContainer, styles.middleContainer]}>
 					<Text style={styles.sectionTitle}>Ratings & Reviews</Text>
 					<View
 						style={{
@@ -497,6 +534,10 @@ const SpecificBusinessPage: React.FC = () => {
 						</View>
 					</View>
 				</View>
+
+
+
+				{/* Other sections like Ratings & Reviews... */}
 			</ScrollView>
 		</>
 	);
@@ -525,21 +566,12 @@ const styles = StyleSheet.create({
 		padding: 25,
 		flexShrink: 1,
 	},
-	topContainer: {},
-	middleContainer: {
-		alignItems: "center",
-	},
-	bottomContainer: {
-		flexDirection: "row",
-		alignItems: "center",
+	topContainer: {
+		marginBottom: 20,
 	},
 	businessInfoContainer: {
 		flexDirection: "row",
 		alignItems: "center",
-	},
-	progressBars: {
-		height: 13,
-		marginTop: 2.3,
 	},
 	initialCircle: {
 		width: 60,
@@ -553,12 +585,6 @@ const styles = StyleSheet.create({
 		fontSize: 24,
 		fontWeight: "500",
 	},
-	ratingNum: {
-		color: "black",
-		textAlign: "center",
-		display: "flex",
-		fontSize: 13,
-	},
 	businessDetails: {
 		marginLeft: 15,
 	},
@@ -566,35 +592,44 @@ const styles = StyleSheet.create({
 		fontWeight: "500",
 		fontSize: 30,
 	},
-	businessDescription: {
-		fontWeight: "500",
-		color: "grey",
-		fontSize: 15,
-	},
-	contactInfo: {
-		display: "flex",
-		color: "black",
-		marginTop: 15,
-		flexDirection: "row",
-	},
-	contactText: {
-		fontWeight: "500",
-		textAlign: "center",
-		width: "33%",
-	},
 	sectionTitle: {
 		fontWeight: "500",
 		fontSize: 25,
 		marginBottom: 10,
 		paddingTop: 10,
 	},
-	carouselContainer: {
-		height: 150,
+	productItem: {
+		borderColor: "#ccc",
+		borderWidth: 1,
+		borderRadius: 10,
+		padding: 10,
+		marginBottom: 15,
+		alignItems: "center",
 		width: "100%",
 	},
-	carouselImage: {
-		flex: 1,
-		width: "100%",
+	productTitle: {
+		fontSize: 18,
+		fontWeight: "bold",
+		marginBottom: 5,
+	},
+	productDescription: {
+		fontSize: 14,
+		marginVertical: 5,
+		textAlign: "center",
+	},
+	productPrice: {
+		fontSize: 16,
+		fontWeight: "bold",
+		marginBottom: 10,
+	},
+	productImage: {
+		width: 150,
+		height: 150,
+		marginBottom: 10,
+		borderRadius: 10,
+	},
+	middleContainer: {
+		alignItems: "center",
 	},
 	businessDescriptionScroll: {
 		width: "100%",
@@ -605,5 +640,40 @@ const styles = StyleSheet.create({
 		width: "90%",
 		marginHorizontal: "auto",
 	},
+	progressBars: {
+		height: 13,
+		marginTop: 2.3,
+	},
+	ratingNum: {
+		color: "black",
+		textAlign: "center",
+		display: "flex",
+		fontSize: 13,
+	},
+	bottomContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+  },
+  carouselContainer: {
+		height: 150,
+		width: "100%",
+	},
+  carouselImage: {
+		flex: 1,
+		width: "100%",
+	},
+  contactInfo: {
+		display: "flex",
+		color: "black",
+		marginTop: 15,
+		flexDirection: "row",
+	},
+	contactText: {
+		fontWeight: "500",
+		textAlign: "center",
+		width: "33%",
+	},
 });
+
+
 export default SpecificBusinessPage;
