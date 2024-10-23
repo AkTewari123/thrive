@@ -307,6 +307,10 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
+    marginHorizontal: 10,
+    borderRadius: 15,
+    gap: 5,
+    marginVertical: 5,
   },
   initialCircle: {
     width: 40,
@@ -328,10 +332,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#1F2937",
+    fontFamily: "Outfit-Semibold",
   },
   itemDescription: {
     fontSize: 14,
-    color: "#6B7280",
+    color: "#5A5D9D",
+    fontWeight: "bold",
+    fontFamily: "Outfit-Semibold",
   },
   arrowRight: {
     fontSize: 20,
@@ -365,7 +372,7 @@ const styles = StyleSheet.create({
     color: "#1F2937",
     marginLeft: 16,
     marginVertical: 16,
-
+    fontFamily: "Outfit-Medium",
     textAlign: "center",
   },
   input: {
