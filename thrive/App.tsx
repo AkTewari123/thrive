@@ -47,6 +47,9 @@ function BusinessTabNavigator() {
             iconName = "home";
           } else if (route.name === "Businesses") {
             iconName = "briefcase";
+          } else if (route.name === "Posts") {
+            iconName = "book";
+
           } else if (route.name === "Messages") {
             iconName = "message-square";
           } else if (route.name === "Settings") {

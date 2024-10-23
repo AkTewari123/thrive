@@ -66,12 +66,40 @@ const BusinessOrdersPage: React.FC = () => {
         }
     };
 
-    const handleFulfill = async (orderId: string, userEmail: string) => {
-        // Logic to update the order status in Firestore can be added here
-        alert(`Order ${orderId} fulfilled!`);
-        // Call the message function to send the notification
-        await handleSendMessage(userEmail, orderId);
+    const setFulfillStatus = async (orderId: string): Promise<any[]> => {
+        try {
+            const q = query(collection(FIRESTORE, "businessData"), where("businessID", "==", id));
+            const querySnapshot = await getDocs(q);
+    
+            if (!querySnapshot.empty) {
+                const docRef = querySnapshot.docs[0].ref;
+                const updatedOrders = orders.map((order) => {
+                    if (order.id === orderId) {
+                        return { ...order, fulfilled: true };
+                    }
+                    return order;
+                });
+                await updateDoc(docRef, { orders: updatedOrders });
+                return updatedOrders;
+            } else {
+                console.log("No such business found with the given ID.");
+            }
+        } catch (error) {
+            console.error("Failed to update order status:", error);
+        }
+        return orders; // Return current orders if error occurs
     };
+    
+
+    const handleFulfill = async (orderId: string, userEmail: string) => {
+        alert(`Order ${orderId} fulfilled!`);
+        await handleSendMessage(userEmail, orderId);
+        const updatedOrders = await setFulfillStatus(orderId);
+    
+        // Update the orders state after fulfilling
+        setOrders(updatedOrders.filter(order => !order.fulfilled)); // Remove fulfilled orders from the list
+    };
+    
 
     if (loading) {
         return (
@@ -87,22 +115,24 @@ const BusinessOrdersPage: React.FC = () => {
             <View style={[styles.childContainer, styles.middleContainer]}>
                 <Text style={styles.sectionTitle}>Orders</Text>
                 {orders.length > 0 ? (
-                    orders.map((order: any, index: any) => (
-                        <View key={index} style={styles.orderItem}>
-                            <Text style={styles.orderTitle}>{order.productName}</Text>
-                            <Image source={{ uri: order.productImage }} style={styles.orderImage} />
-                            <Text style={styles.orderDescription}>Price: ${order.productPrice}</Text>
-                            <Text style={styles.orderDescription}>Order Email: {order.userId}</Text>
-                            <Text style={styles.orderDescription}>Timestamp: {format(order.timestamp.toDate(), 'PPpp')}</Text>
-                            <Button title="Fulfill" onPress={() => handleFulfill(order.id, order.userId)} />
-                        </View>
-                    ))
+                    orders
+                        .filter((order: any) => !order.fulfilled) // Only render orders that are not fulfilled
+                        .map((order: any, index: any) => (
+                            <View key={index} style={styles.orderItem}>
+                                <Text style={styles.orderTitle}>{order.productName}</Text>
+                                <Image source={{ uri: order.productImage }} style={styles.orderImage} />
+                                <Text style={styles.orderDescription}>Price: ${order.productPrice}</Text>
+                                <Text style={styles.orderDescription}>Order Email: {order.userId}</Text>
+                                <Text style={styles.orderDescription}>Timestamp: {format(order.timestamp.toDate(), 'PPpp')}</Text>
+                                <Button title="Fulfill" onPress={() => handleFulfill(order.id, order.userId)} />
+                            </View>
+                        ))
                 ) : (
                     <Text>No orders available</Text>
                 )}
             </View>
         </ScrollView>
-    );
+    );    
 };
 
 const styles = StyleSheet.create({

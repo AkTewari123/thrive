@@ -89,7 +89,7 @@ const OrdersBox: React.FC<OrderProps> = ({ orders, businessID }) => {
     <View style={styles.ordersBoxContainer}>
         <View style={styles.ordersInfo}>
             <Text style={styles.ordersNumberText}>{orders}</Text>
-            <Text style={styles.ordersText}>New Orders</Text>
+            <Text style={styles.ordersText}>{orders === 1 ? "New Order" : "New Orders"}</Text>
         </View>
         <Pressable style={styles.fulfillOrdersButton} onPress={() => navigation.navigate('BusinessOrdersPage', { id: businessID })}>
             <Text style={styles.fulfillOrdersText}>Fulfill Orders</Text>
@@ -123,6 +123,7 @@ interface BusinessData {
     services: string;
     phoneNumber: string;
     businessID: string;
+    orders: Array<any>;
 }
 
 const LandingPageBusiness: React.FC = () => {
@@ -152,6 +153,9 @@ const LandingPageBusiness: React.FC = () => {
         }, []) // Empty dependency array ensures it runs only when the screen is focused
     );
 
+    const orders = businessData?.orders || [];
+    const numNewOrders = orders.filter(order => order.fulfilled === false).length;
+
 
     if (loading) {
         return (
@@ -173,9 +177,9 @@ const LandingPageBusiness: React.FC = () => {
                     rating={4} 
                     initial={businessData?.businessName?.[0] || "B"} 
                 />
-                <View style={styles.contentContainer}>
+                <View style={[styles.contentContainer]}>
                 <EditButtons businessID={businessData?.businessID || ""} />
-                    <OrdersBox orders={3} businessID={businessData?.businessID} />
+                    <OrdersBox orders={numNewOrders} businessID={businessData?.businessID} />
                     <View style={styles.businessInfoContainer}>
                         <Text style={styles.sectionTitle}>Business Information</Text>
                         <Text style={styles.infoText}>Location: {businessData?.location}</Text>
@@ -384,6 +388,18 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginLeft: 8,
     },
+    childContainer: {
+		backgroundColor: "white",
+		width: "100%",
+		borderRadius: 20,
+		marginBottom: 25,
+		shadowColor: "#171717",
+		shadowOffset: { width: -2, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 3,
+		padding: 25,
+		flexShrink: 1,
+	},
 });
 
 export default LandingPageBusiness;

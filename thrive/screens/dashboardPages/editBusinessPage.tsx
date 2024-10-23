@@ -284,7 +284,15 @@ const EditBusinessPage: React.FC = () => {
 
 				{/* Business Information Fields */}
 				<View style={styles.inputContainer}>
-					<Text style={styles.label}>Business Name</Text>
+					
+				</View>
+
+				<View style={styles.inputContainer}>
+					
+				</View>
+
+				<View style={[styles.inputContainer, styles.childContainer]}>
+                <Text style={styles.label}>Business Name</Text>
 					<TextInput
 						style={styles.input}
 						value={businessData?.businessName || ""}
@@ -292,10 +300,7 @@ const EditBusinessPage: React.FC = () => {
 							handleInputChange("businessName", text)
 						}
 					/>
-				</View>
-
-				<View style={styles.inputContainer}>
-					<Text style={styles.label}>Description</Text>
+                <Text style={styles.label}>Description</Text>
 					<TextInput
 						style={[styles.input, styles.descriptionInput]}
 						value={businessData?.description || ""}
@@ -304,9 +309,6 @@ const EditBusinessPage: React.FC = () => {
 						}
 						multiline
 					/>
-				</View>
-
-				<View style={styles.inputContainer}>
 					<Text style={styles.label}>Phone Number</Text>
 					<TextInput
 						style={styles.input}
@@ -316,10 +318,7 @@ const EditBusinessPage: React.FC = () => {
 						}
 						keyboardType="phone-pad"
 					/>
-				</View>
-
-				<View style={styles.inputContainer}>
-					<Text style={styles.label}>Location</Text>
+                    <Text style={styles.label}>Location</Text>
 					<TextInput
 						style={styles.input}
 						value={businessData?.location || ""}
@@ -329,8 +328,12 @@ const EditBusinessPage: React.FC = () => {
 					/>
 				</View>
 
+				<View style={styles.inputContainer}>
+					
+				</View>
+
 				{/* Image picker and upload section */}
-				<View style={[styles.inputContainer, {alignItems:"center"}]}>
+				<View style={[styles.inputContainer, styles.childContainer, {alignItems:"center"}]}>
 					<Text style={styles.label}>Current Images</Text>
 					{businessData?.images?.length > 0 ? (
 						<FlatList
@@ -353,11 +356,7 @@ const EditBusinessPage: React.FC = () => {
 					) : (
 						<Text>No images available</Text>
 					)}
-				</View>
-
-				{/* Add image via file upload */}
-				<View style={styles.inputContainer}>
-					<Button
+                    <Button
 						title="Add Image from Camera Roll"
 						onPress={handlePickImage}
 					/>
@@ -369,7 +368,7 @@ const EditBusinessPage: React.FC = () => {
 				</View>
 
 				{/* Products Section */}
-				<View style={[styles.inputContainer]}>
+				<View style={[styles.inputContainer, styles.childContainer]}>
 					<Text style={[styles.label, {alignSelf:"center"}]}>Products</Text>
 
 					{products.length > 0 ? (
@@ -472,6 +471,18 @@ const styles = StyleSheet.create({
 	},
 	productText: {
 		fontSize: 16,
+	},
+    childContainer: {
+		backgroundColor: "white",
+		width: "100%",
+		borderRadius: 20,
+		marginBottom: 25,
+		shadowColor: "#171717",
+		shadowOffset: { width: -2, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 3,
+		padding: 25,
+		flexShrink: 1,
 	},
 });
 
