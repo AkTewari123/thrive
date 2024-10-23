@@ -35,7 +35,18 @@ import { LogBox } from "react-native";
 import { FIREBASE_AUTH } from "../../FirebaseConfig";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
-import { collection, query, where, getDocs, addDoc, Timestamp, arrayUnion, updateDoc, doc } from "firebase/firestore"; // Adjust this according to your Firestore setup
+import {
+	collection,
+	query,
+	where,
+	getDocs,
+	addDoc,
+	Timestamp,
+	arrayUnion,
+	updateDoc,
+	doc,
+} from "firebase/firestore"; // Adjust this according to your Firestore setup
+import { TextInput } from "react-native-gesture-handler";
 
 LogBox.ignoreLogs(["Warning: Encountered two children with the same key"]);
 
@@ -91,44 +102,47 @@ const SpecificBusinessPage: React.FC = () => {
 	const { width } = Dimensions.get("window");
 	const { id } = route.params as { id: string };
 	let scale = width / 35;
+	const [newReview, setNewReview] = useState<string>("");
+	const [newUsername, setNewUsername] = useState<string>("");
+	const [newRating, setNewRating] = useState<number>(0);
+	const [submitting, setSubmitting] = useState(false); // For form submission state
 
-	useFocusEffect(
-		useCallback(() => {
-			const fetchBusinessData = async () => {
-				setLoading(true);
-				try {
-					const q = query(
-						collection(FIRESTORE, "businessData"),
-						where("businessID", "==", id)
-					);
+  const fetchBusinessData = async () => {
+    setLoading(true);
+    try {
+      const q = query(
+        collection(FIRESTORE, "businessData"),
+        where("businessID", "==", id)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        const data = doc.data();
+        setBusinessData(data);
+      } else {
+        console.log("No such document with the given businessID!");
+        setBusinessData(null);
+      }
+    } catch (error) {
+      console.error("Error fetching business data: ", error);
+      setBusinessData(null);
+    }
+    setLoading(false);
+  };
 
-					const querySnapshot = await getDocs(q);
-
-					if (!querySnapshot.empty) {
-						const doc = querySnapshot.docs[0];
-						const data = doc.data();
-						setBusinessData(data);
-					} else {
-						console.log(
-							"No such document with the given businessID!"
-						);
-						setBusinessData(null);
-					}
-				} catch (error) {
-					console.error("Error fetching business data: ", error);
-					setBusinessData(null);
-				}
-				setLoading(false);
-			};
-
-			fetchBusinessData();
-
-			// Optionally return a cleanup function if necessary
-			return () => {
-				setBusinessData(null); // Reset business data when leaving the screen if needed
-			};
-		}, [id]) // The dependency array
-	);
+  useFocusEffect(
+    useCallback(() => {
+      fetchBusinessData();
+  
+      return () => {
+        setBusinessData(null); // Reset business data when leaving the screen if needed
+      };
+    }, [id])
+  );
+  
+  
 
 	const navigation = useNavigation();
 
@@ -179,55 +193,109 @@ const SpecificBusinessPage: React.FC = () => {
 		displayDate = `${schedule[tdy][0]}-${schedule[tdy][1]}`;
 	}
 
-	const starHollowed = Array.from({ length: 5 }, (_, i) =>
-		i < numStars ? "star" : "star-o"
-	);
-
-  const handleOrder = async (productId: string, productImage: string, productPrice: number, productName: string) => {
+	const handleSubmitReview = async () => {
     const user = FIREBASE_AUTH.currentUser;
-    const userId = user?.email; // Replace this with actual user ID from authentication
-    const orderData = {
-      productId: productId,
-      userId: userId,
-      productImage: productImage, // Add the product image URL to the order data
-      productPrice: productPrice, // Add the product price to the order data
-      productName: productName, // Add the product name to the order data
-      timestamp: Timestamp.now(),
-      fulfilled: false,
+    if (!newReview || newRating === 0) {
+      alert("Please fill in all fields before submitting.");
+      return;
+    }
+  
+    setSubmitting(true); // Set submitting state to true to show a loading spinner
+  
+    const reviewData = {
+      // set username to the user email before the @ symbol
+      username: user?.email?.split("@")[0] || newUsername,
+      rating: newRating,
+      review: newReview,
     };
   
     try {
-      // Query to find the specific business document by ID, similar to useFocusEffect
       const q = query(
-        collection(FIRESTORE, 'businessData'),
-        where('businessID', '==', id)
+        collection(FIRESTORE, "businessData"),
+        where("businessID", "==", id)
       );
   
       const querySnapshot = await getDocs(q);
   
       if (!querySnapshot.empty) {
-        const businessDoc = querySnapshot.docs[0]; // Get the document reference
-        const businessDocRef = businessDoc.ref; // Reference to the current business document
+        const businessDoc = querySnapshot.docs[0];
+        const businessDocRef = businessDoc.ref;
   
-        // Update the 'orders' array by adding the new order
         await updateDoc(businessDocRef, {
-          orders: arrayUnion(orderData), // Add new order to the 'orders' array field
+          reviews: arrayUnion(reviewData),
         });
   
-        alert('Order placed successfully!');
+        alert("Review submitted successfully!");
+  
+        // Reset the form after successful submission
+        setNewReview("");
+        setNewUsername("");
+        setNewRating(0);
+  
+        // Fetch the updated business data
+        await fetchBusinessData();
       } else {
-        console.error('No such document with the given businessID!');
-        alert('Failed to place order: business not found.');
+        alert("Business not found.");
       }
     } catch (error) {
-      console.error('Error placing order: ', error);
-      alert('Failed to place the order. Please try again.');
+      console.error("Error submitting review: ", error);
+      alert("Failed to submit review. Please try again.");
     }
+  
+    setSubmitting(false); // Stop the loading spinner
   };
   
-  
 
+	const starHollowed = Array.from({ length: 5 }, (_, i) =>
+		i < numStars ? "star" : "star-o"
+	);
 
+	const handleOrder = async (
+		productId: string,
+		productImage: string,
+		productPrice: number,
+		productName: string
+	) => {
+		const user = FIREBASE_AUTH.currentUser;
+		const userId = user?.email; // Replace this with actual user ID from authentication
+		const orderData = {
+			productId: productId,
+			userId: userId,
+			productImage: productImage, // Add the product image URL to the order data
+			productPrice: productPrice, // Add the product price to the order data
+			productName: productName, // Add the product name to the order data
+			timestamp: Timestamp.now(),
+			fulfilled: false,
+		};
+
+		try {
+			// Query to find the specific business document by ID, similar to useFocusEffect
+			const q = query(
+				collection(FIRESTORE, "businessData"),
+				where("businessID", "==", id)
+			);
+
+			const querySnapshot = await getDocs(q);
+
+			if (!querySnapshot.empty) {
+				const businessDoc = querySnapshot.docs[0]; // Get the document reference
+				const businessDocRef = businessDoc.ref; // Reference to the current business document
+
+				// Update the 'orders' array by adding the new order
+				await updateDoc(businessDocRef, {
+					orders: arrayUnion(orderData), // Add new order to the 'orders' array field
+				});
+
+				alert("Order placed successfully!");
+			} else {
+				console.error("No such document with the given businessID!");
+				alert("Failed to place order: business not found.");
+			}
+		} catch (error) {
+			console.error("Error placing order: ", error);
+			alert("Failed to place the order. Please try again.");
+		}
+	};
 
 	if (loading) {
 		return (
@@ -381,7 +449,17 @@ const SpecificBusinessPage: React.FC = () => {
 								<Text style={styles.productPrice}>
 									${product.price}
 								</Text>
-								<Button title="Order" onPress={() => handleOrder(product.productID, product.image, product.price, product.name)}  />
+								<Button
+									title="Order"
+									onPress={() =>
+										handleOrder(
+											product.productID,
+											product.image,
+											product.price,
+											product.name
+										)
+									}
+								/>
 							</View>
 						))
 					) : (
@@ -427,7 +505,7 @@ const SpecificBusinessPage: React.FC = () => {
 					</View>
 				</View>
 
-        <View style={[styles.childContainer, styles.middleContainer]}>
+				<View style={[styles.childContainer, styles.middleContainer]}>
 					<View>
 						<Text
 							style={[
@@ -472,6 +550,43 @@ const SpecificBusinessPage: React.FC = () => {
 							</TouchableOpacity>
 						</View>
 					</View>
+				</View>
+				{/* Add Review Section */}
+				<View style={[styles.childContainer, styles.middleContainer]}>
+					<Text style={styles.sectionTitle}>Add a Review</Text>
+
+					<View style={styles.inputContainer}>
+						<Text>Rating (1-5)</Text>
+						<TextInput
+							style={styles.input}
+							keyboardType="numeric"
+							placeholder="Enter your rating"
+							value={newRating ? newRating.toString() : ""}
+							onChangeText={(value) =>
+								setNewRating(parseInt(value) || 0)
+							}
+						/>
+					</View>
+
+					<View style={styles.inputContainer}>
+						<Text>Review</Text>
+						<TextInput
+							style={[
+								styles.input,
+								{ height: 100, textAlignVertical: "top" },
+							]}
+							placeholder="Write your review here"
+							value={newReview}
+							onChangeText={setNewReview}
+							multiline
+						/>
+					</View>
+
+					<Button
+						title={submitting ? "Submitting..." : "Submit Review"}
+						onPress={handleSubmitReview}
+						disabled={submitting}
+					/>
 				</View>
 			</ScrollView>
 		</>
@@ -618,6 +733,19 @@ const styles = StyleSheet.create({
 		width: "85%",
 		marginHorizontal: "auto",
 	},
+	inputContainer: {
+		width: "100%",
+		marginBottom: 15,
+	},
+	input: {
+		borderColor: "#ccc",
+		borderWidth: 1,
+		borderRadius: 10,
+		padding: 10,
+		marginBottom: 10,
+		width: "100%",
+	},
+
 	reviewUsername: {
 		fontSize: 28,
 		fontWeight: "300",
