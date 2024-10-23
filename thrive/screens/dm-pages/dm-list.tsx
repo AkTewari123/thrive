@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 20,
-    bottom: 90, // Adjust this value to move it above the navbar
+    bottom: 40, // Adjust this value to move it above the navbar
     backgroundColor: "#5A5D9D",
     flexDirection: "row",
     alignItems: "center",

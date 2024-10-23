@@ -29,6 +29,8 @@ const SignUpPage: React.FC = () => {
     menuPdf: null,
     phoneNumber: "",
     description: "",
+    businessID: "",
+    uid: "",
   });
 
   const handleUserTypeSelection = (type: string) => {
@@ -70,7 +72,16 @@ const SignUpPage: React.FC = () => {
           phoneNumber: businessDetails.phoneNumber,
           description: businessDetails.description,
           createdAt: new Date(),
+          businessID: businessDetails.businessID,
+          uid: user.uid,
         });
+
+        await setDoc(
+          doc(FIRESTORE, "users", user.uid),
+          { businessID: businessDetails.businessID },
+          { merge: true } // This ensures the businessID is added to the user doc without overwriting other fields
+        );
+  
       }
 
       Alert.alert("Success", `Account created as ${userType}!`);

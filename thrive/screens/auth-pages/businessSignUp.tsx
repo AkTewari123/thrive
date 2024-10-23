@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import { FontAwesome } from "@expo/vector-icons";
+import { useEffect } from "react";
 
 interface BusinessDetails {
   businessName: string;
@@ -17,6 +18,8 @@ interface BusinessDetails {
   menuPdf: any;
   phoneNumber: string;
   description: string;
+  businessID: string;
+  uid: string;
 }
 
 interface BusinessSignUpPageProps {
@@ -28,6 +31,21 @@ const BusinessSignUpPage: React.FC<BusinessSignUpPageProps> = ({
   businessDetails,
   setBusinessDetails,
 }) => {
+
+  // Function to generate a unique BusinessID
+  const generateBusinessID = () => {
+    return `BUS-${Date.now()}`; // Simple timestamp-based ID
+  };
+
+  // Initialize the BusinessID on component mount if not already set
+  useEffect(() => {
+    if (!businessDetails.businessID) {
+      setBusinessDetails((prevState) => ({
+        ...prevState,
+        businessID: generateBusinessID(),
+      }));
+    }
+  }, []);
   const handleInputChange = (name: keyof BusinessDetails, value: string) => {
     setBusinessDetails((prevState) => ({
       ...prevState,

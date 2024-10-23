@@ -5,13 +5,37 @@ import { FontAwesome } from '@expo/vector-icons';
 import { doc, getDoc } from 'firebase/firestore';
 import { FIRESTORE, FIREBASE_AUTH } from '../../FirebaseConfig';
 import thriveHeader from '../components/thriveHeader';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp} from '@react-navigation/stack';
 
-const EditButton: React.FC = () => (
-    <Pressable style={styles.editButton}>
-        <Feather name="edit-2" size={20} color="#618BDB" />
-        <Text style={styles.editButtonText}>Edit Home Page</Text>
-    </Pressable>
-);
+
+type RootStackParamList = {
+    LandingPageBusiness: undefined;
+    BusinessPage: { id: string }; // `id` parameter added
+};
+
+
+
+
+interface EditButtonProps {
+    businessID: string;
+  }
+  
+  const EditButton: React.FC<EditButtonProps> = ({ businessID }) => {
+      const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  
+      const handlePress = () => {
+          navigation.navigate('BusinessPage', { id: businessID });
+      };
+  
+      return (
+          <Pressable style={styles.editButton} onPress={handlePress}>
+              <Feather name="edit-2" size={20} color="#618BDB" />
+              <Text style={styles.editButtonText}>Edit Home Page</Text>
+          </Pressable>
+      );
+  };
+  
 
 interface RatingStarProps { stars: number; }
 
@@ -77,6 +101,7 @@ interface BusinessData {
     establishmentDate: string;
     services: string;
     phoneNumber: string;
+    businessID: string;
 }
 
 const LandingPageBusiness: React.FC = () => {
@@ -125,7 +150,7 @@ const LandingPageBusiness: React.FC = () => {
                     initial={businessData?.businessName?.[0] || "B"} 
                 />
                 <View style={styles.contentContainer}>
-                    <EditButton />
+                <EditButton businessID={businessData?.businessID || ""} />
                     <OrdersBox orders={3} />
                     <View style={styles.businessInfoContainer}>
                         <Text style={styles.sectionTitle}>Business Information</Text>
@@ -133,6 +158,7 @@ const LandingPageBusiness: React.FC = () => {
                         <Text style={styles.infoText}>Established: {businessData?.establishmentDate}</Text>
                         <Text style={styles.infoText}>Services: {businessData?.services}</Text>
                         <Text style={styles.infoText}>Phone: {businessData?.phoneNumber}</Text>
+                        <Text style={styles.infoText}>ID: {businessData?.businessID}</Text>
                     </View>
                     <AIInsights />
                 </View>

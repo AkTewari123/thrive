@@ -20,6 +20,10 @@ import { format } from "date-fns";
 import { ScrollView } from "react-native-gesture-handler";
 import * as Progress from "react-native-progress";
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { ActivityIndicator } from "react-native";
+import { doc, getDoc } from "firebase/firestore";
+import { query, where, getDocs, collection } from "firebase/firestore";
+import { FIRESTORE } from "../../FirebaseConfig";
 
 interface ReviewProps {
   username: string;
@@ -74,21 +78,13 @@ interface SpecificBusinessItemProps {
 }
 
 const SpecificBusinessPage: React.FC = () => {
-  const reviews = [
-    { username: "rtenacity", rating: 4, review: "Good product, overall W" },
-    { username: "user123", rating: 5, review: "Amazing quality!" },
-    { username: "john_doe", rating: 3, review: "Decent but could be better." },
-  ];
+  const [businessData, setBusinessData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIdx((prevIdx) => (prevIdx < reviews.length - 1 ? prevIdx + 1 : 0));
-    }, 10000); // Update every 10 seconds
-
-    return () => clearInterval(interval); // Clear the interval when component unmounts
-  }, [reviews.length]);
+  
   const route = useRoute();
   const { width } = Dimensions.get("window");
+  const { id } = route.params as { id: string };
   let scale = width / 35;
   const IMAGES = [
     "https://images.pexels.com/photos/2529146/pexels-photo-2529146.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
@@ -96,28 +92,83 @@ const SpecificBusinessPage: React.FC = () => {
     "https://images.pexels.com/photos/2529158/pexels-photo-2529158.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
   ];
 
-  const {
-    businessName,
-    businessDescription,
-    numStars,
-    phoneNumber,
-    address,
-    schedule,
-  } = route.params as SpecificBusinessItemProps;
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      setLoading(true);
+      try {
+        const q = query(
+          collection(FIRESTORE, "businessData"),
+          where("businessID", "==", id) // 'id' here should be the businessID you are searching for
+        );
+
+        const querySnapshot = await getDocs(q);
+
+
+        if (!querySnapshot.empty) {
+          // Assuming there's only one document per businessID
+          const doc = querySnapshot.docs[0]; 
+          const data = doc.data();
+          setBusinessData(data);
+          
+        }
+        else {
+          console.log("No such document with the given businessID!");
+          setBusinessData(null);
+        }  
+      } catch (error) {
+        console.error("Error fetching business data: ", error);
+        setBusinessData(null);
+      }
+      setLoading(false);
+    };
+
+    fetchBusinessData();
+  }, [id]);
+
+  const businessName = businessData?.businessName || "Not defined";
+  const businessDescription = businessData?.description || "Not defined";
+  const numStars = businessData?.rating || 0;
+  const phoneNumber = businessData?.phoneNumber || "Not defined";
+  const address = businessData?.location || "Not defined";
+  const schedule = businessData?.schedule || {};
+  const images = businessData?.images || [];
+  const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIdx((prevIdx) => (prevIdx < reviews.length - 1 ? prevIdx + 1 : 0));
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(interval); // Clear the interval when component unmounts
+  }, [reviews.length]);
+
 
   let displayDate: string = "0";
   let tdy = format(new Date(), "iiii");
-  for (let i = 0; i < Object.keys(schedule).length; i++) {
-    if (Object.keys(schedule)[i] === tdy) {
-      displayDate = `${Object.values(schedule)[i][0]}-${
-        Object.values(schedule)[i][1]
-      }`;
-    }
+  if (schedule[tdy]) {
+    displayDate = `${schedule[tdy][0]}-${schedule[tdy][1]}`;
   }
 
   const starHollowed = Array.from({ length: 5 }, (_, i) =>
     i < numStars ? "star" : "star-o"
   );
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </SafeAreaView>
+    );
+  }
+
+  if (!businessData) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Business data not found</Text>
+      </SafeAreaView>
+    );
+  }
+
 
   return (
     <>
@@ -351,6 +402,10 @@ const SpecificBusinessPage: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#E4E8EE",
+  },
   pageContainer: {
     flex: 1,
     backgroundColor: "transparent",
