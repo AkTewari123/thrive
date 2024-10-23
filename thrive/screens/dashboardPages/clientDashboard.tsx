@@ -236,7 +236,7 @@ const ClientDashboard: React.FC = () => {
       }
     };
     fetchBusinesses();
-  });
+  }, []);
   const [bool, setBool] = useState(2);
   function handleSeeMore() {
     console.log("REMY MANDER 857");
