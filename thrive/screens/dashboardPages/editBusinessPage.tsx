@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
-import { Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView, TextInput, Button, Alert } from "react-native";
+import { Text, StyleSheet, Dimensions, TouchableOpacity, SafeAreaView, TextInput, Button, Alert, FlatList } from "react-native";
 import {
-  Carousel,
   Image,
   View,
-  ProgressBar,
 } from "react-native-ui-lib";
 import { FontAwesome } from "@expo/vector-icons";
 import { useRoute } from "@react-navigation/native";
@@ -14,65 +12,42 @@ import { doc, updateDoc, getDoc } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import { query, where, getDocs, collection } from "firebase/firestore";
-import thriveHeader from "../components/thriveHeader";
-
-interface ReviewProps {
-  username: string;
-  rating: number;
-  review: string;
-}
-
-const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
-  const starHollowed = Array.from({ length: 5 }, (_, i) =>
-    i < rating ? "star" : "star-o"
-  );
-  return (
-    <View style={styles.reviewContainer}>
-      <Text style={styles.reviewUsername}>{username}</Text>
-      <Text>
-        {starHollowed.map((star, index) => (
-          <FontAwesome key={index} name={star} size={20} />
-        ))}
-      </Text>
-      <Text>{review}</Text>
-    </View>
-  );
-};
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import * as ImagePicker from 'expo-image-picker';
 
 const EditBusinessPage: React.FC = () => {
   const [businessData, setBusinessData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [idx, setIdx] = useState(0);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");  // State for the image URL input
+  const [uploading, setUploading] = useState(false);
 
   const route = useRoute();
   const { id } = route.params as { id: string };
-  const { width } = Dimensions.get("window");
-  const scale = width / 35;
-
   const navigation = useNavigation();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: "Edit Business Details", // Static title, no need to wait for data
+      headerBackTitle: "Back",
+    });
+  }, [navigation]);
+  
 
   useEffect(() => {
     const fetchBusinessData = async () => {
       setLoading(true);
       try {
-        const q = query(
-          collection(FIRESTORE, "businessData"),
-          where("businessID", "==", id) // 'id' here should be the businessID you are searching for
-        );
-
+        const q = query(collection(FIRESTORE, "businessData"), where("businessID", "==", id));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
-          // Assuming there's only one document per businessID
-          const doc = querySnapshot.docs[0]; 
-          const data = doc.data();
-          setBusinessData(data);
-          
-        }
-        else {
+          const doc = querySnapshot.docs[0];
+          setBusinessData(doc.data());
+        } else {
           console.log("No such document with the given businessID!");
           setBusinessData(null);
-        }  
+        }
       } catch (error) {
         console.error("Error fetching business data: ", error);
         setBusinessData(null);
@@ -85,21 +60,12 @@ const EditBusinessPage: React.FC = () => {
 
   const handleSave = async () => {
     try {
-      // Query to find the business document using businessID
-      const q = query(
-        collection(FIRESTORE, "businessData"),
-        where("businessID", "==", id) // 'id' should be the businessID from route params
-      );
-  
+      const q = query(collection(FIRESTORE, "businessData"), where("businessID", "==", id));
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
-        // Get the first document (assuming only one document per businessID)
         const docRef = querySnapshot.docs[0].ref;
-  
-        // Update the business data
         await updateDoc(docRef, businessData);
-  
         Alert.alert("Success", "Business information updated successfully!");
       } else {
         Alert.alert("Error", "No business found with the given ID.");
@@ -117,29 +83,27 @@ const EditBusinessPage: React.FC = () => {
     }));
   };
 
-  const businessName = businessData?.businessName || "";
-  const businessDescription = businessData?.description || "";
-  const phoneNumber = businessData?.phoneNumber || "";
-  const address = businessData?.location || "";
-  const schedule = businessData?.schedule || {};
-  const images = businessData?.images || [];
-  const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
-
-  const numStars = reviews.length > 0 ? reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length : 0;
-
-  useEffect(() => {
-    if (businessData) {
-      navigation.setOptions({
-        headerTitle: businessName, 
-        headerBackTitle: "Back",
-      });
-    } else {
-      navigation.setOptions({
-        headerTitle: "Loading...",
-        headerBackTitle: "Back",
-      });
+  const handleUrlUpload = async () => {
+    if (!imageUrl.trim()) {
+      Alert.alert("Error", "Please enter a valid image URL.");
+      return;
     }
-  }, [businessName, navigation]);
+    
+    if (businessData.images.includes(imageUrl.trim())) {
+      Alert.alert("Error", "This image URL is already added.");
+      return;
+    }
+  
+    handleInputChange("images", [...(businessData.images || []), imageUrl.trim()]);
+    setImageUrl(""); // Clear the input field after adding the URL
+    Alert.alert("Success", "Image URL added!");
+  };
+  
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...businessData.images];
+    updatedImages.splice(index, 1);  // Remove the selected image
+    handleInputChange("images", updatedImages);  // Update the business data with new images
+  };
 
   if (loading) {
     return (
@@ -149,23 +113,27 @@ const EditBusinessPage: React.FC = () => {
     );
   }
 
+
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.pageContainer}>
-        <Text style={{textAlign:"center", fontSize:30, paddingVertical:20}}>Edit Business Information</Text>
+        <Text style={{ textAlign: "center", fontSize: 30, paddingVertical: 20 }}>Edit Business Information</Text>
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Business Name</Text>
           <TextInput
             style={styles.input}
-            value={businessName}
+            value={businessData?.businessName || ""}
             onChangeText={(text) => handleInputChange("businessName", text)}
           />
         </View>
+
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={[styles.input, styles.descriptionInput]}  // Apply the larger input style here
-            value={businessDescription}
+            value={businessData?.description || ""}
             onChangeText={(text) => handleInputChange("description", text)}
             multiline
           />
@@ -174,7 +142,7 @@ const EditBusinessPage: React.FC = () => {
           <Text style={styles.label}>Phone Number</Text>
           <TextInput
             style={styles.input}
-            value={phoneNumber}
+            value={businessData?.phoneNumber || ""}
             onChangeText={(text) => handleInputChange("phoneNumber", text)}
             keyboardType="phone-pad"
           />
@@ -183,11 +151,49 @@ const EditBusinessPage: React.FC = () => {
           <Text style={styles.label}>Location</Text>
           <TextInput
             style={styles.input}
-            value={address}
+            value={businessData?.location || ""}
             onChangeText={(text) => handleInputChange("location", text)}
           />
         </View>
-        {/* Add more fields for the schedule, gallery, etc. as needed */}
+
+        {/* Image picker and upload section */}
+
+        {/* Display current images */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Current Images</Text>
+          {businessData?.images?.length > 0 ? (
+            <FlatList
+            data={businessData.images}
+            keyExtractor={(item, index) => `image-${index}`}
+            renderItem={({ item, index }) => (
+              <View style={styles.imageItem}>
+                <Image source={{ uri: item }} style={styles.image} />
+                <Button title="Remove" onPress={() => handleRemoveImage(index)} />
+              </View>
+            )}
+            horizontal
+          />
+          
+          
+          ) : (
+            <Text>No images available</Text>
+          )}
+        </View>
+
+        {/* Add image by URL */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Add Image by URL</Text>
+          <TextInput
+            style={styles.input}
+            value={imageUrl}
+            onChangeText={setImageUrl}
+            placeholder="Enter image URL"
+          />
+          <Button title="Add Image" onPress={handleUrlUpload} />
+        </View>
+
+        {/* Other business fields */}
+
         <View style={styles.buttonContainer}>
           <Button title="Save Changes" onPress={handleSave} />
         </View>
@@ -227,23 +233,14 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 30,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginVertical: 10,
+  imageItem: {
+    marginRight: 10,
+    alignItems: "center",
   },
-  reviewsSection: {
-    marginTop: 20,
-  },
-  reviewContainer: {
-    backgroundColor: "#FFF",
-    padding: 10,
-    borderRadius: 5,
-    marginVertical: 10,
-  },
-  reviewUsername: {
-    fontSize: 18,
-    fontWeight: "bold",
+  image: {
+    width: 100,
+    height: 100,
+    borderRadius: 10,
   },
 });
 

@@ -32,6 +32,9 @@ import { query, where, getDocs, collection } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import BusinessNavBar from "../components/businessNavbar";
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs(['Warning: Encountered two children with the same key']);
 
 interface ReviewProps {
 	username: string;
@@ -261,17 +264,21 @@ const SpecificBusinessPage: React.FC = () => {
 						showCounter
 						autoplay
 					>
-						{images.map((image: any, index: any) => (
-							<View flex centerV key={index}>
-								<Image
-									overlayType={Image.overlayTypes.BOTTOM}
-									style={styles.carouselImage}
-									source={{ uri: image }}
-									resizeMode="cover"
-									borderRadius={30}
-								/>
-							</View>
-						))}
+						{images.map((image: any, index: any) => {
+							const key = `carousel-image-${index}-${businessName}`;
+							console.log("Key:", key); // Log each key
+							return (
+								<View flex centerV key={key}>
+									<Image
+										overlayType={Image.overlayTypes.BOTTOM}
+										style={styles.carouselImage}
+										source={{ uri: image }}
+										resizeMode="cover"
+										borderRadius={30}
+									/>
+								</View>
+							);
+						})}
 					</Carousel>
 				</View>
 				<View
