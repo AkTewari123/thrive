@@ -12,6 +12,9 @@ import { Feather } from "@expo/vector-icons";
 import thriveHeader from "../components/thriveHeader";
 import { query, collection, getDocs } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
+import { Pressable } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 const SearchResults: React.FC = () => {
   const [businesses, setBusinesses] = useState([]);
@@ -24,6 +27,8 @@ const SearchResults: React.FC = () => {
     );
     setFilteredResults(filtered);
   };
+
+  const navigation = useNavigation<StackNavigationProp<any>>();
   const displayBusinesses = () => {
     if (searchQuery.length === 0) {
       return null; // return null if search query is empty
@@ -51,8 +56,10 @@ const SearchResults: React.FC = () => {
                 </Text>
               </View>
               <View style={styles.itemTextContainer}>
-                <Text style={styles.itemName}>{item.businessName}</Text>
-                <Text style={styles.itemDescription}>{item.description}</Text>
+                <Pressable onPress={() => navigation.navigate('SpecificBusinessPage', { id: item.businessID })}>
+                  <Text style={styles.itemName}>{item.businessName}</Text>
+                  <Text style={styles.itemDescription}>{item.description}</Text>
+                </Pressable>
               </View>
               <Feather name="arrow-right-circle" size={32} color="black" />
             </TouchableOpacity>

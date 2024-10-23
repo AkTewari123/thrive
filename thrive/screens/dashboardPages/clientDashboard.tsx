@@ -15,6 +15,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { collection, getDocs, query } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
+import { StackNavigationProp } from "@react-navigation/stack";
 
 interface BusinessItemProps {
   name: string;
@@ -122,16 +123,13 @@ const Following: React.FC<followingItemProps> = ({
   color,
   email,
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<any>>();
 
   return (
     <TouchableOpacity
       style={styles.itemContainer}
       onPress={() => {
-        navigation.navigate("CompanyPostHistory", {
-          companyEmail: email,
-          companyName: name,
-        });
+        navigation.navigate("CompanyPostHistory", {companyEmail: email, companyName: name,});
       }}
     >
       <View style={[styles.initialCircle, { backgroundColor: color }]}>
@@ -155,14 +153,13 @@ interface reccommendedItemProps {
   color: string;
   email: string;
 }
-
 const Reccommended: React.FC<reccommendedItemProps> = ({
   name,
   description,
   color,
   email,
 }) => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<any>>();
 
   return (
     <TouchableOpacity
@@ -308,7 +305,6 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   sectionHeader: {
-    fontFamily: "Outfit-Medium",
     fontSize: 35,
     fontWeight: "800",
     color: "#1F2937",
@@ -337,7 +333,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   initialText: {
-    fontFamily: "Outfit-Bold",
     color: "white",
     fontSize: 18,
   },
@@ -346,12 +341,10 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   itemName: {
-    fontFamily: "Outfit-SemiBold",
     fontSize: 16,
     color: "#1F2937",
   },
   itemDescription: {
-    fontFamily: "Outfit-Bold",
     fontSize: 14,
     color: "#618BDB",
     fontWeight: "600",
@@ -369,7 +362,6 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   seeMoreText: {
-    fontFamily: "Outfit-SemiBold",
     color: "#3B82F6",
     fontSize: 16,
   },

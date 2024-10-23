@@ -188,8 +188,17 @@ function CustomerLayout() {
       />
       <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
       <CustomerStack.Screen
-        name="SpecificBusiness"
+        name="SpecificBusinessPage"
         component={SpecificBusinessPage}
+        options={{ headerShown: true,
+          headerStyle: {
+            backgroundColor: "#5A5D9D",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
       />
       <CustomerStack.Screen
         name="CompanyPostHistory"
