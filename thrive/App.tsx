@@ -25,6 +25,7 @@ import SpecificDM from './screens/dm-pages/dm';
 import LandingPageBusiness from './screens/dashboardPages/landingPageBusiness';
 import SettingsPage from './screens/Setting';
 import BusinessSignUpPage from './screens/auth-pages/businessSignUp';
+import EditBusinessPage from './screens/dashboardPages/editBusinessPage';
 
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
@@ -90,6 +91,7 @@ function BusinessLayout() {
         }
       }}
     >
+
       <BusinessStack.Screen 
         name="BusinessTabs" 
         component={BusinessTabNavigator} 
@@ -98,6 +100,11 @@ function BusinessLayout() {
       <BusinessStack.Screen 
         name="BusinessPage" 
         component={SpecificBusinessPage} 
+        options={{ title: 'Business Page' }}
+      />
+      <BusinessStack.Screen 
+        name="EditBusinessPage" 
+        component={EditBusinessPage} 
         options={{ title: 'Business Page' }}
       />
       <BusinessStack.Screen 

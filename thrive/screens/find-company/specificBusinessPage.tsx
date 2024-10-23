@@ -80,11 +80,7 @@ const SpecificBusinessPage: React.FC = () => {
   const { width } = Dimensions.get("window");
   const { id } = route.params as { id: string };
   let scale = width / 35;
-  const IMAGES = [
-    "https://images.pexels.com/photos/2529146/pexels-photo-2529146.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-    "https://images.pexels.com/photos/2529159/pexels-photo-2529159.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-    "https://images.pexels.com/photos/2529158/pexels-photo-2529158.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-  ];
+
 
   useEffect(() => {
     const fetchBusinessData = async () => {
@@ -130,7 +126,9 @@ const SpecificBusinessPage: React.FC = () => {
   const phoneNumber = businessData?.phoneNumber || "Not defined";
   const address = businessData?.location || "Not defined";
   const schedule = businessData?.schedule || {};
-  const images = businessData?.images || [];
+  const images = businessData?.images || ["https://images.pexels.com/photos/2529146/pexels-photo-2529146.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+    "https://images.pexels.com/photos/2529159/pexels-photo-2529159.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
+    "https://images.pexels.com/photos/2529158/pexels-photo-2529158.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",];
   const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
 
   useEffect(() => {
@@ -260,7 +258,7 @@ const SpecificBusinessPage: React.FC = () => {
             showCounter
             autoplay
           >
-            {IMAGES.map((image, index) => (
+            {images.map((image:any, index: any) => (
               <View flex centerV key={index}>
                 <Image
                   overlayType={Image.overlayTypes.BOTTOM}
@@ -279,11 +277,7 @@ const SpecificBusinessPage: React.FC = () => {
           </Text>
           <ScrollView style={styles.businessDescriptionScroll}>
             <Text style={styles.businessDescriptionText}>
-              &nbsp; &nbsp; &nbsp; I was with Kendrick Lamar back in Compton,
-              USA. You know how hard it is to make it here? It's very hard, just
-              so you know. It's important to keep an open mind since anything is
-              possible blah blah blahblah blah blahblah blah blahblah blah
-              blahblah blah blahblah blah blah
+              {businessDescription}
             </Text>
           </ScrollView>
         </View>

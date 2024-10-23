@@ -7,11 +7,13 @@ import { FIRESTORE, FIREBASE_AUTH } from '../../FirebaseConfig';
 import thriveHeader from '../components/thriveHeader';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp} from '@react-navigation/stack';
-
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 type RootStackParamList = {
     LandingPageBusiness: undefined;
     BusinessPage: { id: string }; // `id` parameter added
+    EditBusinessPage: { id: string }; // `id` parameter added
 };
 
 
@@ -21,20 +23,36 @@ interface EditButtonProps {
     businessID: string;
   }
   
-  const EditButton: React.FC<EditButtonProps> = ({ businessID }) => {
-      const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  
-      const handlePress = () => {
-          navigation.navigate('BusinessPage', { id: businessID });
-      };
-  
-      return (
-          <Pressable style={styles.editButton} onPress={handlePress}>
-              <Feather name="edit-2" size={20} color="#618BDB" />
-              <Text style={styles.editButtonText}>Edit Home Page</Text>
-          </Pressable>
-      );
-  };
+  interface EditButtonProps {
+    businessID: string;
+}
+
+const EditButtons: React.FC<EditButtonProps> = ({ businessID }) => {
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+
+    const handleEditPress = () => {
+        navigation.navigate('EditBusinessPage', { id: businessID }); 
+    };
+
+    const handlePreviewPress = () => {
+        // Assuming you have a preview page or can create a navigation route for preview
+        navigation.navigate('BusinessPage', { id: businessID }); 
+    };
+
+    return (
+        <View style={styles.editButtonsContainer}>
+            <Pressable style={styles.editButton} onPress={handleEditPress}>
+                <Feather name="edit-2" size={20} color="#618BDB" />
+                <Text style={styles.editButtonText}>Edit Page</Text>
+            </Pressable>
+            <Pressable style={styles.previewButton} onPress={handlePreviewPress}>
+                <FontAwesome name="eye" size={20} color="#618BDB" />
+                <Text style={styles.previewButtonText}>Preview Page</Text>
+            </Pressable>
+        </View>
+    );
+};
+
   
 
 interface RatingStarProps { stars: number; }
@@ -108,26 +126,29 @@ const LandingPageBusiness: React.FC = () => {
     const [businessData, setBusinessData] = useState<BusinessData | null>(null);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchBusinessData = async () => {
-            try {   
-                const user = FIREBASE_AUTH.currentUser;
-                if (user) {
-                    const docRef = doc(FIRESTORE, 'businessData', user.uid);
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        setBusinessData(docSnap.data() as BusinessData);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchBusinessData = async () => {
+                try {
+                    const user = FIREBASE_AUTH.currentUser;
+                    if (user) {
+                        const docRef = doc(FIRESTORE, 'businessData', user.uid);
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists()) {
+                            setBusinessData(docSnap.data() as BusinessData);
+                        }
                     }
+                } catch (error) {
+                    console.error("Error fetching business data:", error);
+                } finally {
+                    setLoading(false);
                 }
-            } catch (error) {
-                console.error("Error fetching business data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
+            };
 
-        fetchBusinessData();
-    }, []);
+            fetchBusinessData();
+        }, []) // Empty dependency array ensures it runs only when the screen is focused
+    );
+
 
     if (loading) {
         return (
@@ -150,7 +171,7 @@ const LandingPageBusiness: React.FC = () => {
                     initial={businessData?.businessName?.[0] || "B"} 
                 />
                 <View style={styles.contentContainer}>
-                <EditButton businessID={businessData?.businessID || ""} />
+                <EditButtons businessID={businessData?.businessID || ""} />
                     <OrdersBox orders={3} />
                     <View style={styles.businessInfoContainer}>
                         <Text style={styles.sectionTitle}>Business Information</Text>
@@ -177,19 +198,6 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         padding: 16,
-    },
-    editButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFFFFF',
-        padding: 12,
-        borderRadius: 8,
-        marginBottom: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
     },
     editButtonText: {
         color: '#618BDB',
@@ -334,6 +342,44 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginBottom: 8,
         color: '#4B5563',
+    },
+    editButtonsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 16,
+    },
+    editButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        padding: 12,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 8,  // Add margin to separate the buttons
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    previewButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        padding: 12,
+        borderRadius: 8,
+        flex: 1,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    previewButtonText: {
+        color: '#618BDB',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
     },
 });
 
