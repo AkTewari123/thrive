@@ -10,10 +10,8 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
-import { v4 as uuidv4 } from "uuid";
 
 import Feather from "@expo/vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
 import {
   collection,
   query,
@@ -25,12 +23,8 @@ import {
 } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { getAuth } from "firebase/auth";
+import thriveHeader from "../components/thriveHeader";
 
-// Types for our navigation
-type RootStackParamList = {
-  PostsList: undefined;
-  PostDetail: { postId: string };
-};
 
 // Post type definition
 interface Post {
@@ -153,6 +147,8 @@ export const CompanyPosts: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {thriveHeader({})}
+      <Text style={styles.headerText}>Create/View a Post</Text>
       <ScrollView style={styles.content}>
         {posts.length === 0 ? (
           <View style={styles.emptyStateContainer}>
@@ -234,6 +230,14 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#1F2937",
+    marginLeft: 16,
+    marginVertical: 16,
+    textAlign: "center",
   },
   postContainer: {
     flexDirection: "row",
