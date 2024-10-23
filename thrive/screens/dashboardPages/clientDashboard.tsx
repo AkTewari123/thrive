@@ -186,11 +186,6 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
 };
 
 const ClientDashboard: React.FC = () => {
-  const [fontsLoaded, fontError] = useFonts({
-    "Outfit-Medium": require("../../assets/fonts/Outfit-Medium.ttf"),
-    "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
-    "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
-  });
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -229,15 +224,7 @@ const ClientDashboard: React.FC = () => {
       }
     };
     fetchBusinesses();
-
-    if (fontsLoaded || fontError) {
-      SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded, fontError]);
-  if (!fontsLoaded && !fontError) {
-    return null;
-  }
-
+  });
   return (
     <SafeAreaView style={styles.safeArea}>
       {thriveHeader({})}
@@ -388,7 +375,7 @@ const styles = StyleSheet.create({
 //     backgroundColor: 'white',
 //     borderBottomWidth: 1,
 //     borderBottomColor: '#E5E7EB',
-//   },
+//   },s
 //   headerText: {
 //     marginLeft: 8,
 //     fontSize: 20,

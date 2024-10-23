@@ -7,8 +7,9 @@ import {
 	Button,
 	Alert,
 	FlatList,
+	Touchable,
 } from "react-native";
-import { Image, View } from "react-native-ui-lib";
+import { Image, TouchableOpacity, View } from "react-native-ui-lib";
 import { useRoute } from "@react-navigation/native";
 import { ScrollView } from "react-native-gesture-handler";
 import {
