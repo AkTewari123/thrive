@@ -31,10 +31,6 @@ interface EditButtonProps {
   businessID: string;
 }
 
-interface EditButtonProps {
-  businessID: string;
-}
-
 const EditButtons: React.FC<EditButtonProps> = ({ businessID }) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
 
@@ -43,7 +39,6 @@ const EditButtons: React.FC<EditButtonProps> = ({ businessID }) => {
   };
 
   const handlePreviewPress = () => {
-    // Assuming you have a preview page or can create a navigation route for preview
     navigation.navigate("BusinessPage", { id: businessID });
   };
 
@@ -124,6 +119,64 @@ const OrdersBox: React.FC<OrderProps> = ({ orders, businessID }) => {
   );
 };
 
+interface BusinessInfoProps {
+  location: string;
+  phoneNumber: string;
+  establishmentDate: string;
+  businessID: string;
+}
+
+const BusinessInfoSection: React.FC<BusinessInfoProps> = ({
+  location,
+  phoneNumber,
+  establishmentDate,
+  businessID,
+}) => {
+  const infoCards = [
+    {
+      icon: "compass",
+      label: "Location",
+      value: location,
+      color: "#4A90E2"
+    },
+    {
+      icon: "phone-call",
+      label: "Contact",
+      value: phoneNumber,
+      color: "#50C878"
+    },
+    {
+      icon: "calendar",
+      label: "Established",
+      value: establishmentDate,
+      color: "#FFB347"
+    },
+    {
+      icon: "credit-card",
+      label: "Business ID",
+      value: businessID,
+      color: "#FF6B6B"
+    }
+  ];
+
+  return (
+    <View style={styles.businessInfoContainer}>
+      <Text style={styles.sectionTitle}>Business Information</Text>
+      <View style={styles.cardsContainer}>
+        {infoCards.map((card, index) => (
+          <View key={index} style={styles.infoCard}>
+            <View style={[styles.iconContainer, { backgroundColor: card.color + '15' }]}>
+              <Feather name={card.icon} size={24} color={card.color} />
+            </View>
+            <Text style={styles.cardLabel}>{card.label}</Text>
+            <Text style={styles.cardValue} numberOfLines={2}>{card.value || 'Not provided'}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
 const AIInsights: React.FC = () => (
   <View style={styles.insightContainer}>
     <Text style={styles.insightTitle}>
@@ -197,9 +250,8 @@ const LandingPageBusiness: React.FC = () => {
       };
 
       fetchBusinessData();
-    }, []) // Empty dependency array ensures it runs only when the screen is focused
+    }, [])
   );
-  console.log(businessData);
 
   const orders = businessData?.orders || [];
   const numNewOrders = orders.filter(
@@ -232,122 +284,19 @@ const LandingPageBusiness: React.FC = () => {
             orders={numNewOrders}
             businessID={businessData?.businessID}
           />
-          <View style={styles.businessInfoContainer}>
-            <Text style={styles.sectionTitle}>Business Information</Text>
-            <View
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                justifyContent: "center",
-                alignContent: "center",
-                alignItems: "center",
-                gap: 5,
-              }}
-            >
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "white",
-                  borderRadius: 10,
-                  padding: 15,
-                }}
-              >
-                <Text style={{ textAlign: "center" }}>
-                  <Feather name="compass" size={30} color="#0f172a" />
-                  <Text
-                    style={{
-                      fontSize: 8,
-                    }}
-                  >
-                    {"\n"}
-                    {"\n"}
-
-                    {businessData?.location
-                      ? businessData?.location
-                      : "903 Illonois Ave."}
-                  </Text>
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "white",
-                  borderRadius: 10,
-                  padding: 15,
-                }}
-              >
-                <View>
-                  <Text style={{ textAlign: "center" }}>
-                    <Feather name="phone-call" size={30} color="#0f172a" />
-                  </Text>
-                  <View>
-                    <Text
-                      style={{
-                        fontSize: 8,
-                      }}
-                    >
-                      {"\n"}
-                      {businessData?.phoneNumber
-                        ? businessData?.phoneNumber
-                        : "732-453-8908"}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "white",
-                  borderRadius: 10,
-                  padding: 15,
-                }}
-              >
-                <Text style={{ textAlign: "center" }}>
-                  <Feather name="calendar" size={30} color="#0f172a" />
-                  <Text
-                    style={{
-                      fontSize: 8,
-                    }}
-                  >
-                    {"\n"}
-                    {"\n"}
-                    {businessData?.establishmentDate
-                      ? businessData?.establishmentDate
-                      : "09/23/1954"}
-                  </Text>
-                </Text>
-              </View>
-              <View
-                style={{
-                  flex: 1,
-                  backgroundColor: "white",
-                  borderRadius: 10,
-                  padding: 15,
-                }}
-              >
-                <Text style={{ textAlign: "center" }}>
-                  <Feather name="credit-card" size={30} color="#0f172a" />
-                  <Text
-                    style={{
-                      fontSize: 8,
-                    }}
-                  >
-                    {"\n"}
-
-                    {businessData?.businessID
-                      ? businessData?.businessID
-                      : "123894u70=4jkdfnleqjl032"}
-                  </Text>
-                </Text>
-              </View>
-            </View>
-          </View>
+          <BusinessInfoSection
+            location={businessData?.location || "903 Illinois Ave."}
+            phoneNumber={businessData?.phoneNumber || "732-453-8908"}
+            establishmentDate={businessData?.establishmentDate || "09/23/1954"}
+            businessID={businessData?.businessID || "123894u70=4jkdfnleqjl032"}
+          />
           <AIInsights />
         </View>
         <Button
           label="View Graphs"
           style={{ margin: 20, backgroundColor: "#5A5D9D" }}
-          onPress={handleGraphsPress}/>
+          onPress={handleGraphsPress}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -489,26 +438,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   businessInfoContainer: {
-    borderRadius: 8,
-    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  infoCard: {
+    flex: 1,
+    minWidth: '47%',
+    backgroundColor: '#F8FAFC',
+    borderRadius: 12,
+    padding: 16,
+    alignItems: 'flex-start',
+  },
+  iconContainer: {
+    padding: 8,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  cardLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+    marginBottom: 4,
+    textTransform: 'uppercase',
+  }, cardValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0F172A',
+    flexWrap: 'wrap',
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 12,
-    color: "#1F2937",
-    textAlign: "center",
-  },
-  infoText: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: "#4B5563",
+    fontWeight: '700',
+    color: '#1F2937',
+    marginBottom: 16,
+    textAlign: 'left',
   },
   editButtonsContainer: {
     flexDirection: "row",
@@ -522,7 +497,7 @@ const styles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     flex: 1,
-    marginRight: 8, // Add margin to separate the buttons
+    marginRight: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

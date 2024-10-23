@@ -81,7 +81,6 @@ const styles = StyleSheet.create({
   },
 
   headerTitle: {
-    fontFamily: "Outfit-Bold",
     fontSize: 24,
     color: "white",
   },
@@ -161,7 +160,6 @@ const styles = StyleSheet.create({
     color: "#5A5D9D",
     fontSize: 24,
     fontWeight: "bold",
-    fontFamily: "Outfit",
   },
   logoutText: {
     color: "white",

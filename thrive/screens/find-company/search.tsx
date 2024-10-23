@@ -341,7 +341,6 @@ const styles = StyleSheet.create({
   },
   dropdownButtonText: {
     fontSize: 16,
-    fontFamily: "Outfit-Medium",
     backgroundColor: "white",
   },
   modalOverlay: {
