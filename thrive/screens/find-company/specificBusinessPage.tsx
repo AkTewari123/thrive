@@ -31,13 +31,13 @@ import { ActivityIndicator } from "react-native";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation } from "@react-navigation/native";
 import BusinessNavBar from "../components/businessNavbar";
-import { LogBox } from 'react-native';
+import { LogBox } from "react-native";
 
-import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Adjust this according to your Firestore setup
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+import { collection, query, where, getDocs } from "firebase/firestore"; // Adjust this according to your Firestore setup
 
-LogBox.ignoreLogs(['Warning: Encountered two children with the same key']);
+LogBox.ignoreLogs(["Warning: Encountered two children with the same key"]);
 
 interface ReviewProps {
 	username: string;
@@ -92,43 +92,43 @@ const SpecificBusinessPage: React.FC = () => {
 	const { id } = route.params as { id: string };
 	let scale = width / 35;
 
+	useFocusEffect(
+		useCallback(() => {
+			const fetchBusinessData = async () => {
+				setLoading(true);
+				try {
+					const q = query(
+						collection(FIRESTORE, "businessData"),
+						where("businessID", "==", id)
+					);
 
-useFocusEffect(
-	useCallback(() => {
-		const fetchBusinessData = async () => {
-			setLoading(true);
-			try {
-				const q = query(
-					collection(FIRESTORE, "businessData"),
-					where("businessID", "==", id)
-				);
+					const querySnapshot = await getDocs(q);
 
-				const querySnapshot = await getDocs(q);
-
-				if (!querySnapshot.empty) {
-					const doc = querySnapshot.docs[0];
-					const data = doc.data();
-					setBusinessData(data);
-				} else {
-					console.log("No such document with the given businessID!");
+					if (!querySnapshot.empty) {
+						const doc = querySnapshot.docs[0];
+						const data = doc.data();
+						setBusinessData(data);
+					} else {
+						console.log(
+							"No such document with the given businessID!"
+						);
+						setBusinessData(null);
+					}
+				} catch (error) {
+					console.error("Error fetching business data: ", error);
 					setBusinessData(null);
 				}
-			} catch (error) {
-				console.error("Error fetching business data: ", error);
-				setBusinessData(null);
-			}
-			setLoading(false);
-		};
+				setLoading(false);
+			};
 
-		fetchBusinessData();
+			fetchBusinessData();
 
-		// Optionally return a cleanup function if necessary
-		return () => {
-			setBusinessData(null); // Reset business data when leaving the screen if needed
-		};
-	}, [id]) // The dependency array
-);
-
+			// Optionally return a cleanup function if necessary
+			return () => {
+				setBusinessData(null); // Reset business data when leaving the screen if needed
+			};
+		}, [id]) // The dependency array
+	);
 
 	const navigation = useNavigation();
 
@@ -138,7 +138,9 @@ useFocusEffect(
 	const address = businessData?.location || "Not defined";
 	const schedule = businessData?.schedule || {};
 	const images = businessData?.images || [];
-	const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
+	const reviews = businessData?.reviews || [
+		{ username: "None", rating: 5, review: "No Reviews" },
+	];
 	const products = businessData?.products || [];
 
 	useEffect(() => {
@@ -197,6 +199,12 @@ useFocusEffect(
 		);
 	}
 
+	const starCounts = [5, 4, 3, 2, 1].map(
+		(star) => reviews.filter((review: any) => review.rating === star).length
+	);
+
+	const totalReviews = reviews.length;
+
 	return (
 		<>
 			<SafeAreaView></SafeAreaView>
@@ -232,7 +240,7 @@ useFocusEffect(
 					</View>
 				</View>
 
-        <View
+				<View
 					style={[
 						styles.childContainer,
 						styles.middleContainer,
@@ -250,7 +258,7 @@ useFocusEffect(
 					</ScrollView>
 				</View>
 
-        <View style={styles.childContainer}>
+				<View style={styles.childContainer}>
 					<Text
 						style={[{ textAlign: "center" }, styles.sectionTitle]}
 					>
@@ -278,8 +286,6 @@ useFocusEffect(
 						</Text>
 					</View>
 				</View>
-
-       
 
 				<View style={[styles.childContainer, styles.middleContainer]}>
 					<Text style={[styles.sectionTitle, { paddingBottom: 10 }]}>
@@ -314,7 +320,7 @@ useFocusEffect(
 				<View style={[styles.childContainer, styles.middleContainer]}>
 					<Text style={styles.sectionTitle}>Products</Text>
 					{products.length > 0 ? (
-						products.map((product:any, index:any) => (
+						products.map((product: any, index: any) => (
 							<View key={index} style={styles.productItem}>
 								<Text style={styles.productTitle}>
 									{product.name}
@@ -336,159 +342,46 @@ useFocusEffect(
 						<Text>No products available</Text>
 					)}
 				</View>
-        <View style={[styles.childContainer, styles.middleContainer]}>
+				{/* Ratings & Reviews Section */}
+				<View style={[styles.childContainer, styles.middleContainer]}>
 					<Text style={styles.sectionTitle}>Ratings & Reviews</Text>
-					<View
-						style={{
-							display: "flex",
-							flexDirection: "row",
-							marginTop: 15,
-							marginHorizontal: "auto",
-						}}
-					>
+					<View style={styles.ratingsContainer}>
 						<View>
-							<Text
-								style={{
-									fontWeight: 300,
-									fontSize: 50,
-									textAlign: "center",
-								}}
-							>
-								4.3
+							<Text style={styles.averageRatingText}>
+								{numStars.toFixed(1)}
 							</Text>
-							<Text style={{ textAlign: "center" }}>
-								out of 5 stars
-							</Text>
+							<Text style={styles.outOfText}>out of 5 stars</Text>
 						</View>
-						<View style={{ marginLeft: 10 }}>
-							<Text>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-							</Text>
-							<Text>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-							</Text>
-							<Text>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-							</Text>
-							<Text>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-							</Text>
-							<Text>
-								<FontAwesome
-									name="star"
-									size={15}
-									color="black"
-								/>
-							</Text>
-						</View>
-						<View style={{ marginHorizontal: 5 }}>
-							<Text style={styles.ratingNum}>(89)</Text>
-							<Text style={styles.ratingNum}>(34)</Text>
-							<Text style={styles.ratingNum}>(12)</Text>
-							<Text style={styles.ratingNum}>(2)</Text>
-							<Text style={styles.ratingNum}>(19)</Text>
-						</View>
-						<View style={{ marginLeft: 5, width: scale * 10 }}>
-							<ProgressBar
-								progress={55}
-								progressColor="#1415D0"
-								style={{ height: 13 }}
-							/>
-							<ProgressBar
-								progress={20}
-								progressColor="#1415D0"
-								style={styles.progressBars}
-							/>
-							<ProgressBar
-								progress={10}
-								progressColor="#1415D0"
-								style={styles.progressBars}
-							/>
-							<ProgressBar
-								progress={2}
-								progressColor="#1415D0"
-								style={styles.progressBars}
-							/>
-							<ProgressBar
-								progress={30}
-								progressColor="#1415D0"
-								style={styles.progressBars}
-							/>
-							<Progress.Bar
-								progress={0.2}
-								borderRadius={30}
-								color="transparent"
-							/>
+						<View style={styles.starBarsContainer}>
+							{starCounts.map((count, index) => (
+								<View key={index} style={styles.starRow}>
+									<Text>
+										<FontAwesome
+											name="star"
+											size={15}
+											color="black"
+										/>{" "}
+										{5 - index} stars
+									</Text>
+									<ProgressBar
+										progress={
+											totalReviews
+												? count / totalReviews
+												: 0
+										}
+										progressColor="#1415D0"
+										style={styles.progressBars}
+									/>
+									<Text style={styles.ratingNum}>
+										({count})
+									</Text>
+								</View>
+							))}
 						</View>
 					</View>
 				</View>
-				<View style={[styles.childContainer, styles.middleContainer]}>
+
+        <View style={[styles.childContainer, styles.middleContainer]}>
 					<View>
 						<Text
 							style={[
@@ -534,10 +427,6 @@ useFocusEffect(
 						</View>
 					</View>
 				</View>
-
-
-
-				{/* Other sections like Ratings & Reviews... */}
 			</ScrollView>
 		</>
 	);
@@ -653,16 +542,16 @@ const styles = StyleSheet.create({
 	bottomContainer: {
 		flexDirection: "row",
 		alignItems: "center",
-  },
-  carouselContainer: {
+	},
+	carouselContainer: {
 		height: 150,
 		width: "100%",
 	},
-  carouselImage: {
+	carouselImage: {
 		flex: 1,
 		width: "100%",
 	},
-  contactInfo: {
+	contactInfo: {
 		display: "flex",
 		color: "black",
 		marginTop: 15,
@@ -673,7 +562,45 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		width: "33%",
 	},
-});
+	reviewContainer: {
+		padding: 15,
+		borderRadius: 20,
+		backgroundColor: "#F9F9F9",
+		shadowOffset: { width: -2, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 3,
+		width: "85%",
+		marginHorizontal: "auto",
+	},
+	reviewUsername: {
+		fontSize: 28,
+		fontWeight: "300",
+	},
+	reviewText: {},
+	ratingsContainer: {
+		display: "flex",
+		flexDirection: "row",
+		marginTop: 15,
+		marginHorizontal: "auto",
+	},
+	averageRatingText: {
+		fontWeight: "300",
+		fontSize: 50,
+		textAlign: "center",
+	},
+	outOfText: {
+		textAlign: "center",
+	},
+	starBarsContainer: {
+		marginLeft: 10,
+	},
 
+	starRow: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 5,
+	},
+});
 
 export default SpecificBusinessPage;
