@@ -1,19 +1,94 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, SafeAreaView } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  SafeAreaView,
+} from "react-native";
+import { Feather } from "@expo/vector-icons";
 import thriveHeader from "../components/thriveHeader";
+import { query, collection, getDocs } from "firebase/firestore";
+import { FIRESTORE } from "../../FirebaseConfig";
 
 const SearchResults: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredResults, setFilteredResults] = useState(data);
-
+  const [businesses, setBusinesses] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredResults, setFilteredResults]: any = useState([]);
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    const filtered = data.filter(item =>
-      item.name.toLowerCase().includes(query.toLowerCase())
+    const filtered = businesses.filter((item: any) =>
+      item["businessName"].toLowerCase().includes(query.toLowerCase())
     );
     setFilteredResults(filtered);
   };
+  const displayBusinesses = () => {
+    if (searchQuery.length === 0) {
+      return null; // return null if search query is empty
+    }
+
+    return (
+      <>
+        {filteredResults.length > 0 ? (
+          filteredResults.map((item: any, index: any) => (
+            <TouchableOpacity key={index} style={styles.itemContainer}>
+              <View
+                style={[
+                  styles.initialCircle,
+                  {
+                    backgroundColor: item.color
+                      ? item.color
+                      : ["#4338ca", "#38bdf8", "#059669", "#111827"][
+                          Math.floor(Math.random() * 4)
+                        ],
+                  },
+                ]}
+              >
+                <Text style={styles.initialText}>
+                  {item.businessName.slice(0, 1)}
+                </Text>
+              </View>
+              <View style={styles.itemTextContainer}>
+                <Text style={styles.itemName}>{item.businessName}</Text>
+                <Text style={styles.itemDescription}>{item.description}</Text>
+              </View>
+              <Feather name="arrow-right-circle" size={32} color="black" />
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noResultsText}>No results found</Text>
+        )}
+      </>
+    );
+  };
+  useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        // Fetch businesses
+        const businessQuery = query(collection(FIRESTORE, "businessData"));
+        const querySnapshot = await getDocs(businessQuery);
+
+        // Check if any businesses were found
+        if (!querySnapshot.empty) {
+          const fetchedBusinesses: any = [];
+          querySnapshot.forEach((businessDoc: any) => {
+            const businessData = businessDoc.data();
+            fetchedBusinesses.push(businessData);
+          });
+
+          // Set the shuffled businesses to state
+          setBusinesses(fetchedBusinesses);
+        } else {
+          console.error("No businesses found");
+        }
+      } catch (error) {
+        console.error("Error fetching businesses:", error);
+      }
+    };
+    fetchBusinesses();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,40 +101,19 @@ const SearchResults: React.FC = () => {
           value={searchQuery}
           onChangeText={handleSearch}
         />
-        <Feather name="search" size={24} color="#6B7280" style={styles.searchIcon} />
+        <Feather
+          name="search"
+          size={24}
+          color="#6B7280"
+          style={styles.searchIcon}
+        />
       </View>
 
       {/* Search Results */}
-      <ScrollView style={styles.resultsList}>
-        {filteredResults.length > 0 ? (
-          filteredResults.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.itemContainer}>
-              <View style={[styles.initialCircle, { backgroundColor: item.initial === 'H' ? '#8B5CF6' : '#22C55E' }]}>
-                <Text style={styles.initialText}>{item.initial}</Text>
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Text style={styles.itemName}>{item.name}</Text>
-                <Text style={styles.itemDescription}>{item.description}</Text>
-              </View>
-              <Feather name="arrow-right-circle" size={32} color="black" />
-            </TouchableOpacity>
-          ))
-        ) : (
-          <Text style={styles.noResultsText}>No results found</Text>
-        )}
-      </ScrollView>
+      <ScrollView style={styles.resultsList}>{displayBusinesses()}</ScrollView>
     </SafeAreaView>
   );
 };
-
-const data = [
-  { name: 'Hyderabad Spice', description: 'Nice spicy Indian food', initial: 'H' },
-  { name: 'Akbar’s Kitchen', description: 'Indian Food that takes you back', initial: 'A' },
-  { name: 'Gupta Cuisine', description: 'Best Indian Food in NJ!', initial: 'G' },
-  { name: 'Silicon Spice', description: 'Perfect for family and friends.', initial: 'S' },
-  { name: 'Aangara Indian Cuisine', description: 'The Best Dosa in the Tri-state Area.', initial: 'A' },
-  { name: 'Saffron Kitchen', description: 'Greatest Indian Food of All Time.', initial: 'S' }
-];
 
 const styles = StyleSheet.create({
   container: {
@@ -67,21 +121,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#E4E8EE",
   },
   searchContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
-    backgroundColor: 'white',
-    alignItems: 'center',
+    backgroundColor: "white",
+    alignItems: "center",
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: "#E5E7EB",
   },
   searchInput: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#F3F4F6",
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 8,
     fontSize: 16,
-    color: '#1F2937',
+    color: "#1F2937",
   },
   searchIcon: {
     marginLeft: 8,
@@ -92,25 +146,27 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   itemContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-
+    borderBottomColor: "#E5E7EB",
+    marginHorizontal: 5,
+    marginTop: 10,
+    borderRadius: 15,
   },
   initialCircle: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   initialText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   itemTextContainer: {
     flex: 1,
@@ -118,17 +174,19 @@ const styles = StyleSheet.create({
   },
   itemName: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: "bold",
+    color: "#1F2937",
   },
   itemDescription: {
     fontSize: 14,
-    color: '#6B7280',
+    color: "#6B7280",
   },
   noResultsText: {
-    textAlign: 'center',
-    color: '#9CA3AF',
+    textAlign: "center",
+    color: "#0f172a",
     marginTop: 20,
+    fontFamily: "Outfit-Medium",
+    fontSize: 18,
   },
 });
 
