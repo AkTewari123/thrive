@@ -9,15 +9,24 @@ import {
   SafeAreaView,
 } from "react-native";
 import thriveHeader from "../components/thriveHeader";
-import { useFonts } from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { FIRESTORE } from "../../FirebaseConfig";
+import { format } from "date-fns";
+import {
+  collection,
+  getDocs,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { color } from "@rneui/themed/dist/config";
 
 interface BusinessItemProps {
   name: string;
   description: string;
   initial: string;
 }
-
 
 const BusinessItem: React.FC<BusinessItemProps> = ({
   name,
@@ -47,6 +56,33 @@ interface SectionHeaderProps {
   title: string;
 }
 
+const fetchBusinesses = async () => {
+  const businesses: any = [];
+  try {
+    // Query to find the user document by email
+    const businessQuery = query(collection(FIRESTORE, "businessData"));
+
+    const querySnapshot = await getDocs(businessQuery);
+    // Check if we found the user
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach(async (businessDoc: any) => {
+        const businessData = businessDoc.data();
+        businesses.push(businessData);
+      });
+    } else {
+      console.error("User not found");
+    }
+  } catch (error) {
+    console.error("Error updating user color:", error);
+  }
+  if (businesses.length === 0) {
+    console.error("No Businesses found, check api");
+    return null;
+  }
+  console.log(businesses);
+  return businesses;
+};
+fetchBusinesses();
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
   <Text style={styles.sectionHeader}>{title}</Text>
 );
@@ -113,9 +149,9 @@ const Reccommended: React.FC<reccommendedItemProps> = ({
 
 const ClientDashboard: React.FC = () => {
   const [fontsLoaded, fontError] = useFonts({
-    'Outfit-Medium': require('../../assets/fonts/Outfit-Medium.ttf'),
-    'Outfit-Bold': require('../../assets/fonts/Outfit-Bold.ttf'),
-    'Outfit-SemiBold': require('../../assets/fonts/Outfit-SemiBold.ttf'),
+    "Outfit-Medium": require("../../assets/fonts/Outfit-Medium.ttf"),
+    "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
+    "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
   });
 
   useEffect(() => {
@@ -181,7 +217,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   sectionHeader: {
-    fontFamily: 'Outfit-Medium',
+    fontFamily: "Outfit-Medium",
     fontSize: 35,
     fontWeight: "800",
     color: "#1F2937",
@@ -210,7 +246,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   initialText: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: "Outfit-Bold",
     color: "white",
     fontSize: 18,
   },
@@ -219,12 +255,12 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   itemName: {
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: "Outfit-SemiBold",
     fontSize: 16,
     color: "#1F2937",
   },
   itemDescription: {
-    fontFamily: 'Outfit-Bold',
+    fontFamily: "Outfit-Bold",
     fontSize: 14,
     color: "#618BDB",
     fontWeight: "600",
@@ -242,7 +278,7 @@ const styles = StyleSheet.create({
     padding: 2,
   },
   seeMoreText: {
-    fontFamily: 'Outfit-SemiBold',
+    fontFamily: "Outfit-SemiBold",
     color: "#3B82F6",
     fontSize: 16,
   },
@@ -256,7 +292,6 @@ const styles = StyleSheet.create({
     left: 45,
   },
 });
-
 
 // const styles = StyleSheet.create({
 //   container: {

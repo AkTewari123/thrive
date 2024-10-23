@@ -28,6 +28,7 @@ const SignUpPage: React.FC = () => {
     services: "",
     menuPdf: null,
     phoneNumber: "",
+    description: "",
   });
 
   const handleUserTypeSelection = (type: string) => {
@@ -67,6 +68,7 @@ const SignUpPage: React.FC = () => {
           services: businessDetails.services,
           menuPdf: businessDetails.menuPdf,
           phoneNumber: businessDetails.phoneNumber,
+          description: businessDetails.description,
           createdAt: new Date(),
         });
       }
