@@ -147,6 +147,8 @@ const AIInsights: React.FC = () => {
             console.error("Error fetching business data:", error);
         }
     };
+
+    
     
 
     // Function to fetch AI insights
@@ -162,7 +164,16 @@ const AIInsights: React.FC = () => {
                     messages: [
                         { 
                             role: 'system', 
-                            content: `Tell me how to improve this for my buisness: ${businessData.services}. Make each suggestion a maximum of one sentence each (max 4 suggestions). Start each bullet with text (no hyphen)` 
+                            content: `Tell me how to improve the content of my profile for my buisness. Make each suggestion a maximum of one sentence each (max 3 suggestions with 10 words max per each suggestion). Examples include: 'Add x', 'Fix spelling of buisness to business', 'add more description to y'. If a field is undefined, say add an (whatever)
+                            Suggestions should look at quality of descriptions, and things such as grammar in what is displayed, and then show the solution. Start each bullet with text (no hyphen). Here is what is displayed:
+                            
+                                
+                            
+                                ${businessData.businessName}
+                                ${businessData.services}
+                                ${businessData.location}
+                                ${businessData.phoneNumber}
+                                ` 
                         }
                     ],
                     max_tokens: 100,
@@ -171,7 +182,7 @@ const AIInsights: React.FC = () => {
                 },
                 {
                     headers: {
-                        Authorization: `Bearer ***REMOVED***`,  //use env but if not just change the api key but make sure not to push it 
+                        Authorization: `@env`,  //use env but if not just change the api key but make sure not to push it 
                         'Content-Type': 'application/json'
                     }
                 }
