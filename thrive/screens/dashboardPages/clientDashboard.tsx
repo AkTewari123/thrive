@@ -40,9 +40,7 @@ const BusinessItem: React.FC<BusinessItemProps> = ({
       <Text style={styles.itemName}>{name}</Text>
       <Text style={styles.itemDescription}>{description}</Text>
     </View>
-    <Text style={styles.arrowRight}>
-      <Feather name="arrow-right-circle" size={32} color="black" />
-    </Text>
+    <Feather name="arrow-right-circle" size={24} color="#6B7280" />
   </TouchableOpacity>
 );
 
@@ -56,60 +54,43 @@ const fetchBusinesses = async () => {
     const businessQuery = query(collection(FIRESTORE, "businessData"));
     const querySnapshot = await getDocs(businessQuery);
     if (!querySnapshot.empty) {
-      querySnapshot.forEach(async (businessDoc: any) => {
+      querySnapshot.forEach((businessDoc: any) => {
         const businessData = businessDoc.data();
         businesses.push(businessData);
       });
     } else {
-      console.error("User not found");
+      console.error("No businesses found");
     }
   } catch (error) {
-    console.error("Error updating user color:", error);
+    console.error("Error fetching businesses:", error);
   }
-  if (businesses.length === 0) {
-    console.error("No Businesses found, check api");
-    return null;
-  }
-  return businesses;
+  return businesses.length ? businesses : null;
 };
-fetchBusinesses();
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
   <Text style={styles.sectionHeader}>{title}</Text>
 );
-interface seeMore {
-  businesses?: any[];
-  func: any;
+
+interface SeeMoreProps {
+  func: () => void;
 }
-const SeeMoreButton: React.FC<seeMore> = ({ businesses, func }) => (
+
+const SeeMoreButton: React.FC<SeeMoreProps> = ({ func }) => (
   <TouchableOpacity style={styles.seeMoreButton} onPress={func}>
-    <View
-      style={{
-        width: "30%",
-        backgroundColor: "#5A5D9D",
-        padding: 5,
-        borderRadius: 10,
-      }}
-    >
-      <Text style={[styles.seeMoreText, { textAlign: "center" }]}>
-        See More &nbsp;
-        <Feather name="arrow-down-circle" size={18} color="white" />
-      </Text>
-    </View>
+    <Text style={styles.seeMoreText}>See More</Text>
+    <Feather name="arrow-down-circle" size={18} color="white" />
   </TouchableOpacity>
 );
 
-interface followingItemProps {
+interface FollowingItemProps {
   name: string;
   description: string;
-  color: string;
   email: string;
 }
 
-const Following: React.FC<followingItemProps> = ({
+const Following: React.FC<FollowingItemProps> = ({
   name,
   description,
-  color,
   email,
 }) => {
   const navigation = useNavigation<StackNavigationProp<any>>();
@@ -124,185 +105,77 @@ const Following: React.FC<followingItemProps> = ({
         });
       }}
     >
-      <View style={[styles.initialCircle, { backgroundColor: "white" }]}>
-        <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
-      </View>
-      <View style={styles.notificationPing}></View>
-      <View style={styles.itemTextContainer}>
-        <Text style={styles.itemName}>{name}</Text>
-        <Text style={styles.itemDescription}>{description}</Text>
-      </View>
-      <Text style={styles.arrowRight}>
-        <Feather name="arrow-right-circle" size={32} color="white" />
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
-interface reccommendedItemProps {
-  name: string;
-  description: string;
-  color: string;
-  email: string;
-}
-const Reccommended: React.FC<reccommendedItemProps> = ({
-  name,
-  description,
-  color,
-  email,
-}) => {
-  const navigation = useNavigation<StackNavigationProp<any>>();
-
-  return (
-    <TouchableOpacity
-      style={styles.itemContainer}
-      onPress={() => {
-        navigation.navigate("CompanyPostHistory", {
-          companyEmail: email,
-          companyName: name,
-        });
-      }}
-    >
-      <View style={[styles.initialCircle, { backgroundColor: "white" }]}>
+      <View style={[styles.initialCircle, { backgroundColor: "#F472B6" }]}>
         <Text style={styles.initialText}>{name.slice(0, 1)}</Text>
       </View>
       <View style={styles.itemTextContainer}>
         <Text style={styles.itemName}>{name}</Text>
         <Text style={styles.itemDescription}>{description}</Text>
       </View>
-      <Text style={styles.arrowRight}>
-        <Feather name="arrow-right-circle" size={32} color="white" />
-      </Text>
+      <Feather name="arrow-right-circle" size={24} color="#6B7280" />
     </TouchableOpacity>
   );
 };
 
 const ClientDashboard: React.FC = () => {
-  const [businesses, setBusinesses] = useState([]);
+  const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  //   console.log(businesses);
-  //   businesses?.map((business: any, idx: number) =>
-  //     idx > 2 ? (
-  //       <Reccommended
-  //         key={business["id"] || idx}
-  //         name={business["businessName"]}
-  //         color={
-  //           business["color"] != null
-  //             ? business["color"]
-  //             : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
-  //                 Math.floor(Math.random() * 4)
-  //               ]
-  //         }
-  //         description={business["description"] || "Business Near You"}
-  //         email="myBusiness@gmail.com"
-  //       />
-  //     ) : null
-  //   );
-  // }
+  const [visibleItems, setVisibleItems] = useState(2);
 
   useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        // Fetch businesses
-        const businessQuery = query(collection(FIRESTORE, "businessData"));
-        const querySnapshot = await getDocs(businessQuery);
-
-        // Check if any businesses were found
-        if (!querySnapshot.empty) {
-          const fetchedBusinesses: any = [];
-          querySnapshot.forEach((businessDoc: any) => {
-            const businessData = businessDoc.data();
-            fetchedBusinesses.push(businessData);
-          });
-
-          // Shuffle businesses after fetching
-          function shuffle(array: any) {
-            for (let i = array.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-          }
-
-          // Set the shuffled businesses to state
-          setBusinesses(shuffle(fetchedBusinesses));
-        } else {
-          console.error("No businesses found");
-        }
-      } catch (error) {
-        console.error("Error fetching businesses:", error);
-      } finally {
-        setLoading(false);
-      }
+    const fetchBusinessesData = async () => {
+      setLoading(true);
+      const fetchedBusinesses = await fetchBusinesses();
+      if (fetchedBusinesses) setBusinesses(fetchedBusinesses);
+      setLoading(false);
     };
-    fetchBusinesses();
+
+    fetchBusinessesData();
   }, []);
-  const [bool, setBool] = useState(2);
-  function handleSeeMore() {
-    console.log("REMY MANDER 857");
-    setBool((prev) => {
-      return prev + 2;
-    });
-  }
+
+  const handleSeeMore = () => {
+    setVisibleItems((prev) => prev + 2);
+  };
 
   const renderBusinessItems = () => {
-    return businesses.map((business, idx) =>
-      idx < bool ? (
-        <Reccommended
-          key={business["id"] || idx}
-          name={business["businessName"]}
-          color={
-            business["color"] != null
-              ? business["color"]
-              : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
-                  Math.floor(Math.random() * 3)
-                ]
-          }
-          description={business["description"] || "Business Near You"}
-          email="myBusiness@gmail.com"
-        />
-      ) : null
-    );
+    return businesses.slice(0, visibleItems).map((business, idx) => (
+      <BusinessItem
+        key={idx}
+        name={business.businessName}
+        description={business.description}
+        initial={business.businessName[0]}
+      />
+    ));
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {thriveHeader({})}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          <View
-            style={{ backgroundColor: "white", borderRadius: 20, padding: 0 }}
-          >
+          <View style={styles.section}>
             <SectionHeader title="Following" />
             <Following
-              name="Hyderbad Spice"
-              color="#2196F3"
+              name="Hyderabad Spice"
               description="New Spicy Kurma Dish!"
               email="hyderabadspice@example.com"
             />
             <Following
               name="Ganga"
-              color="rgb(20 184 166)"
-              description="New Spicy Kurma Dish!"
+              description="Best Curry in Town!"
               email="ganga@example.com"
             />
             <SeeMoreButton func={handleSeeMore} />
           </View>
-          <View
-            style={{
-              backgroundColor: "white",
-              borderRadius: 20,
-              padding: 0,
-              marginTop: 20,
-            }}
-          >
+
+          <View style={[styles.section, { marginTop: 20 }]}>
             <SectionHeader title="Recommended" />
             {loading ? (
-              <ActivityIndicator size="large" color="#0000ff" />
+              <ActivityIndicator size="large" color="#6B7280" />
             ) : (
-              renderBusinessItems() // Call a separate function to render business items
+              renderBusinessItems()
             )}
-            {/* {followingElements()} */}
-            <SeeMoreButton businesses={businesses} func={handleSeeMore} />
+            <SeeMoreButton func={handleSeeMore} />
           </View>
         </View>
       </ScrollView>
@@ -313,197 +186,80 @@ const ClientDashboard: React.FC = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#E4E8EE",
+    backgroundColor: "#F9FAFB",
   },
   scrollView: {
     flex: 1,
   },
   content: {
-    padding: 10,
-    flex: 1,
+    padding: 15,
   },
-  container: {
-    flex: 1,
-    backgroundColor: "#E4E8EE",
-    padding: 10,
+  section: {
+    backgroundColor: "white",
+    borderRadius: 15,
+    padding: 20,
+    marginVertical: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   sectionHeader: {
-    fontSize: 35,
-    fontWeight: "800",
+    fontSize: 22,
+    fontWeight: "700",
     color: "#1F2937",
-    textAlign: "center",
-    paddingVertical: 10,
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 10,
-    backgroundColor: "transparent",
+    marginBottom: 10,
   },
   itemContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#5A5D9D",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#DDDDDD",
-    borderTopColor: "#DDDDDD",
-    borderTopWidth: 1,
-    marginHorizontal: 10,
-    marginVertical: 5,
-    borderRadius: 20,
-    color: "white",
-    shadowColor: "#171717",
-    shadowOffset: { width: -2, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    backgroundColor: "#E5E7EB",
+    padding: 15,
+    borderRadius: 12,
+    marginVertical: 8,
   },
   initialCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#4F46E5",
   },
   initialText: {
-    color: "#5A5D9D",
+    color: "white",
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "bold",
   },
   itemTextContainer: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 15,
   },
   itemName: {
     fontSize: 16,
-    color: "white",
+    fontWeight: "600",
+    color: "#374151",
   },
   itemDescription: {
     fontSize: 14,
-    color: "white",
-  },
-  arrowRight: {
-    fontSize: 20,
-    color: "white",
+    color: "#6B7280",
+    marginTop: 3,
   },
   seeMoreButton: {
-    backgroundColor: "transparent",
     flexDirection: "row",
     justifyContent: "center",
-    gap: 8,
     alignItems: "center",
-    padding: 2,
-    paddingBottom: 10,
-    color: "white",
-    borderRadius: 15,
+    backgroundColor: "#5A5D9D",
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 15,
   },
   seeMoreText: {
     color: "white",
     fontSize: 16,
-    padding: 5,
-  },
-  notificationPing: {
-    backgroundColor: "#EE4957",
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    position: "absolute",
-    top: 17,
-    left: 45,
+    fontWeight: "500",
+    marginRight: 5,
   },
 });
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#E4E8EE',
-//   },
-//   header: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     padding: 16,
-//     backgroundColor: 'white',
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#E5E7EB',
-//   },s
-//   headerText: {
-//     marginLeft: 8,
-//     fontSize: 20,
-//     fontWeight: 'bold',
-//     color: '#1F2937',
-//   },
-//   content: {
-//     flex: 1,
-//   },
-//   sectionHeader: {
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//     color: '#1F2937',
-//     marginTop: 24,
-//     marginBottom: 8,
-//     marginLeft: 16,
-//   },
-//   itemContainer: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     backgroundColor: 'white',
-//     padding: 16,
-//     borderBottomWidth: 1,
-//     borderBottomColor: '#E5E7EB',
-//   },
-//   initialCircle: {
-//     width: 40,
-//     height: 40,
-//     borderRadius: 20,
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//   },
-//   initialText: {
-//     color: 'white',
-//     fontSize: 18,
-//     fontWeight: 'bold',
-//   },
-//   itemTextContainer: {
-//     flex: 1,
-//     marginLeft: 12,
-//   },
-//   itemName: {
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//     color: '#1F2937',
-//   },
-//   itemDescription: {
-//     fontSize: 14,
-//     color: '#6B7280',
-//   },
-//   arrowRight: {
-//     fontSize: 20,
-//     color: '#9CA3AF',
-//   },
-//   seeMoreButton: {
-//     backgroundColor: 'white',
-//     flexDirection: 'row',
-//     justifyContent: 'center',
-//     gap: 8,
-//     alignItems: 'center',
-//     padding: 2,
-//   },
-//   seeMoreText: {
-//     color: '#3B82F6',
-//     fontSize: 16,
-//   },
-//   startChatButton: {
-//     backgroundColor: '#5A5D9D',
-//     margin: 16,
-//     padding: 16,
-//     borderRadius: 8,
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 8,
-//     justifyContent: 'center',
-//   },
-//   startChatButtonText: {
-//     color: 'white',
-//     fontSize: 16,
-//     fontWeight: 'bold',
-//   },
-// });
 
 export default ClientDashboard;
