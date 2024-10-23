@@ -24,6 +24,8 @@ import { ActivityIndicator } from "react-native";
 import { doc, getDoc } from "firebase/firestore";
 import { query, where, getDocs, collection } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
+import { useNavigation } from "@react-navigation/native";
+import BusinessNavBar from "../components/businessNavbar";
 
 interface ReviewProps {
   username: string;
@@ -52,7 +54,7 @@ const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
         <Text
           style={{
             fontSize: 28,
-            fontWeight: 700,
+            fontWeight: 300,
           }}
         >
           {username}
@@ -68,14 +70,6 @@ const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
   );
 };
 
-interface SpecificBusinessItemProps {
-  businessName: string;
-  businessDescription: string;
-  numStars: number;
-  phoneNumber: string;
-  address: string;
-  schedule: { [key: string]: [string, string] };
-}
 
 const SpecificBusinessPage: React.FC = () => {
   const [businessData, setBusinessData] = useState<any>(null);
@@ -125,14 +119,40 @@ const SpecificBusinessPage: React.FC = () => {
     fetchBusinessData();
   }, [id]);
 
+  const navigation = useNavigation();
+
+
+
+
+
   const businessName = businessData?.businessName || "Not defined";
-  const businessDescription = businessData?.description || "Not defined";
-  const numStars = businessData?.rating || 0;
+  const businessDescription = businessData?.description || "Not defined"; 
   const phoneNumber = businessData?.phoneNumber || "Not defined";
   const address = businessData?.location || "Not defined";
   const schedule = businessData?.schedule || {};
   const images = businessData?.images || [];
   const reviews = businessData?.reviews || [{ username: "None", rating: null, review: "No Reviews" }];
+
+  useEffect(() => {
+    if (businessData) {
+      navigation.setOptions({
+        headerTitle: businessName, // Sets the business name as title after it's loaded
+        headerBackTitle: "Back", // Shows "Back" next to the back button
+      });
+    } else {
+      navigation.setOptions({
+        headerTitle: "Loading...",
+        headerBackTitle: "Back",
+      });
+    }
+  }, [businessName, navigation]);
+
+  
+  let sum = 0;
+  for (let i = 0; i < reviews.length; i++) {
+    sum += reviews[i].rating;
+  }
+  const numStars = reviews.length > 0 ? sum / reviews.length : 0;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -170,12 +190,18 @@ const SpecificBusinessPage: React.FC = () => {
   }
 
 
+
+
+
+
+
   return (
     <>
       <SafeAreaView></SafeAreaView>
       <ScrollView style={styles.pageContainer}>
-        {thriveHeader({})}
+      
         <View style={[styles.childContainer, styles.topContainer]}>
+          
           <View style={styles.businessInfoContainer}>
             <View
               style={[styles.initialCircle, { backgroundColor: "#6096F7" }]}
@@ -184,9 +210,6 @@ const SpecificBusinessPage: React.FC = () => {
             </View>
             <View style={styles.businessDetails}>
               <Text style={styles.businessName}>{businessName}</Text>
-              <Text style={styles.businessDescription}>
-                {businessDescription}
-              </Text>
               <Text>
                 {starHollowed.map((star, index) => (
                   <FontAwesome
@@ -195,7 +218,7 @@ const SpecificBusinessPage: React.FC = () => {
                     size={15}
                     color="black"
                   />
-                ))}
+                ))} {numStars} stars
               </Text>
             </View>
           </View>
@@ -228,7 +251,7 @@ const SpecificBusinessPage: React.FC = () => {
         </View>
         <View style={[styles.childContainer, styles.middleContainer]}>
           <Text style={[styles.sectionTitle, { paddingBottom: 10 }]}>
-            Our Business
+            Gallery
           </Text>
           <Carousel
             containerStyle={styles.carouselContainer}
@@ -249,6 +272,11 @@ const SpecificBusinessPage: React.FC = () => {
               </View>
             ))}
           </Carousel>
+        </View>
+        <View style={[styles.childContainer, styles.middleContainer]}>
+          <Text style={[styles.sectionTitle]}>
+            Our Business
+          </Text>
           <ScrollView style={styles.businessDescriptionScroll}>
             <Text style={styles.businessDescriptionText}>
               &nbsp; &nbsp; &nbsp; I was with Kendrick Lamar back in Compton,
@@ -259,13 +287,9 @@ const SpecificBusinessPage: React.FC = () => {
             </Text>
           </ScrollView>
         </View>
-        <View style={[styles.childContainer]}>
+        <View style={[styles.childContainer, styles.middleContainer]}>
           <Text
-            style={{
-              fontWeight: 800,
-              fontSize: 35,
-              textAlign: "center",
-            }}
+            style={styles.sectionTitle}
           >
             Ratings & Reviews
           </Text>
@@ -280,7 +304,7 @@ const SpecificBusinessPage: React.FC = () => {
             <View>
               <Text
                 style={{
-                  fontWeight: 800,
+                  fontWeight: 300,
                   fontSize: 50,
                   textAlign: "center",
                 }}
@@ -357,14 +381,10 @@ const SpecificBusinessPage: React.FC = () => {
             </View>
           </View>
         </View>
-        <View style={[styles.childContainer]}>
+        <View style={[styles.childContainer, styles.middleContainer]}>
           <View>
             <Text
-              style={{
-                fontWeight: 800,
-                fontSize: 35,
-                textAlign: "center",
-              }}
+              style={[styles.sectionTitle, {textAlign: "center"}]}
             >
               Customers
             </Text>
@@ -396,6 +416,7 @@ const SpecificBusinessPage: React.FC = () => {
           </View>
         </View>
       </ScrollView>
+      
 
     </>
   );
@@ -407,6 +428,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E4E8EE",
   },
   pageContainer: {
+    paddingVertical: 10,
     flex: 1,
     backgroundColor: "transparent",
     paddingHorizontal: 25,
@@ -449,10 +471,9 @@ const styles = StyleSheet.create({
   initialText: {
     color: "white",
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: "500",
   },
   ratingNum: {
-    fontWeight: "bold",
     color: "black",
     textAlign: "center",
     display: "flex",
@@ -462,11 +483,11 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   businessName: {
-    fontWeight: "700",
-    fontSize: 21,
+    fontWeight: "500",
+    fontSize: 30,
   },
   businessDescription: {
-    fontWeight: "800",
+    fontWeight: "500",
     color: "grey",
     fontSize: 15,
   },
@@ -477,13 +498,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   contactText: {
-    fontWeight: "300",
+    fontWeight: "500",
     textAlign: "center",
     width: "33%",
   },
   sectionTitle: {
-    fontWeight: "800",
-    fontSize: 35,
+    fontWeight: "500",
+    fontSize: 25,
     marginBottom: 10,
     paddingTop: 10,
   },
@@ -501,7 +522,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   businessDescriptionText: {
-    fontWeight: "700",
+    fontWeight: "500",
     width: "90%",
     marginHorizontal: "auto",
   },
