@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Feather from "@expo/vector-icons/Feather";
 import {
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
 } from "react-native";
 import thriveHeader from "../components/thriveHeader";
 import { useFonts } from "expo-font";
@@ -82,7 +83,6 @@ const fetchBusinesses = async () => {
   console.log(businesses);
   return businesses;
 };
-fetchBusinesses();
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
   <Text style={styles.sectionHeader}>{title}</Text>
 );
@@ -153,13 +153,49 @@ const ClientDashboard: React.FC = () => {
     "Outfit-Bold": require("../../assets/fonts/Outfit-Bold.ttf"),
     "Outfit-SemiBold": require("../../assets/fonts/Outfit-SemiBold.ttf"),
   });
-
+  const [businesses, setBusinesses] = useState([]);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
+    const fetchBusinesses = async () => {
+      try {
+        // Fetch businesses
+        const businessQuery = query(collection(FIRESTORE, "businessData"));
+        const querySnapshot = await getDocs(businessQuery);
+
+        // Check if any businesses were found
+        if (!querySnapshot.empty) {
+          const fetchedBusinesses: any = [];
+          querySnapshot.forEach((businessDoc: any) => {
+            const businessData = businessDoc.data();
+            fetchedBusinesses.push(businessData);
+          });
+
+          // Shuffle businesses after fetching
+          function shuffle(array: any) {
+            for (let i = array.length - 1; i > 0; i--) {
+              const j = Math.floor(Math.random() * (i + 1));
+              [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+          }
+
+          // Set the shuffled businesses to state
+          setBusinesses(shuffle(fetchedBusinesses));
+        } else {
+          console.error("No businesses found");
+        }
+      } catch (error) {
+        console.error("Error fetching businesses:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBusinesses();
+
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded, fontError]);
-
   if (!fontsLoaded && !fontError) {
     return null;
   }
@@ -182,16 +218,27 @@ const ClientDashboard: React.FC = () => {
           />
           <SeeMoreButton />
           <SectionHeader title="Recommended" />
-          <Reccommended
-            name="Livito's"
-            color="#F69D61"
-            description="Italian Cuisine since 1994"
-          />
-          <Reccommended
-            name="Pine Tavern"
-            color="#F6E061"
-            description="World's Best Burgers"
-          />
+          {loading ? ( // Show loading indicator if loading
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : (
+            businesses.map((business, idx) =>
+              idx < 2 ? (
+                <Reccommended
+                  key={business["id"] || idx}
+                  name={business["businessName"]}
+                  color={
+                    business["color"] != null
+                      ? business["color"]
+                      : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
+                          Math.floor(Math.random() * 3)
+                        ]
+                  }
+                  description={business["description"] || "Business Near You"}
+                />
+              ) : null
+            )
+          )}
+          {/* {followingElements()} */}
           <SeeMoreButton />
         </View>
       </ScrollView>
