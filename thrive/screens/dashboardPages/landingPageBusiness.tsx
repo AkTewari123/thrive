@@ -346,7 +346,7 @@ const LandingPageBusiness: React.FC = () => {
         </View>
         <Button
           label="View Graphs"
-          style={{ margin: 20 }}
+          style={{ margin: 20, backgroundColor: "#5A5D9D" }}
           onPress={handleGraphsPress}/>
       </ScrollView>
     </SafeAreaView>
