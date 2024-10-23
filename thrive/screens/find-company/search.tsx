@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, SafeAreaView } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import thriveHeader from "../components/thriveHeader";
 
 const SearchResults: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -15,7 +16,8 @@ const SearchResults: React.FC = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      {thriveHeader({})}
       <View style={styles.searchContainer}>
         <TextInput
           style={styles.searchInput}
@@ -46,7 +48,7 @@ const SearchResults: React.FC = () => {
           <Text style={styles.noResultsText}>No results found</Text>
         )}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -62,7 +64,7 @@ const data = [
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: "#E4E8EE",
   },
   searchContainer: {
     flexDirection: 'row',

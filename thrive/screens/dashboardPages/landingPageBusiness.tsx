@@ -1,252 +1,314 @@
-import React, {useState} from 'react';
-import { View, Text, StyleSheet,  Pressable } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { FontAwesome } from '@expo/vector-icons';
+import { doc, getDoc } from 'firebase/firestore';
+import { FIRESTORE, FIREBASE_AUTH } from '../../FirebaseConfig';
+import thriveHeader from '../components/thriveHeader';
 
+const EditButton: React.FC = () => (
+    <Pressable style={styles.editButton}>
+        <Feather name="edit-2" size={20} color="#618BDB" />
+        <Text style={styles.editButtonText}>Edit Home Page</Text>
+    </Pressable>
+);
 
+interface RatingStarProps { stars: number; }
 
+export const RatingStars: React.FC<RatingStarProps> = ({ stars }) => (
+    <View style={styles.ratingContainer}>
+        {Array.from({ length: 5 }, (_, index) => (
+            <FontAwesome key={index} name={index < stars ? "star" : "star-o"} size={16} color="#FFD700" />
+        ))}
+        <Text style={styles.ratingText}>{stars.toFixed(1)}</Text>
+    </View>
+);
 
-const EditButton: React.FC = () => {
-    const [opaque, setOpaque] = useState(false);
-    return(
-        <Pressable
-            style={({ pressed }) => [
-                styles.editButton,
-                { opacity: pressed ? 0.5 : 1 }
-            ]}
-            onPressIn={() => setOpaque(true)}
-            onPressOut={() => setOpaque(false)}
-        >
-            <Feather name="edit" size={32} color="#618BDB" />
-            <Text style={styles.editButtonText}>Edit Home Page</Text>
+interface CompanyProps { name: string; rating: number; initial: string; }
+
+const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial }) => (
+    <View style={styles.companyHeader}>
+        <View style={styles.profileCircle}>
+            <Text style={styles.initialText}>{initial}</Text>
+        </View>
+        <View style={styles.headerTextContainer}>
+            <Text style={styles.companyHeaderNameText}>{name}</Text>
+            <RatingStars stars={rating} />
+        </View>
+    </View>
+);
+
+interface OrderProps { orders: number }
+
+const OrdersBox: React.FC<OrderProps> = ({ orders }) => (
+    <View style={styles.ordersBoxContainer}>
+        <View style={styles.ordersInfo}>
+            <Text style={styles.ordersNumberText}>{orders}</Text>
+            <Text style={styles.ordersText}>New Orders</Text>
+        </View>
+        <Pressable style={styles.fulfillOrdersButton}>
+            <Text style={styles.fulfillOrdersText}>Fulfill Orders</Text>
         </Pressable>
-    );
-};
+    </View>
+);
 
-interface RatingStarProps{
-    stars:number; 
-}
-
-export const RatingStars: React.FC<RatingStarProps> = ( {stars} ) => {
-    return (
-        <View style={{flexDirection: 'row'}}>
-            {Array.from({ length: 5 }, (_, index) => (
-                index < stars 
-                ? <FontAwesome key={index} name="star" size={32} color="orange"/>
-                : <FontAwesome key={index} name="star-o" size={32} color="orange" />
-            ))}
+const AIInsights: React.FC = () => (
+    <View style={styles.insightContainer}>
+        <Text style={styles.insightTitle}>AI Insights</Text>
+        <View style={styles.insightItem}>
+            <Text style={styles.insightNumber}>1.</Text>
+            <Text style={styles.insightText}>Lower the price of Gobhi Manchurian from $5 to $4 to entice more customers.</Text>
         </View>
-    )
-}
-
-interface CompanyProps {
-    name: string; 
-    rating: number; 
-    initial: string; 
-}
-
-const CompanyHeader: React.FC<CompanyProps> = ({name, rating, initial}) => {
-    return(
-        <View style={styles.companyHeader}>
-            <View style={styles.profileCircle}>
-                <Text style={styles.initialText}>{initial}</Text>
-            </View>
-            <View style={styles.headerTextContainer}>
-                <Text style={styles.companyHeaderNameText}>{name}</Text>
-                <RatingStars stars={rating}/>
-            </View>
+        <View style={styles.insightItem}>
+            <Text style={styles.insightNumber}>2.</Text>
+            <Text style={styles.insightText}>Correct the menu spelling from "paner" to "paneer".</Text>
         </View>
-    );
-};
-
-interface OrderProps {
-    orders: number 
-}
-
-const OrdersBox: React.FC<OrderProps> = ({ orders }) => {
-    const [opaque, setOpaque] = useState(false);
-    return (
-        <View style={styles.ordersBoxContainer}>
-            <View style={styles.ordersContainer}>
-            <View style={{ flexDirection: 'row' }}>
-                <Text style = {styles.ordersNumberText}>{orders}</Text>
-                <Text style={styles.ordersText}> new orders</Text>
-            </View>
-                <Pressable 
-                    style={({ pressed }) => [
-                    styles.fulfillOrdersButton,
-                    { opacity: pressed ? 0.5 : 1 }
-                    ]}
-                    onPressIn={() => setOpaque(true)}
-                    onPressOut={() => setOpaque(false)}
-                >
-                    <Text style={styles.fulfillOrdersText}>Fulfill Orders</Text>
-                </Pressable>
-            </View>
+        <Text style={styles.insightSubtitle}>Competing businesses:</Text>
+        <View style={styles.insightItem}>
+            <Text style={styles.insightNumber}>1.</Text>
+            <Text style={styles.insightText}>Akbar's Kitchen</Text>
         </View>
-    );
-};
+    </View>
+);
 
-const AIInsights: React.FC = ()  => {
-    return (
-        <View style={styles.insightContainer}>
-            <Text style={styles.insightTitle}>AI Insights</Text>
-
-            <View style={styles.insightItem}>
-                <Text style={styles.insightNumber}>1.</Text>
-                <Text style={styles.insightText}>You can lower the price of your Gobhi Manchurian from $5 to $4. This would entice more customers to try this lovely treat!</Text>
-            </View>
-
-            <View style={styles.insightItem}>
-                <Text style={styles.insightNumber}>2.</Text>
-                <Text style={styles.insightText}>You misspelled one of the items on your menu saying “paner” instead of the correct “paneer.”</Text>
-            </View>
-
-            <Text style={styles.insightNumber}>Here are a few competing businesses:</Text>
-
-            <View style={styles.insightItem}>
-                <Text style={styles.insightNumber}>1.</Text>
-                <Text style={styles.insightText}>Akbar's Kitchen</Text>
-            </View>
-        </View>
-    )
+interface BusinessData {
+    businessName: string;
+    location: string;
+    establishmentDate: string;
+    services: string;
+    phoneNumber: string;
 }
-
-
 
 const LandingPageBusiness: React.FC = () => {
-    return(
-        <View>
-            <EditButton/> 
-            <CompanyHeader name="Hyderabad Spice" rating={4} initial="H"/>
-            <OrdersBox orders={3}/>
-            <AIInsights/>
-        </View>
+    const [businessData, setBusinessData] = useState<BusinessData | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchBusinessData = async () => {
+            try {   
+                const user = FIREBASE_AUTH.currentUser;
+                if (user) {
+                    const docRef = doc(FIRESTORE, 'businessData', user.uid);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        setBusinessData(docSnap.data() as BusinessData);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching business data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchBusinessData();
+    }, []);
+
+    if (loading) {
+        return (
+            <SafeAreaView style={styles.container}>
+                {thriveHeader({})}
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#5A5D9D" />
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    return (
+        <SafeAreaView style={styles.container}>
+            {thriveHeader({})}
+            <ScrollView contentContainerStyle={styles.scrollContent}>
+                <CompanyHeader 
+                    name={businessData?.businessName || "Business Name"} 
+                    rating={4} 
+                    initial={businessData?.businessName?.[0] || "B"} 
+                />
+                <View style={styles.contentContainer}>
+                    <EditButton />
+                    <OrdersBox orders={3} />
+                    <View style={styles.businessInfoContainer}>
+                        <Text style={styles.sectionTitle}>Business Information</Text>
+                        <Text style={styles.infoText}>Location: {businessData?.location}</Text>
+                        <Text style={styles.infoText}>Established: {businessData?.establishmentDate}</Text>
+                        <Text style={styles.infoText}>Services: {businessData?.services}</Text>
+                        <Text style={styles.infoText}>Phone: {businessData?.phoneNumber}</Text>
+                    </View>
+                    <AIInsights />
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );
-};
+}
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#E4E8EE',
-        flexDirection: 'column',
+        backgroundColor: '#F0F2F5',
+    },
+    scrollContent: {
+        flexGrow: 1,
+    },
+    contentContainer: {
+        padding: 16,
     },
     editButton: {
-        backgroundColor: '#FFFFFF',
-        padding: 16,
-        margin: 0,
-        marginTop: 10,
-        borderRadius: 4,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        justifyContent: 'center',
+        backgroundColor: '#FFFFFF',
+        padding: 12,
+        borderRadius: 8,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
     },
     editButtonText: {
         color: '#618BDB',
-        fontSize: 30,
-        fontWeight: 'bold',
+        fontSize: 16,
+        fontWeight: '600',
+        marginLeft: 8,
     },
     companyHeader: {
-        backgroundColor: '#FFFFFF',
-        padding: 20,
-        margin: 0,
-        marginTop: 25,
-        borderRadius: 4,
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 8,
-        justifyContent: 'flex-start',
-
-        width: '100%',
-    },
-    headerTextContainer: {
-        flexDirection: 'column',
-        marginLeft: 20,
-        marginTop: 12,
-    },
-    companyHeaderNameText: {
-        color: 'black',
-        fontSize: 26,
-        fontWeight: 'bold',
-        marginBottom: 6,
+        backgroundColor: '#5A5D9D',
+        padding: 20,
     },
     profileCircle: {
-        backgroundColor: '#8B5CF6',
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        backgroundColor: '#FFFFFF',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 5,
     },
     initialText: {
-        color: 'white',
-        fontSize: 22,
+        color: '#8B5CF6',
+        fontSize: 24,
         fontWeight: 'bold',
+    },
+    headerTextContainer: {
+        marginLeft: 16,
+    },
+    companyHeaderNameText: {
+        color: '#FFFFFF',
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    ratingContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    ratingText: {
+        color: '#FFFFFF',
+        marginLeft: 4,
+        fontSize: 14,
     },
     ordersBoxContainer: {
-        backgroundColor: '#FFFFFF', // White box around the content
-        borderRadius: 0,
-        padding: 20,
-        marginTop: 20,
-        width: '100%', // Ensure the box takes full width
-    },
-    ordersContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 16,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
-        justifyContent: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    ordersInfo: {
         flexDirection: 'column',
     },
-    ordersText: {
-        fontSize: 20,
+    ordersNumberText: {
+        fontSize: 36,
         fontWeight: 'bold',
-        marginTop: 15
+        color: '#5A5D9D',
     },
-    ordersNumberText:{
-        fontSize:45,
-        fontWeight: 'bold'
+    ordersText: {
+        fontSize: 14,
+        color: '#4B5563',
     },
     fulfillOrdersButton: {
-        backgroundColor: '#8B5CF6',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        backgroundColor: '#5A5D9D',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
         borderRadius: 20,
-        marginTop: 10,
     },
     fulfillOrdersText: {
         color: 'white',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
-    insightTitle: {
-        fontSize: 45,
-        textAlign: 'center',
-        marginBottom: 20
-    },
-    insightText: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        maxWidth: '95%'
-
+        fontWeight: '600',
+        fontSize: 14,
     },
     insightContainer: {
-        backgroundColor: 'white',
-        marginTop: 20,
-        justifyContent: 'center',
-        width: '100%'
-
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    insightTitle: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        marginBottom: 16,
+        color: '#1F2937',
+    },
+    insightSubtitle: {
+        fontSize: 18,
+        fontWeight: '600',
+        marginTop: 16,
+        marginBottom: 8,
+        color: '#4B5563',
     },
     insightItem: {
-        flexDirection: 'row', // Align number and text in a row
-        alignItems: 'flex-start', // Align text to the start vertically
-        marginBottom: 5, // Add some space between items
+        flexDirection: 'row',
+        marginBottom: 12,
     },
     insightNumber: {
         fontWeight: 'bold',
-        marginRight: 5, // Space between the number and the text
-        marginLeft: 5
+        marginRight: 8,
+        color: '#8B5CF6',
+    },
+    insightText: {
+        fontSize: 14,
+        color: '#4B5563',
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    businessInfoContainer: {
+        backgroundColor: '#FFFFFF',
+        borderRadius: 8,
+        padding: 16,
+        marginBottom: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    sectionTitle: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 12,
+        color: '#1F2937',
+    },
+    infoText: {
+        fontSize: 16,
+        marginBottom: 8,
+        color: '#4B5563',
     },
 });
 
 export default LandingPageBusiness;
-

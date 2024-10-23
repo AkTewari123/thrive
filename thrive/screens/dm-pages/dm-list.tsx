@@ -202,20 +202,13 @@ const DMList: React.FC = () => {
             description={`Chat with ${dm.name}`}
             initial={dm.name.charAt(0).toUpperCase()}
             onPress={() =>
-              navigation.navigate("SpecificDM", {
-                otherUserEmail: dm.email,
-                color: dm.color,
-              })
+              navigation.navigate("SpecificDM", { otherUserEmail: dm.email })
             }
           />
         ))}
       </ScrollView>
 
-      {/* New Chat Floating Button */}
       <FloatingActionButton onPress={handleNewChat} />
-
-      {/* Navigation Bar */}
-      <BusinessNavBar navigation={navigation} />
 
       {/* Modal for Email Input */}
       <Modal
@@ -367,6 +360,24 @@ const styles = StyleSheet.create({
   modalCloseButton: {
     marginTop: 12,
     padding: 8,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
+  },
+  emptyStateText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 20,
+  },
+  emptyStateSubText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 10,
+    textAlign: "center",
   },
 });
 
