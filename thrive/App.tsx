@@ -15,18 +15,18 @@ import { CompanyPostHistory } from "./screens/posts/viewCompanyPosts";
 import BusinessOrdersPage from "./screens/dashboardPages/businessOrdersPage";
 
 // Import your screens here
-import LoginPage from './screens/auth-pages/login';
-import SignUpPage from './screens/auth-pages/sign-up';
-import ClientDashboard from './screens/dashboardPages/clientDashboard';
-import SpecificBusinessPage from './screens/find-company/specificBusinessPage';
-import DMList from './screens/dm-pages/dm-list';
-import SearchResults from './screens/find-company/search';
-import AuthLandingPage from './screens/auth-pages/auth-landing';
-import SpecificDM from './screens/dm-pages/dm';
-import LandingPageBusiness from './screens/dashboardPages/landingPageBusiness';
-import SettingsPage from './screens/Setting';
-import BusinessSignUpPage from './screens/auth-pages/businessSignUp';
-import EditBusinessPage from './screens/dashboardPages/editBusinessPage';
+import LoginPage from "./screens/auth-pages/login";
+import SignUpPage from "./screens/auth-pages/sign-up";
+import ClientDashboard from "./screens/dashboardPages/clientDashboard";
+import SpecificBusinessPage from "./screens/find-company/specificBusinessPage";
+import DMList from "./screens/dm-pages/dm-list";
+import SearchResults from "./screens/find-company/search";
+import AuthLandingPage from "./screens/auth-pages/auth-landing";
+import SpecificDM from "./screens/dm-pages/dm";
+import LandingPageBusiness from "./screens/dashboardPages/landingPageBusiness";
+import SettingsPage from "./screens/Setting";
+import BusinessSignUpPage from "./screens/auth-pages/businessSignUp";
+import EditBusinessPage from "./screens/dashboardPages/editBusinessPage";
 
 const Stack = createStackNavigator();
 const AuthStack = createStackNavigator();
@@ -49,26 +49,28 @@ function BusinessTabNavigator() {
             iconName = "briefcase";
           } else if (route.name === "Posts") {
             iconName = "book";
-
           } else if (route.name === "Messages") {
             iconName = "message-square";
           } else if (route.name === "Settings") {
             iconName = "settings";
           }
 
-          return <Feather name={iconName} size={size} color={color} />;
+          return <Feather name={iconName} size={30} color={color} />;
         },
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
         tabBarStyle: {
           backgroundColor: "#5A5D9D",
           borderTopWidth: 0,
-          height: 60,
-          paddingBottom: 5,
-          paddingTop: 5,
+          height: 80,
+          paddingBottom: 10,
+          paddingTop: 10,
+          marginBottom: 35,
+          marginHorizontal: 15,
+          borderRadius: 40,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
         },
         headerShown: false,
       })}
@@ -94,30 +96,30 @@ function BusinessLayout() {
         },
       }}
     >
-      <BusinessStack.Screen 
-        name="BusinessTabs" 
-        component={BusinessTabNavigator} 
+      <BusinessStack.Screen
+        name="BusinessTabs"
+        component={BusinessTabNavigator}
         options={{ headerShown: false }}
       />
-      <BusinessStack.Screen 
-        name="BusinessPage" 
-        component={SpecificBusinessPage} 
-        options={{ title: 'Business Page' }}
+      <BusinessStack.Screen
+        name="BusinessPage"
+        component={SpecificBusinessPage}
+        options={{ title: "Business Page" }}
       />
-      <BusinessStack.Screen 
-        name="EditBusinessPage" 
-        component={EditBusinessPage} 
-        options={{ title: 'Business Page' }}
+      <BusinessStack.Screen
+        name="EditBusinessPage"
+        component={EditBusinessPage}
+        options={{ title: "Business Page" }}
       />
-      <BusinessStack.Screen 
-        name="BusinessOrdersPage" 
-        component={BusinessOrdersPage} 
-        options={{ title: 'Business Page' }}
+      <BusinessStack.Screen
+        name="BusinessOrdersPage"
+        component={BusinessOrdersPage}
+        options={{ title: "Business Page" }}
       />
-      <BusinessStack.Screen 
-        name="SpecificDM" 
-        component={SpecificDM} 
-        options={{ title: 'Chat' }}
+      <BusinessStack.Screen
+        name="SpecificDM"
+        component={SpecificDM}
+        options={{ title: "Chat" }}
       />
     </BusinessStack.Navigator>
   );
@@ -151,19 +153,22 @@ function CustomerTabNavigator() {
             iconName = "settings";
           }
 
-          return <Feather name={iconName} size={24} color={color} />;
+          return <Feather name={iconName} size={30} color={color} />;
         },
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
         tabBarStyle: {
           backgroundColor: "#5A5D9D",
           borderTopWidth: 0,
-          height: 60,
-          paddingBottom: 5,
-          paddingTop: 5,
+          height: 80,
+          paddingBottom: 10,
+          paddingTop: 10,
+          marginBottom: 35,
+          marginHorizontal: 15,
+          borderRadius: 40,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 10,
         },
         headerShown: false,
       })}
@@ -190,7 +195,8 @@ function CustomerLayout() {
       <CustomerStack.Screen
         name="SpecificBusinessPage"
         component={SpecificBusinessPage}
-        options={{ headerShown: true,
+        options={{
+          headerShown: true,
           headerStyle: {
             backgroundColor: "#5A5D9D",
           },
