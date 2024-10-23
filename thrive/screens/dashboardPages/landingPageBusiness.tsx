@@ -2,18 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, SafeAreaView, ActivityIndicator } from 'react-native';
 import Feather from '@expo/vector-icons/Feather';
 import { FontAwesome } from '@expo/vector-icons';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { FIRESTORE, FIREBASE_AUTH } from '../../FirebaseConfig';
 import thriveHeader from '../components/thriveHeader';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp} from '@react-navigation/stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
+import OpenAI from 'openai';
+import axios from 'axios';
 
 type RootStackParamList = {
     LandingPageBusiness: undefined;
     BusinessPage: { id: string }; // `id` parameter added
     EditBusinessPage: { id: string }; // `id` parameter added
+    BusinessOrdersPage: { id: string }; // `id` parameter added
 };
 
 
@@ -80,21 +83,119 @@ const CompanyHeader: React.FC<CompanyProps> = ({ name, rating, initial }) => (
     </View>
 );
 
-interface OrderProps { orders: number }
+interface OrderProps { orders: number; businessID: any; }
 
-const OrdersBox: React.FC<OrderProps> = ({ orders }) => (
+const OrdersBox: React.FC<OrderProps> = ({ orders, businessID }) => {
+    const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+    return (
     <View style={styles.ordersBoxContainer}>
         <View style={styles.ordersInfo}>
             <Text style={styles.ordersNumberText}>{orders}</Text>
-            <Text style={styles.ordersText}>New Orders</Text>
+            <Text style={styles.ordersText}>{orders === 1 ? "New Order" : "New Orders"}</Text>
         </View>
-        <Pressable style={styles.fulfillOrdersButton}>
+        <Pressable style={styles.fulfillOrdersButton} onPress={() => navigation.navigate('BusinessOrdersPage', { id: businessID })}>
             <Text style={styles.fulfillOrdersText}>Fulfill Orders</Text>
         </Pressable>
-    </View>
-);
+    </View>);
+}
 
-const AIInsights: React.FC = () => (
+
+
+const AIInsights: React.FC = () => {
+    const [insights, setInsights] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [businessData, setBusinessData] = useState<any>(null); // Update type as necessary
+
+    const fetchBusinessData = async () => {
+        try {
+            const user = FIREBASE_AUTH.currentUser;
+            if (user) {
+                const docRef = doc(FIRESTORE, 'businessData', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setBusinessData(docSnap.data());
+                } else {
+                    console.error("No such document!");
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching business data:", error);
+        }
+    };
+    
+
+    // Function to fetch AI insights
+    const fetchAIInsights = async () => {
+        if (!businessData) return; // Do not fetch insights if business data is not available
+
+        setIsLoading(true);
+        try {
+            const response = await axios.post(
+                'https://api.openai.com/v1/chat/completions',
+                {
+                    model: 'gpt-4o-mini',  // Or the latest model available
+                    messages: [
+                        { 
+                            role: 'system', 
+                            content: `Tell me how to improve this for my buisness: ${businessData.services}` 
+                        }
+                    ],
+                    max_tokens: 100,
+                    temperature: 0.05
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer @env`,  
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            // Extract insights from the OpenAI response
+            const aiResponse = response.data.choices[0].message.content.split("\n");
+            setInsights(aiResponse); // Save the insights to state
+
+        } catch (error) {
+            console.error('Error fetching AI insights:', error);
+        }
+        setIsLoading(false);
+    };
+
+    // Fetch business data and then fetch AI insights when the component mounts
+    React.useEffect(() => {
+        fetchBusinessData();
+    }, []);
+
+    // Fetch AI insights whenever business data changes
+    React.useEffect(() => {
+        if (businessData) {
+            fetchAIInsights();
+        }
+    }, [businessData]);
+
+    return (
+        <View style={styles.insightContainer}>
+            <Text style={styles.insightTitle}>AI Insights</Text>
+
+            {isLoading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                insights.map((insight, index) => (
+                    <View style={styles.insightItem} key={index}>
+                        <Text style={styles.insightNumber}>{index + 1}.</Text>
+                        <Text style={styles.insightText}>{insight}</Text>
+                    </View>
+                ))
+            )}
+        </View>
+    );
+};
+
+/* 
+    const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    
+    return(
     <View style={styles.insightContainer}>
         <Text style={styles.insightTitle}>AI Insights</Text>
         <View style={styles.insightItem}>
@@ -111,7 +212,9 @@ const AIInsights: React.FC = () => (
             <Text style={styles.insightText}>Akbar's Kitchen</Text>
         </View>
     </View>
-);
+    );
+*/
+
 
 interface BusinessData {
     businessName: string;
@@ -120,6 +223,7 @@ interface BusinessData {
     services: string;
     phoneNumber: string;
     businessID: string;
+    orders: Array<any>;
 }
 
 const LandingPageBusiness: React.FC = () => {
@@ -149,6 +253,9 @@ const LandingPageBusiness: React.FC = () => {
         }, []) // Empty dependency array ensures it runs only when the screen is focused
     );
 
+    const orders = businessData?.orders || [];
+    const numNewOrders = orders.filter(order => order.fulfilled === false).length;
+
 
     if (loading) {
         return (
@@ -170,9 +277,9 @@ const LandingPageBusiness: React.FC = () => {
                     rating={4} 
                     initial={businessData?.businessName?.[0] || "B"} 
                 />
-                <View style={styles.contentContainer}>
+                <View style={[styles.contentContainer]}>
                 <EditButtons businessID={businessData?.businessID || ""} />
-                    <OrdersBox orders={3} />
+                    <OrdersBox orders={numNewOrders} businessID={businessData?.businessID} />
                     <View style={styles.businessInfoContainer}>
                         <Text style={styles.sectionTitle}>Business Information</Text>
                         <Text style={styles.infoText}>Location: {businessData?.location}</Text>
@@ -381,6 +488,18 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         marginLeft: 8,
     },
+    childContainer: {
+		backgroundColor: "white",
+		width: "100%",
+		borderRadius: 20,
+		marginBottom: 25,
+		shadowColor: "#171717",
+		shadowOffset: { width: -2, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 3,
+		padding: 25,
+		flexShrink: 1,
+	},
 });
 
 export default LandingPageBusiness;
