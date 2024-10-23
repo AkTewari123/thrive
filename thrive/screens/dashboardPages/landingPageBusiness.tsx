@@ -20,6 +20,7 @@ import { useCallback } from "react";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Button } from "react-native-ui-lib";
 import axios from 'axios';
+import { OPENAI_API_KEY } from "../../apiKeys";
 
 type RootStackParamList = {
   LandingPageBusiness: undefined;
@@ -242,7 +243,7 @@ const AIInsights: React.FC = () => {
                 },
                 {
                     headers: {
-                        Authorization: `@env`,  //use env but if not just change the api key but make sure not to push it 
+                        Authorization: `Bearer ${OPENAI_API_KEY}`,  //use env but if not just change the api key but make sure not to push it 
                         'Content-Type': 'application/json'
                     }
                 }
