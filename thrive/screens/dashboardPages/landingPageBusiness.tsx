@@ -19,6 +19,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import { TouchableOpacity } from 'react-native-gesture-handler';
 import { Button } from "react-native-ui-lib";
+import axios from 'axios';
 
 type RootStackParamList = {
   LandingPageBusiness: undefined;
@@ -124,7 +125,81 @@ const OrdersBox: React.FC<OrderProps> = ({ orders, businessID }) => {
   );
 };
 
-const AIInsights: React.FC = () => (
+const AIInsights: React.FC = () => {
+    
+    const [insights, setInsights] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [businessData, setBusinessData] = useState<any>(null); // Update type as necessary
+
+    const fetchBusinessData = async () => {
+        try {
+            const user = FIREBASE_AUTH.currentUser;
+            if (user) {
+                const docRef = doc(FIRESTORE, 'businessData', user.uid);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setBusinessData(docSnap.data());
+                } else {
+                    console.error("No such document!");
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching business data:", error);
+        }
+    };
+    
+
+    // Function to fetch AI insights
+    const fetchAIInsights = async () => {
+        if (!businessData) return; // Do not fetch insights if business data is not available
+
+        setIsLoading(true);
+        try {
+            const response = await axios.post(
+                'https://api.openai.com/v1/chat/completions',
+                {
+                    model: 'gpt-4o-mini',  // Or the latest model available
+                    messages: [
+                        { 
+                            role: 'system', 
+                            content: `Tell me how to improve this for my buisness: ${businessData.services}. Make each suggestion a maximum of one sentence each (max 4 suggestions). Start each bullet with text (no hyphen)` 
+                        }
+                    ],
+                    max_tokens: 100,
+                    temperature: 0,
+
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer @env`,  //use env but if not just change the api key but make sure not to push it 
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            // Extract insights from the OpenAI response
+            const aiResponse = response.data.choices[0].message.content.split("\n");
+            setInsights(aiResponse); // Save the insights to state
+
+        } catch (error) {
+            console.error('Error fetching AI insights:', error);
+        }
+        setIsLoading(false);
+    };
+
+    // Fetch business data and then fetch AI insights when the component mounts
+    React.useEffect(() => {
+        fetchBusinessData();
+    }, []);
+
+    // Fetch AI insights whenever business data changes
+    React.useEffect(() => {
+        if (businessData) {
+            fetchAIInsights();
+        }
+    }, [businessData]);
+
+    return(
   <View style={styles.insightContainer}>
     <Text style={styles.insightTitle}>
       Insights &nbsp;
@@ -132,8 +207,18 @@ const AIInsights: React.FC = () => (
     </Text>
     <View style={{ marginTop: 0 }}>
       <Text style={[styles.insightSubtitle]}>Quick Tips:</Text>
+      {isLoading ? (
+                <ActivityIndicator size="large" color="#0000ff" />
+            ) : (
+                insights.map((insight, index) => (
+                    <View style={styles.insightItem} key={index}>
+                        <Text style={styles.insightNumber}>{index + 1}.</Text>
+                        <Text style={styles.insightText}>{insight}</Text>
+                    </View>
+                ))
+            )}
     </View>
-
+    {/*
     <View style={styles.insightItem}>
       <Text style={styles.insightNumber}>1.</Text>
       <Text style={styles.insightText}>
@@ -154,9 +239,13 @@ const AIInsights: React.FC = () => (
         Akbar's Kitchen &nbsp;
         <Feather name="external-link" size={14} color="#618BDB" />
       </Text>
+      
     </View>
+    */}
   </View>
-);
+
+    );
+};
 
 interface BusinessData {
   businessName: string;
@@ -199,7 +288,6 @@ const LandingPageBusiness: React.FC = () => {
       fetchBusinessData();
     }, []) // Empty dependency array ensures it runs only when the screen is focused
   );
-  console.log(businessData);
 
   const orders = businessData?.orders || [];
   const numNewOrders = orders.filter(
@@ -346,7 +434,7 @@ const LandingPageBusiness: React.FC = () => {
         </View>
         <Button
           label="View Graphs"
-          style={{ margin: 20 }}
+          style={{ margin: 20, backgroundColor: "#5A5D9D" }}
           onPress={handleGraphsPress}/>
       </ScrollView>
     </SafeAreaView>
