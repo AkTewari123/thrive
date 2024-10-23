@@ -31,45 +31,57 @@ const SearchResults: React.FC = () => {
   const navigation = useNavigation<StackNavigationProp<any>>();
   const displayBusinesses = () => {
     if (searchQuery.length === 0) {
-      return null; // return null if search query is empty
+        // If the search query is empty, display a message
+        return (
+          <>
+          <View style={styles.emptyStateContainer}>
+            <Feather name="search" size={64} color="#CCCCCC" />
+            <Text style={styles.emptyStateText}>Search for a business</Text>
+            <Text style={styles.emptyStateSubText}>
+              Find a business by name
+            </Text>
+          </View>
+          </>
+        )
     }
 
     return (
-      <>
-        {filteredResults.length > 0 ? (
-          filteredResults.map((item: any, index: any) => (
-            <TouchableOpacity key={index} style={styles.itemContainer}>
-              <View
-                style={[
-                  styles.initialCircle,
-                  {
-                    backgroundColor: item.color
-                      ? item.color
-                      : ["#4338ca", "#38bdf8", "#059669", "#111827"][
-                          Math.floor(Math.random() * 4)
-                        ],
-                  },
-                ]}
-              >
-                <Text style={styles.initialText}>
-                  {item.businessName.slice(0, 1)}
-                </Text>
-              </View>
-              <View style={styles.itemTextContainer}>
-                <Pressable onPress={() => navigation.navigate('SpecificBusinessPage', { id: item.businessID })}>
-                  <Text style={styles.itemName}>{item.businessName}</Text>
-                  <Text style={styles.itemDescription}>{item.description}</Text>
-                </Pressable>
-              </View>
-              <Feather name="arrow-right-circle" size={32} color="black" />
-            </TouchableOpacity>
-          ))
-        ) : (
-          <Text style={styles.noResultsText}>No results found</Text>
-        )}
-      </>
+        <>
+            {filteredResults.length > 0 ? (
+                filteredResults.map((item: any, index: any) => (
+                    <TouchableOpacity key={index} style={styles.itemContainer}>
+                        <View
+                            style={[
+                                styles.initialCircle,
+                                {
+                                    backgroundColor: item.color
+                                        ? item.color
+                                        : ["#4338ca", "#38bdf8", "#059669", "#111827"][
+                                              Math.floor(Math.random() * 4)
+                                          ],
+                                },
+                            ]}
+                        >
+                            <Text style={styles.initialText}>
+                                {item.businessName.slice(0, 1)}
+                            </Text>
+                        </View>
+                        <View style={styles.itemTextContainer}>
+                            <Pressable onPress={() => navigation.navigate('SpecificBusinessPage', { id: item.businessID })}>
+                                <Text style={styles.itemName}>{item.businessName}</Text>
+                                <Text style={styles.itemDescription}>{item.description}</Text>
+                            </Pressable>
+                        </View>
+                        <Feather name="arrow-right-circle" size={32} color="black" />
+                    </TouchableOpacity>
+                ))
+            ) : (
+                <Text style={styles.noResultsText}>No results found</Text>
+            )}
+        </>
     );
-  };
+};
+
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
@@ -129,8 +141,9 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     flexDirection: "row",
-    padding: 16,
-    backgroundColor: "white",
+    padding: 5,
+    marginHorizontal: 10,
+    
     alignItems: "center",
     borderBottomWidth: 1,
     borderBottomColor: "#E5E7EB",
@@ -148,7 +161,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   resultsList: {
-    marginTop: 16,
+    marginTop: 5,
     flex: 1,
     padding: 0,
   },
@@ -192,8 +205,26 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#0f172a",
     marginTop: 20,
-    fontFamily: "Outfit-Medium",
     fontSize: 18,
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 100,
+  },
+  emptyStateText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginTop: 20,
+  },
+  emptyStateSubText: {
+    fontSize: 16,
+    color: "#666",
+    marginTop: 10,
+    textAlign: "center",
+    paddingHorizontal: 40,
   },
 });
 

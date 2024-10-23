@@ -23,6 +23,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../FirebaseConfig";
+import { Picker } from "@react-native-picker/picker";
 
 const EditBusinessPage: React.FC = () => {
 	const [businessData, setBusinessData] = useState<any>(null);
@@ -87,7 +88,7 @@ const EditBusinessPage: React.FC = () => {
 
 			if (!querySnapshot.empty) {
 				const docRef = querySnapshot.docs[0].ref;
-				await updateDoc(docRef, { ...businessData, products });
+				await updateDoc(docRef, { ...businessData, products, category: selectedCategory });
 				Alert.alert(
 					"Success",
 					"Business information updated successfully!"
@@ -100,6 +101,8 @@ const EditBusinessPage: React.FC = () => {
 			console.error("Error updating business data: ", error);
 		}
 	};
+
+
 
 	const handleInputChange = (field: string, value: any) => {
 		setBusinessData((prevData: any) => ({
@@ -240,6 +243,8 @@ const EditBusinessPage: React.FC = () => {
 			}
 		}
 	};
+	const [selectedCategory, setSelectedCategory] = useState<string>("food"); // State for selected category
+
 
 	const handleAddProduct = () => {
 		if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.image) {
@@ -326,6 +331,22 @@ const EditBusinessPage: React.FC = () => {
 							handleInputChange("location", text)
 						}
 					/>
+
+					{/* Category Selection */}
+					<Text style={styles.label}>Business Category</Text>
+					<Picker
+						selectedValue={selectedCategory}
+						onValueChange={(itemValue) =>
+							setSelectedCategory(itemValue)
+						}
+						style={styles.picker} // Add some styling to the picker
+					>
+						<Picker.Item label="Food" value="food" />
+						<Picker.Item label="Service" value="service" />
+						<Picker.Item label="Arts and Crafts" value="arts_crafts" />
+						<Picker.Item label="Technology" value="technology" />
+						<Picker.Item label="Retail" value="retail" />
+					</Picker>
 				</View>
 
 				<View style={styles.inputContainer}>
@@ -472,6 +493,14 @@ const styles = StyleSheet.create({
 	productText: {
 		fontSize: 16,
 	},
+	picker: {
+		backgroundColor: "#FFF",
+		borderWidth: 1,
+		borderColor: "#CCC",
+		marginTop: 10,
+		borderRadius: 5,
+	},
+
     childContainer: {
 		backgroundColor: "white",
 		width: "100%",
