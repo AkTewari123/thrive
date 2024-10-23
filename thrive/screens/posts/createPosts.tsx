@@ -10,6 +10,8 @@ import {
   Modal,
   ActivityIndicator,
 } from "react-native";
+import { v4 as uuidv4 } from "uuid";
+
 import Feather from "@expo/vector-icons/Feather";
 import { useNavigation } from "@react-navigation/native";
 import {
@@ -116,7 +118,8 @@ export const CompanyPosts: React.FC = () => {
   };
 
   const handleCreatePost = async () => {
-    if (!user?.email || !newPost.title.trim() || !newPost.content.trim()) return;
+    if (!user?.email || !newPost.title.trim() || !newPost.content.trim())
+      return;
 
     try {
       const postData = {
@@ -126,6 +129,9 @@ export const CompanyPosts: React.FC = () => {
         companyEmail: user.email,
         timestamp: Timestamp.now(),
         color: "#5A5D9D",
+        id: `${user.email.split("@")[0]}-${Date.now()}-${Math.floor(
+          Math.random() * 10000
+        )}`,
       };
 
       await addDoc(collection(FIRESTORE, "posts"), postData);
@@ -380,6 +386,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default {
-  CompanyPosts,
-};
+export default CompanyPosts;

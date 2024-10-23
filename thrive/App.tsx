@@ -1,17 +1,17 @@
-import { StatusBar } from 'expo-status-bar';
-import React, { useContext, useEffect } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { FIREBASE_AUTH, FIRESTORE } from './FirebaseConfig';
-import { User } from 'firebase/auth';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { doc, getDoc } from 'firebase/firestore';
-import Feather from '@expo/vector-icons/Feather';
-import { UserProvider, UserContext } from './UserContext'; // Import the provider
-import { CompanyPosts } from './screens/posts/createPosts';
-import { CompanyPostHistory } from './screens/posts/viewCompanyPosts';
+import { StatusBar } from "expo-status-bar";
+import React, { useContext, useEffect } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { FIREBASE_AUTH, FIRESTORE } from "./FirebaseConfig";
+import { User } from "firebase/auth";
+import { View, Text, Button, StyleSheet } from "react-native";
+import { doc, getDoc } from "firebase/firestore";
+import Feather from "@expo/vector-icons/Feather";
+import { UserProvider, UserContext } from "./UserContext"; // Import the provider
+import { CompanyPosts } from "./screens/posts/createPosts";
+import { CompanyPostHistory } from "./screens/posts/viewCompanyPosts";
 
 // Import your screens here
 import LoginPage from './screens/auth-pages/login';
@@ -40,24 +40,24 @@ function BusinessTabNavigator() {
       initialRouteName="Dashboard" // Add this line
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName:any;
+          let iconName: any;
 
-          if (route.name === 'Dashboard') {
-            iconName = 'home';
-          } else if (route.name === 'Businesses') {
-            iconName = 'briefcase';
-          } else if (route.name === 'Messages') {
-            iconName = 'message-square';
-          } else if (route.name === 'Settings') {
-            iconName = 'settings';
+          if (route.name === "Dashboard") {
+            iconName = "home";
+          } else if (route.name === "Businesses") {
+            iconName = "briefcase";
+          } else if (route.name === "Messages") {
+            iconName = "message-square";
+          } else if (route.name === "Settings") {
+            iconName = "settings";
           }
 
           return <Feather name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarActiveTintColor: "white",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
         tabBarStyle: {
-          backgroundColor: '#5A5D9D',
+          backgroundColor: "#5A5D9D",
           borderTopWidth: 0,
           height: 60,
           paddingBottom: 5,
@@ -77,21 +77,19 @@ function BusinessTabNavigator() {
   );
 }
 
-
 function BusinessLayout() {
   return (
     <BusinessStack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#5A5D9D',
+          backgroundColor: "#5A5D9D",
         },
-        headerTintColor: '#fff',
+        headerTintColor: "#fff",
         headerTitleStyle: {
-          fontWeight: 'bold',
-        }
+          fontWeight: "bold",
+        },
       }}
     >
-
       <BusinessStack.Screen 
         name="BusinessTabs" 
         component={BusinessTabNavigator} 
@@ -134,22 +132,22 @@ function CustomerTabNavigator() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: any;
 
-          if (route.name === 'Dashboard') {
-            iconName = 'home';
-          } else if (route.name === 'Businesses') {
-            iconName = 'briefcase';
-          } else if (route.name === 'Messages') {
-            iconName = 'message-square';
-          } else if (route.name === 'Settings') {
-            iconName = 'settings';
+          if (route.name === "Dashboard") {
+            iconName = "home";
+          } else if (route.name === "Businesses") {
+            iconName = "briefcase";
+          } else if (route.name === "Messages") {
+            iconName = "message-square";
+          } else if (route.name === "Settings") {
+            iconName = "settings";
           }
 
           return <Feather name={iconName} size={24} color={color} />;
         },
-        tabBarActiveTintColor: 'white',
-        tabBarInactiveTintColor: 'rgba(255,255,255,0.5)',
+        tabBarActiveTintColor: "white",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
         tabBarStyle: {
-          backgroundColor: '#5A5D9D',
+          backgroundColor: "#5A5D9D",
           borderTopWidth: 0,
           height: 60,
           paddingBottom: 5,
@@ -171,11 +169,23 @@ function CustomerTabNavigator() {
 
 function CustomerLayout() {
   return (
-    <CustomerStack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Dashboard">
-      <CustomerStack.Screen name="CustomerTabs" component={CustomerTabNavigator} />
+    <CustomerStack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName="Dashboard"
+    >
+      <CustomerStack.Screen
+        name="CustomerTabs"
+        component={CustomerTabNavigator}
+      />
       <CustomerStack.Screen name="SpecificDM" component={SpecificDM} />
-      <CustomerStack.Screen name="SpecificBusiness" component={SpecificBusinessPage} />
-      <CustomerStack.Screen name="CompanyPostHistory" component={CompanyPostHistory} />
+      <CustomerStack.Screen
+        name="SpecificBusiness"
+        component={SpecificBusinessPage}
+      />
+      <CustomerStack.Screen
+        name="CompanyPostHistory"
+        component={CompanyPostHistory}
+      />
     </CustomerStack.Navigator>
   );
 }
@@ -188,7 +198,7 @@ function MainApp() {
       if (user) {
         setUser(user);
 
-        const userDoc = await getDoc(doc(FIRESTORE, 'users', user.uid));
+        const userDoc = await getDoc(doc(FIRESTORE, "users", user.uid));
         if (userDoc.exists()) {
           setUserType(userDoc.data().userType);
         } else {
@@ -207,7 +217,7 @@ function MainApp() {
       <StatusBar style="dark" />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {user ? (
-          userType === 'Business' ? (
+          userType === "Business" ? (
             <Stack.Screen name="BusinessLayout" component={BusinessLayout} />
           ) : (
             <Stack.Screen name="CustomerLayout" component={CustomerLayout} />
@@ -226,13 +236,13 @@ export default function App() {
       <MainApp />
     </UserProvider>
   );
-} 
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });

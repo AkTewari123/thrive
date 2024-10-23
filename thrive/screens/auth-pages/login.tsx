@@ -1,46 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
-import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { FIREBASE_AUTH } from '../../FirebaseConfig';
-import thriveHeader from '../components/thriveHeader';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+} from "react-native";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { FIREBASE_AUTH } from "../../FirebaseConfig";
+import thriveHeader from "../components/thriveHeader";
 
 // Consistent color palette (matching signup page)
 const COLORS = {
-  primary: '#6366F1',     // Main brand color (purple)
-  secondary: '#4F46E5',   // Darker purple for hover states
-  background: '#F3F4F6',  // Light grey background
-  surface: '#FFFFFF',     // White surface
+  primary: "#6366F1", // Main brand color (purple)
+  secondary: "#4F46E5", // Darker purple for hover states
+  background: "#F3F4F6", // Light grey background
+  surface: "#FFFFFF", // White surface
   text: {
-    primary: '#1F2937',   // Dark grey for primary text
-    secondary: '#6B7280', // Medium grey for secondary text
-    inverse: '#FFFFFF',   // White text
+    primary: "#1F2937", // Dark grey for primary text
+    secondary: "#6B7280", // Medium grey for secondary text
+    inverse: "#FFFFFF", // White text
   },
-  border: '#E5E7EB',      // Light grey for borders
-  error: '#EF4444',       // Red for errors
-  success: '#10B981',     // Green for success states
+  border: "#E5E7EB", // Light grey for borders
+  error: "#EF4444", // Red for errors
+  success: "#10B981", // Green for success states
 };
 
 const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      Alert.alert("Error", "Please enter both email and password");
       return;
     }
 
     setLoading(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      const userCredential = await signInWithEmailAndPassword(
+        FIREBASE_AUTH,
+        email,
+        password
+      );
       const user = userCredential.user;
-      console.log('User signed in:', user);
+      console.log("User signed in:", user);
     } catch (error: any) {
-      console.error('Error during login:', error.message);
-      Alert.alert('Login Failed', error.message);
+      console.error("Error during login:", error.message);
+      Alert.alert("Login Failed", error.message);
     } finally {
       setLoading(false);
     }
@@ -50,20 +61,23 @@ const LoginPage: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.loginContainer}>
         {thriveHeader({})}
-        
         <View style={styles.welcomeContainer}>
-          <MaterialCommunityIcons name="login" size={40} color={COLORS.primary} />
+          <MaterialCommunityIcons
+            name="login"
+            size={40}
+            color={COLORS.primary}
+          />
           <Text style={styles.welcomeText}>Welcome Back</Text>
         </View>
 
         <Text style={styles.subtitle}>Log in to your account</Text>
 
         <View style={styles.inputContainer}>
-          <MaterialCommunityIcons 
-            name="email" 
-            size={20} 
-            color={COLORS.text.secondary} 
-            style={styles.inputIcon} 
+          <MaterialCommunityIcons
+            name="email"
+            size={20}
+            color={COLORS.text.secondary}
+            style={styles.inputIcon}
           />
           <TextInput
             style={styles.input}
@@ -77,11 +91,11 @@ const LoginPage: React.FC = () => {
         </View>
 
         <View style={styles.inputContainer}>
-          <MaterialCommunityIcons 
-            name="lock" 
-            size={20} 
-            color={COLORS.text.secondary} 
-            style={styles.inputIcon} 
+          <MaterialCommunityIcons
+            name="lock"
+            size={20}
+            color={COLORS.text.secondary}
+            style={styles.inputIcon}
           />
           <TextInput
             style={styles.input}
@@ -91,21 +105,26 @@ const LoginPage: React.FC = () => {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
           />
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.passwordToggle}
             onPress={() => setShowPassword(!showPassword)}
           >
-            <Ionicons 
-              name={showPassword ? "eye-off" : "eye"} 
-              size={20} 
-              color={COLORS.text.secondary} 
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={20}
+              color={COLORS.text.secondary}
             />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.forgotPassword]}
-          onPress={() => Alert.alert('Info', 'Password reset functionality to be implemented')}
+          onPress={() =>
+            Alert.alert(
+              "Info",
+              "Password reset functionality to be implemented"
+            )
+          }
         >
           <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
         </TouchableOpacity>
@@ -116,10 +135,18 @@ const LoginPage: React.FC = () => {
           disabled={loading}
         >
           {loading ? (
-            <MaterialCommunityIcons name="loading" size={24} color={COLORS.text.inverse} />
+            <MaterialCommunityIcons
+              name="loading"
+              size={24}
+              color={COLORS.text.inverse}
+            />
           ) : (
             <>
-              <MaterialCommunityIcons name="login" size={24} color={COLORS.text.inverse} />
+              <MaterialCommunityIcons
+                name="login"
+                size={24}
+                color={COLORS.text.inverse}
+              />
               <Text style={styles.actionButtonText}>Log In</Text>
             </>
           )}
@@ -133,7 +160,7 @@ const LoginPage: React.FC = () => {
 
         <TouchableOpacity
           style={styles.signUpButton}
-          onPress={() => Alert.alert('Info', 'Navigate to sign up page')}
+          onPress={() => Alert.alert("Info", "Navigate to sign up page")}
         >
           <Text style={styles.signUpButtonText}>Create New Account</Text>
         </TouchableOpacity>
@@ -146,15 +173,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loginContainer: {
     padding: 32,
     borderRadius: 16,
-    width: '90%',
+    width: "90%",
     maxWidth: 400,
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: COLORS.surface,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -163,7 +190,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   welcomeContainer: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 16,
   },
   welcomeText: {
@@ -201,13 +228,13 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   forgotPassword: {
-    alignSelf: 'flex-end',
+    alignSelf: "flex-end",
     marginBottom: 24,
   },
   forgotPasswordText: {
     color: COLORS.primary,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   actionButton: {
     backgroundColor: COLORS.primary,
@@ -215,8 +242,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     width: "100%",
-    flexDirection: 'row',
-    justifyContent: 'center',
+    flexDirection: "row",
+    justifyContent: "center",
     gap: 8,
   },
   actionButtonDisabled: {
@@ -228,9 +255,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
     marginVertical: 24,
   },
   dividerLine: {
@@ -242,12 +269,12 @@ const styles = StyleSheet.create({
     color: COLORS.text.secondary,
     paddingHorizontal: 16,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   signUpButton: {
-    width: '100%',
+    width: "100%",
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     borderWidth: 2,
     borderColor: COLORS.primary,
     borderRadius: 12,
@@ -255,7 +282,7 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: COLORS.primary,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
 

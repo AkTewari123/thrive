@@ -77,9 +77,33 @@ fetchBusinesses();
 const SectionHeader: React.FC<SectionHeaderProps> = ({ title }) => (
   <Text style={styles.sectionHeader}>{title}</Text>
 );
-
-const SeeMoreButton: React.FC = () => (
-  <TouchableOpacity style={styles.seeMoreButton}>
+interface seeMore {
+  businesses?: any[];
+}
+const SeeMoreButton: React.FC<seeMore> = ({ businesses }) => (
+  <TouchableOpacity
+    style={styles.seeMoreButton}
+    onPress={() => {
+      console.log(businesses);
+      businesses?.map((business: any, idx: number) =>
+        idx > 2 ? (
+          <Reccommended
+            key={business["id"] || idx}
+            name={business["businessName"]}
+            color={
+              business["color"] != null
+                ? business["color"]
+                : ["#14b8a6", "#4f46e5", "#047857", "#881337"][
+                    Math.floor(Math.random() * 4)
+                  ]
+            }
+            description={business["description"] || "Business Near You"}
+            email="myBusiness@gmail.com"
+          />
+        ) : null
+      );
+    }}
+  >
     <Text style={styles.seeMoreText}>See More</Text>
     <Feather name="arrow-down-circle" size={32} color="#3B82F6" />
   </TouchableOpacity>
@@ -259,7 +283,7 @@ const ClientDashboard: React.FC = () => {
             )
           )}
           {/* {followingElements()} */}
-          <SeeMoreButton />
+          <SeeMoreButton businesses={businesses} />
         </View>
       </ScrollView>
     </SafeAreaView>
