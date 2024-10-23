@@ -53,6 +53,7 @@ const updateUserColorIfNull = async (userEmail: string, color: string) => {
           await updateDoc(userDoc.ref, {
             color: color,
           });
+          console.log("color");
           console.log(`Updated color for user: ${userEmail}`);
         }
       });
@@ -128,7 +129,12 @@ const DMList: React.FC = () => {
       setModalVisible(false);
       setEmail(""); // Clear the input
       // Navigate to SpecificDM with the entered email
-      navigation.navigate("SpecificDM", { otherUserEmail: email.trim() });
+      navigation.navigate("SpecificDM", {
+        otherUserEmail: email.trim(),
+        color: ["#14b8a6", "#4f46e5", "#047857", "#881337"][
+          Math.floor(Math.random() * 3)
+        ],
+      });
     }
   };
 
@@ -150,6 +156,7 @@ const DMList: React.FC = () => {
             let color = ["#14b8a6", "#4f46e5", "#047857", "#881337"][
               Math.floor(Math.random() * 3)
             ];
+            console.log(color);
             const otherUserEmail =
               participants[0] === user.email
                 ? participants[1]
@@ -194,18 +201,31 @@ const DMList: React.FC = () => {
       {thriveHeader({})}
 
       <ScrollView style={styles.content}>
-        {dmList.map((dm) => (
-          <BusinessItem
-            key={dm.email}
-            name={dm.name}
-            color={dm.color}
-            description={`Chat with ${dm.name}`}
-            initial={dm.name.charAt(0).toUpperCase()}
-            onPress={() =>
-              navigation.navigate("SpecificDM", { otherUserEmail: dm.email })
-            }
-          />
-        ))}
+        {dmList.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <Feather name="message-square" size={64} color="#CCCCCC" />
+            <Text style={styles.emptyStateText}>No chats yet</Text>
+            <Text style={styles.emptyStateSubText}>
+              Start a new chat to begin messaging
+            </Text>
+          </View>
+        ) : (
+          dmList.map((dm) => (
+            <BusinessItem
+              key={dm.email}
+              name={dm.name}
+              color={dm.color}
+              description={`Chat with ${dm.name}`}
+              initial={dm.name.charAt(0).toUpperCase()}
+              onPress={() =>
+                navigation.navigate("SpecificDM", {
+                  otherUserEmail: dm.email,
+                  color: dm.color,
+                })
+              }
+            />
+          ))
+        )}
       </ScrollView>
 
       <FloatingActionButton onPress={handleNewChat} />

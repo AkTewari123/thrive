@@ -73,6 +73,7 @@ const SpecificDM: React.FC = () => {
   const { otherUserEmail } = route.params as { otherUserEmail: string }; // Get the other user's email from route params
   const { color } = route.params as { color: string }; // Get the other user's email from route params
   // Use both emails to create the Firestore document ID (sort alphabetically to ensure consistency)
+  console.log(color);
   const docId =
     currentUserEmail && otherUserEmail
       ? [currentUserEmail, otherUserEmail].sort().join("&")
