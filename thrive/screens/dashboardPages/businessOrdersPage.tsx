@@ -65,12 +65,12 @@ const BusinessOrdersPage: React.FC = () => {
 
     const currentUserEmail: any = FIREBASE_AUTH.currentUser?.email;
 
-    const handleSendMessage = async (recipientEmail: string, orderId: string) => {
+    const handleSendMessage = async (recipientEmail: string, orderId: string, orderName: string) => {
         const docId = currentUserEmail && recipientEmail
             ? [currentUserEmail, recipientEmail].sort().join("&")
             : null;
         const docRef = doc(FIRESTORE, "messages", docId || "default");
-        const messageContent = `Your order ${orderId} is ready for pickup!`;
+        const messageContent = `Your order for ${orderName} is ready for pickup!`;
         const newMessage = { [currentUserEmail]: messageContent };
 
         try {
@@ -111,8 +111,8 @@ const BusinessOrdersPage: React.FC = () => {
         return orders;
     };
 
-    const handleFulfill = async (orderId: string, userEmail: string) => {
-        await handleSendMessage(userEmail, orderId);
+    const handleFulfill = async (orderId: string, userEmail: string, orderName: string) => {
+        await handleSendMessage(userEmail, orderId, orderName);
         const updatedOrders = await setFulfillStatus(orderId);
         setOrders(updatedOrders.filter(order => !order.fulfilled));
     };
@@ -154,7 +154,7 @@ const BusinessOrdersPage: React.FC = () => {
                                         </Text>
                                         <TouchableOpacity
                                             style={styles.fulfillButton}
-                                            onPress={() => handleFulfill(order.id, order.userId)}
+                                            onPress={() => handleFulfill(order.id, order.userId, order.productName)}
                                         >
                                             <MaterialCommunityIcons
                                                 name="check-circle"

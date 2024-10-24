@@ -19,6 +19,7 @@ interface BusinessDetails {
   description: string;
   businessID: string;
   uid: string;
+  establishmentDate: string;
 }
 
 interface BusinessSignUpPageProps {
@@ -89,6 +90,12 @@ const BusinessSignUpPage: React.FC<BusinessSignUpPageProps> = ({
         value={businessDetails.phoneNumber}
         onChangeText={(value) => handleInputChange("phoneNumber", value)}
         keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Establishment Date"
+        value={businessDetails.establishmentDate}
+        onChangeText={(value) => handleInputChange("establishmentDate", value)}
       />
       <TextInput
         style={styles.inputBottom}
