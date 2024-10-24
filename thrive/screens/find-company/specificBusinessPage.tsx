@@ -1,113 +1,71 @@
-import React, { useEffect, useState } from "react";
-import Feather from "@expo/vector-icons/Feather";
+import React, { useEffect, useState, useCallback } from "react";
 import {
-	Text,
-	StyleSheet,
-	Dimensions,
-	TouchableOpacity,
-	SafeAreaView,
-	Button,
+  Text,
+  StyleSheet,
+  Dimensions,
+  TouchableOpacity,
+  SafeAreaView,
+  View,
+  ScrollView,
+  Alert,
+  TextInput,
+  ActivityIndicator,
 } from "react-native";
+import { Image } from "react-native-ui-lib";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
+import { FIREBASE_AUTH, FIRESTORE } from "../../FirebaseConfig";
 import {
-	Carousel,
-	Image,
-	View,
-	ProgressBar,
-	Colors,
-} from "react-native-ui-lib";
-import { FontAwesome } from "@expo/vector-icons";
-import { useRoute } from "@react-navigation/native";
-import thriveHeader from "../components/thriveHeader";
-import { FontAwesomeIcon } from "@fortawesome/react-native-fontawesome";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
-import { faLocationDot } from "@fortawesome/free-solid-svg-icons/faLocationDot";
-import { faClock } from "@fortawesome/free-solid-svg-icons/faClock";
-import { format } from "date-fns";
-import { ScrollView } from "react-native-gesture-handler";
-import * as Progress from "react-native-progress";
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { ActivityIndicator } from "react-native";
-import { FIRESTORE } from "../../FirebaseConfig";
-import { useNavigation } from "@react-navigation/native";
-import BusinessNavBar from "../components/businessNavbar";
-import { LogBox } from "react-native";
-import { FIREBASE_AUTH } from "../../FirebaseConfig";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-import {
-	collection,
-	query,
-	where,
-	getDocs,
-	addDoc,
-	Timestamp,
-	arrayUnion,
-	updateDoc,
-	doc,
-} from "firebase/firestore"; // Adjust this according to your Firestore setup
-import { TextInput } from "react-native-gesture-handler";
-import { CompanyHeader } from "../dashboardPages/landingPageBusiness";
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  arrayUnion,
+  Timestamp,
+} from "firebase/firestore";
+import { format } from 'date-fns';
 
-LogBox.ignoreLogs(["Warning: Encountered two children with the same key"]);
+// Consistent color palette
+const COLORS = {
+  primary: '#6366F1',     // Main brand color (purple)
+  secondary: '#4F46E5',   // Darker purple for hover states
+  background: '#F3F4F6',  // Light grey background
+  surface: '#FFFFFF',     // White surface
+  text: {
+    primary: '#1F2937',   // Dark grey for primary text
+    secondary: '#6B7280', // Medium grey for secondary text
+    inverse: '#FFFFFF',   // White text
+  },
+  border: '#E5E7EB',      // Light grey for borders
+  error: '#EF4444',       // Red for errors
+  success: '#10B981',     // Green for success states
+};
 
 interface ReviewProps {
-	username: string;
-	rating: number;
-	review: string;
+  username: string;
+  rating: number;
+  review: string;
 }
 
-const COLORS = {
-	primary: '#6366F1',     // Main brand color (purple)
-	secondary: '#4F46E5',   // Darker purple for hover states
-	background: '#F3F4F6',  // Light grey background
-	surface: '#FFFFFF',     // White surface
-	text: {
-	  primary: '#1F2937',   // Dark grey for primary text
-	  secondary: '#6B7280', // Medium grey for secondary text
-	  inverse: '#FFFFFF',   // White text
-	},
-	border: '#E5E7EB',      // Light grey for borders
-	error: '#EF4444',       // Red for errors
-	success: '#10B981',     // Green for success states
-  };
-  
-
 const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
-	const starHollowed = Array.from({ length: 5 }, (_, i) =>
-		i < rating ? "star" : "star-o"
-	);
-	return (
-		<>
-			<View
-				style={{
-					padding: 15,
-					borderRadius: 20,
-					backgroundColor: "#F9F9F9",
-					shadowOffset: { width: -2, height: 4 },
-					shadowOpacity: 0.2,
-					shadowRadius: 3,
-					width: "85%",
-					marginHorizontal: "auto",
-				}}
-			>
-				<Text
-					style={{
-						fontSize: 28,
-						fontWeight: 300,
-					}}
-				>
-					{username}
-				</Text>
-				<Text>
-					{starHollowed.map((star, index) => (
-						<FontAwesome key={index} name={star} size={20} />
-					))}
-				</Text>
-				<Text style={{}}>{review}</Text>
-			</View>
-		</>
-	);
+  const stars = Array.from({ length: 5 }, (_, i) => (
+    <FontAwesome
+      key={i}
+      name={i < rating ? "star" : "star-o"}
+      size={16}
+      color={i < rating ? COLORS.primary : COLORS.text.secondary}
+      style={{ marginRight: 4 }}
+    />
+  ));
+
+  return (
+    <View style={styles.reviewCard}>
+      <Text style={styles.reviewUsername}>{username}</Text>
+      <View style={styles.starsContainer}>{stars}</View>
+      <Text style={styles.reviewText}>{review}</Text>
+    </View>
+  );
 };
 
 const SpecificBusinessPage: React.FC = () => {
@@ -337,453 +295,298 @@ const SpecificBusinessPage: React.FC = () => {
 	const totalReviews = reviews.length;
 
 	return (
-		<>
-			<SafeAreaView></SafeAreaView>
-			<ScrollView style={styles.pageContainer}>
-				<View style = {[styles.dropShadow, {marginBottom: 20}]}> 
+    <SafeAreaView style={styles.container}>
+      <ScrollView style={styles.scrollView}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <Text style={styles.businessName}>{businessName}</Text>
+          <View style={styles.ratingContainer}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <FontAwesome
+                key={i}
+                name={i < numStars ? "star" : "star-o"}
+                size={20}
+                color={i < numStars ? COLORS.primary : COLORS.text.secondary}
+              />
+            ))}
+            <Text style={styles.ratingText}>({reviews.length} reviews)</Text>
+          </View>
+        </View>
 
-					<CompanyHeader name = {businessName} rating={numStars} initial = {businessName.slice(0, 1)} landing={false} />
-					<TouchableOpacity
-						style={styles.navigateButton}  // Style for the new button
-						onPress={() => navigation.navigate("CompanyPostHistory", {companyName: businessName})}  // Replace "AnotherPage" with the actual route name
-					>
-						<Text style={styles.navigateButtonText}>Go to Another Page</Text>
-					</TouchableOpacity>
-				</View>
+        {/* Image Carousel */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.carouselContainer}
+        >
+          {images.map((image: any, index: any) => (
+            <Image
+              key={`image-${index}`}
+              source={{ uri: image }}
+              style={styles.carouselImage}
+            />
+          ))}
+        </ScrollView>
 
-				<View style={[styles.childContainer, styles.middleContainer]}>
-					<Text style={[styles.sectionTitle, { paddingBottom: 10 }]}>
-						Gallery
-					</Text>
-					<Carousel
-						containerStyle={styles.carouselContainer}
-						loop
-						pageControlPosition={Carousel.pageControlPositions.OVER}
-						showCounter
-						autoplay
-					>
-						{images.map((image: any, index: any) => {
-							const key = `carousel-image-${index}-${businessName}`;
-							console.log("Key:", key); // Log each key
-							return (
-								<View flex centerV key={key}>
-									<Image
-										overlayType={Image.overlayTypes.BOTTOM}
-										style={styles.carouselImage}
-										source={{ uri: image }}
-										resizeMode="cover"
-										borderRadius={30}
-									/>
-								</View>
-							);
-						})}
-					</Carousel>
-				</View>
-				
-				<View style={[styles.childContainer, styles.topContainer]}>
-					{/* Business Info Section */}
+        {/* Business Info Card */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>About</Text>
+          <Text style={styles.descriptionText}>{businessDescription}</Text>
+          
+          <View style={styles.contactInfo}>
+            <View style={styles.contactItem}>
+              <MaterialCommunityIcons name="phone" size={24} color={COLORS.primary} />
+              <Text style={styles.contactText}>{phoneNumber}</Text>
+            </View>
+            <View style={styles.contactItem}>
+              <MaterialCommunityIcons name="map-marker" size={24} color={COLORS.primary} />
+              <Text style={styles.contactText}>{address}</Text>
+            </View>
+          </View>
+        </View>
 
-					{/* Business Description Section */}
-					<View style={[styles.businessDescriptionScroll, {paddingBottom:20}]}>
-						<Text style={styles.businessDescriptionText}>
-							{businessDescription}
-						</Text>
-					</View>
+        {/* Products Section */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Products</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {products.map((product: any, index: any) => (
+              <View key={index} style={styles.productCard}>
+                <Image source={{ uri: product.image }} style={styles.productImage} />
+                <Text style={styles.productTitle}>{product.name}</Text>
+                <Text style={styles.productPrice}>${product.price}</Text>
+                <TouchableOpacity
+                  style={styles.orderButton}
+                  onPress={() => handleOrder(product.productID, product.image, product.price, product.name)}
+                >
+                  <Text style={styles.orderButtonText}>Order Now</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
 
-					{/* Contact Info Section */}
-					<View style={[styles.contactInfo, {marginHorizontal:"auto"}]}>
-						<Text style={[styles.contactText, {}]}>
-							<Feather name="phone-outgoing" size={34} />
-							{"\n "}
-							{"\n "}
-							{phoneNumber}
-						</Text>
-						<Text style={styles.contactText}>
-							<Entypo name="location" size={34} />
-							{"\n "}
-							{"\n "}
-							{address}
-						</Text>
-					</View>
-				</View>
-
-				
-
-				{/* Products Section */}
-				<View style={[styles.childContainer, styles.middleContainer]}>
-					<Text style={styles.sectionTitle}>Products</Text>
-					{products.length > 0 ? (
-						products.map((product: any, index: any) => (
-							<View key={index} style={styles.productItem}>
-								<Text style={styles.productTitle}>
-									{product.name}
-								</Text>
-								<Image
-									source={{ uri: product.image }}
-									style={styles.productImage}
-								/>
-								<Text style={styles.productDescription}>
-									{product.description}
-								</Text>
-								<Text style={styles.productPrice}>
-									${product.price}
-								</Text>
-								<Button
-									title="Order"
-									onPress={() =>
-										handleOrder(
-											product.productID,
-											product.image,
-											product.price,
-											product.name
-										)
-									}
-								/>
-							</View>
-						))
-					) : (
-						<Text>No products available</Text>
-					)}
-				</View>
-				{/* Ratings & Reviews Section */}
-				<View style={[styles.childContainer, styles.middleContainer]}>
-					<Text style={styles.sectionTitle}>Ratings & Reviews</Text>
-					<View style={styles.ratingsContainer}>
-						<View>
-							<Text style={styles.averageRatingText}>
-								{numStars.toFixed(1)}
-							</Text>
-							<Text style={styles.outOfText}>out of 5 stars</Text>
-						</View>
-						<View style={styles.starBarsContainer}>
-							{starCounts.map((count, index) => (
-								<View key={index} style={styles.starRow}>
-									<Text>
-										<FontAwesome
-											name="star"
-											size={15}
-											color="black"
-										/>{" "}
-										{5 - index} stars
-									</Text>
-									<ProgressBar
-										progress={
-											totalReviews
-												? count / totalReviews
-												: 0
-										}
-										progressColor="#1415D0"
-										style={styles.progressBars}
-									/>
-									<Text style={styles.ratingNum}>
-										({count})
-									</Text>
-								</View>
-							))}
-						</View>
-					</View>
-				</View>
-
-				<View style={[styles.childContainer, styles.middleContainer]}>
-					<View>
-						<Text
-							style={[
-								styles.sectionTitle,
-								{ textAlign: "center" },
-							]}
-						>
-							Customers
-						</Text>
-						<View
-							style={{
-								flexDirection: "row",
-								justifyContent: "space-between",
-								marginTop: 5,
-							}}
-						>
-							<TouchableOpacity
-								onPress={() =>
-									setIdx(
-										idx > 0 ? idx - 1 : reviews.length - 1
-									)
-								}
-								style={{ marginTop: "13%" }}
-							>
-								<FontAwesomeIcon icon={faArrowLeft} size={20} />
-							</TouchableOpacity>
-							<Review
-								username={reviews[idx].username}
-								rating={reviews[idx].rating}
-								review={reviews[idx].review}
-							/>
-							<TouchableOpacity
-								onPress={() =>
-									setIdx((idx + 1) % reviews.length)
-								}
-								style={{ marginTop: "13%" }}
-							>
-								<FontAwesomeIcon
-									icon={faArrowRight}
-									size={20}
-								/>
-							</TouchableOpacity>
-						</View>
-					</View>
-				</View>
-				{/* Add Review Section */}
-				<View style={[styles.childContainer, styles.middleContainer]}>
-					<Text style={styles.sectionTitle}>Add a Review</Text>
-
-					<View style={styles.inputContainer}>
-						<Text>Rating (1-5)</Text>
-						<TextInput
-							style={styles.input}
-							keyboardType="numeric"
-							placeholder="Enter your rating"
-							value={newRating ? newRating.toString() : ""}
-							onChangeText={(value) =>
-								setNewRating(parseInt(value) || 0)
-							}
-						/>
-					</View>
-
-					<View style={styles.inputContainer}>
-						<Text>Review</Text>
-						<TextInput
-							style={[
-								styles.input,
-								{ height: 100, textAlignVertical: "top" },
-							]}
-							placeholder="Write your review here"
-							value={newReview}
-							onChangeText={setNewReview}
-							multiline
-						/>
-					</View>
-
-					<Button
-						title={submitting ? "Submitting..." : "Submit Review"}
-						onPress={handleSubmitReview}
-						disabled={submitting}
-					/>
-				</View>
-			</ScrollView>
-		</>
-	);
+        {/* Reviews Section */}
+        <View style={styles.card}>
+          <Text style={styles.sectionTitle}>Reviews</Text>
+          <View>
+            {reviews.map((review: any, index: any) => (
+              <Review
+                key={index}
+                username={review.username}
+                rating={review.rating}
+                review={review.review}
+              />
+            ))}
+          </View>
+          
+          {/* Add Review Form */}
+          <View style={styles.addReviewSection}>
+            <Text style={styles.subsectionTitle}>Write a Review</Text>
+            <View style={styles.ratingInput}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <TouchableOpacity key={i} onPress={() => setNewRating(i + 1)}>
+                  <FontAwesome
+                    name={i < newRating ? "star" : "star-o"}
+                    size={24}
+                    color={i < newRating ? COLORS.primary : COLORS.text.secondary}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              style={styles.reviewInput}
+              placeholder="Share your experience..."
+              multiline
+              value={newReview}
+              onChangeText={setNewReview}
+            />
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmitReview}
+              disabled={submitting}
+            >
+              <Text style={styles.submitButtonText}>
+                {submitting ? "Submitting..." : "Submit Review"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
 };
 
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: "#E4E8EE",
-	},
-	pageContainer: {
-		paddingVertical: 10,
-		flex: 1,
-		backgroundColor: "transparent",
-		paddingHorizontal: 25,
-	},
-	childContainer: {
-		backgroundColor: "white",
-		width: "100%",
-		borderRadius: 20,
-		marginBottom: 25,
-		shadowColor: "#171717",
-		shadowOffset: { width: -2, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 3,
-		padding: 25,
-		flexShrink: 1,
-	},
-	dropShadow: {
-		shadowColor: "#171717",
-		shadowOffset: { width: -2, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 3,
-		flexShrink: 1,
-	},
-	topContainer: {
-		marginBottom: 20,
-	},
-	businessInfoContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	initialCircle: {
-		width: 60,
-		height: 60,
-		borderRadius: 30,
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	initialText: {
-		color: "white",
-		fontSize: 24,
-		fontWeight: "500",
-	},
-	businessDetails: {
-		marginLeft: 15,
-	},
-	businessName: {
-		fontWeight: "500",
-		fontSize: 30,
-	},
-	sectionTitle: {
-		fontWeight: "500",
-		fontSize: 25,
-		marginBottom: 10,
-		paddingTop: 10,
-	},
-	descriptionText: {
-		fontWeight: "500",
-		fontSize: 20,
-		marginBottom: 10,
-		paddingTop: 10,
-	},
-	productItem: {
-		borderColor: "#ccc",
-		borderWidth: 1,
-		borderRadius: 10,
-		padding: 10,
-		marginBottom: 15,
-		alignItems: "center",
-		width: "100%",
-	},
-	productTitle: {
-		fontSize: 18,
-		fontWeight: "bold",
-		marginBottom: 5,
-	},
-	productDescription: {
-		fontSize: 14,
-		marginVertical: 5,
-		textAlign: "center",
-	},
-	productPrice: {
-		fontSize: 16,
-		fontWeight: "bold",
-		marginBottom: 10,
-	},
-	productImage: {
-		width: 150,
-		height: 150,
-		marginBottom: 10,
-		borderRadius: 10,
-	},
-	middleContainer: {
-		alignItems: "center",
-	},
-	businessDescriptionScroll: {
-		width: "100%",
-		marginTop: 10,
-	},
-	businessDescriptionText: {
-		fontWeight: "500",
-		width: "90%",
-		marginHorizontal: "auto",
-	},
-	progressBars: {
-		height: 13,
-		marginTop: 2.3,
-	},
-	ratingNum: {
-		color: "black",
-		textAlign: "center",
-		display: "flex",
-		fontSize: 13,
-	},
-	navigateButton: {
-		backgroundColor: COLORS.primary,
-		borderRadius: 12,
-		paddingVertical: 16,
-		alignItems: "center",
-		justifyContent: 'center',
-		flexDirection: 'row',
-		gap: 8,
-		marginTop: 16,
-		width: "100%",
-	  },
-	  navigateButtonText: {
-		color: COLORS.text.inverse,
-		fontSize: 16,
-		fontWeight: "600",
-	  },
-	  
-	bottomContainer: {
-		flexDirection: "row",
-		alignItems: "center",
-	},
-	carouselContainer: {
-		height: 150,
-		width: "100%",
-	},
-	carouselImage: {
-		flex: 1,
-		width: "100%",
-	},
-	contactInfo: {
-		display: "flex",
-		color: "black",
-		marginTop: 15,
-		flexDirection: "row",
-	},
-	contactText: {
-		fontWeight: "500",
-		textAlign: "center",
-		width: "50%",
-	},
-	reviewContainer: {
-		padding: 15,
-		borderRadius: 20,
-		backgroundColor: "#F9F9F9",
-		shadowOffset: { width: -2, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 3,
-		width: "85%",
-		marginHorizontal: "auto",
-	},
-	inputContainer: {
-		width: "100%",
-		marginBottom: 15,
-	},
-	input: {
-		borderColor: "#ccc",
-		borderWidth: 1,
-		borderRadius: 10,
-		padding: 10,
-		marginBottom: 10,
-		width: "100%",
-	},
-
-	reviewUsername: {
-		fontSize: 28,
-		fontWeight: "300",
-	},
-	reviewText: {},
-	ratingsContainer: {
-		display: "flex",
-		flexDirection: "row",
-		marginTop: 15,
-		marginHorizontal: "auto",
-	},
-	averageRatingText: {
-		fontWeight: "300",
-		fontSize: 50,
-		textAlign: "center",
-	},
-	outOfText: {
-		textAlign: "center",
-	},
-	starBarsContainer: {
-		marginLeft: 10,
-	},
-
-	starRow: {
-		display: "flex",
-		flexDirection: "row",
-		alignItems: "center",
-		marginBottom: 5,
-	},
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  headerSection: {
+    padding: 20,
+    backgroundColor: COLORS.surface,
+  },
+  businessName: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: COLORS.text.primary,
+    marginBottom: 8,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  ratingText: {
+    marginLeft: 8,
+    color: COLORS.text.secondary,
+  },
+  carouselContainer: {
+    height: 200,
+    marginBottom: 16,
+  },
+  carouselImage: {
+    width: 300,
+    height: 200,
+    marginHorizontal: 8,
+    borderRadius: 12,
+  },
+  card: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginHorizontal: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    marginBottom: 16,
+  },
+  descriptionText: {
+    fontSize: 16,
+    color: COLORS.text.secondary,
+    lineHeight: 24,
+    marginBottom: 16,
+  },
+  contactInfo: {
+    marginTop: 16,
+  },
+  contactItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  contactText: {
+    marginLeft: 12,
+    fontSize: 16,
+    color: COLORS.text.secondary,
+  },
+  productCard: {
+    width: 200,
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: 16,
+    marginRight: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  productImage: {
+    width: "100%",
+    height: 150,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  productTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 12,
+  },
+  orderButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    padding: 12,
+    alignItems: "center",
+  },
+  orderButtonText: {
+    color: COLORS.text.inverse,
+    fontWeight: "600",
+  },
+  reviewCard: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  reviewUsername: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    marginBottom: 4,
+  },
+  starsContainer: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  reviewText: {
+    fontSize: 14,
+    color: COLORS.text.secondary,
+    lineHeight: 20,
+  },
+  addReviewSection: {
+    marginTop: 24,
+    paddingTop: 24,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  subsectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: COLORS.text.primary,
+    marginBottom: 16,
+  },
+  ratingInput: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 16,
+    gap: 8,
+  },
+  reviewInput: {
+    backgroundColor: COLORS.background,
+    borderRadius: 12,
+    padding: 16,
+    height: 120,
+    textAlignVertical: "top",
+    marginBottom: 16,
+  },
+  submitButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  submitButtonText: {
+    color: COLORS.text.inverse,
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default SpecificBusinessPage;
