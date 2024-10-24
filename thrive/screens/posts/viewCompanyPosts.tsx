@@ -68,6 +68,13 @@ export const CompanyPostHistory: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: "View Posts",
+      headerBackTitle: "Back",
+    });
+  }, [navigation]);
+
   // Fetch user by businessID and then their posts
   useEffect(() => {
     const fetchUserAndPosts = async () => {
