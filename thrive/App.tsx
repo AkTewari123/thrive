@@ -134,6 +134,10 @@ function BusinessLayout() {
         component={CombinedCharts}
         options={{ title: 'Graphs' }}
       />
+      <BusinessStack.Screen
+        name="CompanyPostHistory"
+        component={CompanyPostHistory}
+      />
     </BusinessStack.Navigator>
   );
 }
@@ -197,6 +201,7 @@ function CustomerTabNavigator() {
       <Tab.Screen name="Dashboard" component={ClientDashboard} />
       <Tab.Screen name="Businesses" component={SearchResults} />
       <Tab.Screen name="Settings" component={SettingsPage} />
+      
     </Tab.Navigator>
   );
 }

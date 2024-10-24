@@ -57,6 +57,22 @@ interface ReviewProps {
 	review: string;
 }
 
+const COLORS = {
+	primary: '#6366F1',     // Main brand color (purple)
+	secondary: '#4F46E5',   // Darker purple for hover states
+	background: '#F3F4F6',  // Light grey background
+	surface: '#FFFFFF',     // White surface
+	text: {
+	  primary: '#1F2937',   // Dark grey for primary text
+	  secondary: '#6B7280', // Medium grey for secondary text
+	  inverse: '#FFFFFF',   // White text
+	},
+	border: '#E5E7EB',      // Light grey for borders
+	error: '#EF4444',       // Red for errors
+	success: '#10B981',     // Green for success states
+  };
+  
+
 const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
 	const starHollowed = Array.from({ length: 5 }, (_, i) =>
 		i < rating ? "star" : "star-o"
@@ -156,6 +172,7 @@ const SpecificBusinessPage: React.FC = () => {
 	const reviews = businessData?.reviews || [
 		{ username: "None", rating: 5, review: "No Reviews" },
 	];
+	const email = businessData?.email || "Not defined";
 	const products = businessData?.products || [];
 
 	useEffect(() => {
@@ -326,6 +343,12 @@ const SpecificBusinessPage: React.FC = () => {
 				<View style = {[styles.dropShadow, {marginBottom: 20}]}> 
 
 					<CompanyHeader name = {businessName} rating={numStars} initial = {businessName.slice(0, 1)} landing={false} />
+					<TouchableOpacity
+						style={styles.navigateButton}  // Style for the new button
+						onPress={() => navigation.navigate("CompanyPostHistory", {companyName: businessName})}  // Replace "AnotherPage" with the actual route name
+					>
+						<Text style={styles.navigateButtonText}>Go to Another Page</Text>
+					</TouchableOpacity>
 				</View>
 
 				<View style={[styles.childContainer, styles.middleContainer]}>
@@ -669,6 +692,23 @@ const styles = StyleSheet.create({
 		display: "flex",
 		fontSize: 13,
 	},
+	navigateButton: {
+		backgroundColor: COLORS.primary,
+		borderRadius: 12,
+		paddingVertical: 16,
+		alignItems: "center",
+		justifyContent: 'center',
+		flexDirection: 'row',
+		gap: 8,
+		marginTop: 16,
+		width: "100%",
+	  },
+	  navigateButtonText: {
+		color: COLORS.text.inverse,
+		fontSize: 16,
+		fontWeight: "600",
+	  },
+	  
 	bottomContainer: {
 		flexDirection: "row",
 		alignItems: "center",

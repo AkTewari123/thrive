@@ -63,17 +63,24 @@ const PostItem: React.FC<Post> = ({
 export const CompanyPostHistory: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { companyEmail, companyName } = route.params as RouteParams;
+  const { companyName } = route.params as RouteParams;
 
   const [loading, setLoading] = useState(true);
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     fetchCompanyPosts();
-  }, [companyEmail]);
+  }, [companyName]);
+
+  useEffect(() => {
+			navigation.setOptions({
+				headerTitle: companyName,
+				headerBackTitle: "Back",
+			});
+	}, [companyName, navigation]);
 
   const fetchCompanyPosts = async () => {
-    if (!companyEmail) return;
+    if (!companyName) return;
 
     try {
       const q = query(
@@ -104,7 +111,7 @@ export const CompanyPostHistory: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
@@ -112,7 +119,7 @@ export const CompanyPostHistory: React.FC = () => {
           <Text style={styles.backButtonText}>←</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{companyName}'s Updates</Text>
-      </View>
+      </View> */}
 
       <ScrollView style={styles.content}>
         {posts.length === 0 ? (
