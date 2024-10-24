@@ -235,6 +235,16 @@ function CustomerLayout() {
       <CustomerStack.Screen
         name="CompanyPostHistory"
         component={CompanyPostHistory}
+        options={{
+          headerShown: true,
+          headerStyle: {
+            backgroundColor: "#5A5D9D",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+        }}
       />
     </CustomerStack.Navigator>
   );

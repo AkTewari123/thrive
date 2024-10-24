@@ -44,6 +44,8 @@ const EditButtons: React.FC<EditButtonProps> = ({ businessID }) => {
     navigation.navigate("BusinessPage", { id: businessID });
   };
 
+  
+
   return (
     <View style={styles.editButtonsContainer}>
       <Pressable style={styles.editButton} onPress={handleEditPress}>
@@ -365,10 +367,11 @@ const LandingPageBusiness: React.FC = () => {
       </SafeAreaView>
     );
   }
+  let reviews = businessData?.reviews || [];
 
   let sum = 0;
-	for (let i = 0; i < businessData?.reviews.length; i++) {
-		sum += businessData?.reviews[i].rating;
+	for (let i = 0; i < reviews.length; i++) {
+		sum += reviews[i].rating;
 	}
 
   return (
@@ -377,7 +380,7 @@ const LandingPageBusiness: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <CompanyHeader
           name={businessData?.businessName || "Business Name"}
-          rating={businessData?.reviews.length > 0 ? sum / businessData?.reviews.length : 0}
+          rating={reviews.length > 0 ? sum / reviews.length : 0}
           initial={businessData?.businessName?.[0] || "B"}
           landing={true}
         />

@@ -13,7 +13,6 @@ import { useEffect } from "react";
 interface BusinessDetails {
   businessName: string;
   location: string;
-  establishmentDate: string;
   services: string;
   menuPdf: any;
   phoneNumber: string;
@@ -86,37 +85,18 @@ const BusinessSignUpPage: React.FC<BusinessSignUpPageProps> = ({
       />
       <TextInput
         style={styles.input}
-        placeholder="Date of Establishment"
-        value={businessDetails.establishmentDate}
-        onChangeText={(value) => handleInputChange("establishmentDate", value)}
-      />
-      <TextInput
-        style={styles.input}
         placeholder="Contact Phone Number"
         value={businessDetails.phoneNumber}
         onChangeText={(value) => handleInputChange("phoneNumber", value)}
         keyboardType="phone-pad"
       />
       <TextInput
-        style={styles.input}
+        style={styles.inputBottom}
         placeholder="Brief Description"
-        maxLength={15}
         value={businessDetails.description}
         onChangeText={(value) => handleInputChange("description", value)}
         keyboardType="phone-pad"
       />
-
-      <TouchableOpacity style={styles.uploadButton} onPress={handlePdfUpload}>
-        <FontAwesome name="file-pdf-o" size={24} color="#6366F1" />
-        <Text style={styles.uploadButtonText}>
-          {businessDetails.menuPdf
-            ? "Change Menu/Product List PDF"
-            : "Upload Menu/Product List PDF"}
-        </Text>
-      </TouchableOpacity>
-      {businessDetails.menuPdf && !businessDetails.menuPdf.canceled && (
-        <Text style={styles.fileName}>{businessDetails.menuPdf.name}</Text>
-      )}
     </View>
   );
 };
@@ -134,6 +114,15 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#1F2937",
     marginBottom: 16,
+  },
+  inputBottom: {
+    width: "100%",
+    backgroundColor: "#F3F4F6",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#1F2937",
   },
   uploadButton: {
     flexDirection: "row",

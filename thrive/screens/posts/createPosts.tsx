@@ -33,6 +33,7 @@ interface Post {
   content: string;
   companyName: string;
   companyEmail: string;
+  businessID: string;
   timestamp: Timestamp;
   color: string;
 }
