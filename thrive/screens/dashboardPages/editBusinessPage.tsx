@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import {
-	Text,
-	StyleSheet,
-	SafeAreaView,
-	TextInput,
-	Button,
-	Alert,
-	FlatList,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  FlatList,
+  View,
 } from "react-native";
-import { Image, View } from "react-native-ui-lib";
+import { Image } from "react-native-ui-lib";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { ScrollView } from "react-native-gesture-handler";
 import { updateDoc, getDocs, query, where, collection } from "firebase/firestore";
@@ -17,20 +18,22 @@ import * as ImagePicker from "expo-image-picker";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../../FirebaseConfig";
 import { Picker } from "@react-native-picker/picker";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+// Consistent color palette
 const COLORS = {
-	primary: '#6366F1', // Main brand color (purple)
-	secondary: '#4F46E5', // Darker purple for hover states
-	background: '#F3F4F6', // Light grey background
-	surface: '#FFFFFF', // White surface
-	text: {
-		primary: '#1F2937', // Dark grey for primary text
-		secondary: '#6B7280', // Medium grey for secondary text
-		inverse: '#FFFFFF', // White text
-	},
-	border: '#E5E7EB', // Light grey for borders
-	error: '#EF4444', // Red for errors
-	success: '#10B981', // Green for success states
+  primary: "#6366F1", // Main brand color (purple)
+  secondary: "#4F46E5", // Darker purple for hover states
+  background: "#F3F4F6", // Light grey background
+  surface: "#FFFFFF", // White surface
+  text: {
+    primary: "#1F2937", // Dark grey for primary text
+    secondary: "#6B7280", // Medium grey for secondary text
+    inverse: "#FFFFFF", // White text
+  },
+  border: "#E5E7EB", // Light grey for borders
+  error: "#EF4444", // Red for errors
+  success: "#10B981", // Green for success states
 };
 
 
@@ -197,224 +200,379 @@ const EditBusinessPage: React.FC = () => {
 		);
 	}
 
-	return (
+	const renderInputField = (
+		label: string,
+		value: string,
+		onChangeText: (text: string) => void,
+		icon: string,
+		multiline: boolean = false,
+		keyboardType: any = "default"
+	  ) => (
+		<View style={styles.inputWrapper}>
+		  <Text style={styles.label}>{label}</Text>
+		  <View style={styles.inputContainer}>
+			<MaterialCommunityIcons
+			  name={icon as any}
+			  size={20}
+			  color={COLORS.text.secondary}
+			  style={styles.inputIcon}
+			/>
+			<TextInput
+			  style={[
+				styles.input,
+				multiline && styles.multilineInput
+			  ]}
+			  value={value}
+			  onChangeText={onChangeText}
+			  multiline={multiline}
+			  keyboardType={keyboardType}
+			  placeholderTextColor={COLORS.text.secondary}
+			/>
+		  </View>
+		</View>
+	  );
+	
+	  const renderActionButton = (title: string, onPress: () => void, icon: string, color: string = COLORS.primary) => (
+		<TouchableOpacity
+		  style={[styles.actionButton, { backgroundColor: color }]}
+		  onPress={onPress}
+		>
+		  <MaterialCommunityIcons
+			name={icon as any}
+			size={24}
+			color={COLORS.text.inverse}
+		  />
+		  <Text style={styles.actionButtonText}>{title}</Text>
+		</TouchableOpacity>
+	  );
+	
+	  return (
 		<SafeAreaView style={styles.container}>
-			<ScrollView style={styles.pageContainer}>
-				<Text
-					style={{
-						textAlign: "center",
-						fontSize: 30,
-						paddingVertical: 20,
-					}}
-				>
-					Edit Business Information
-				</Text>
-
-				{/* Business Information Fields */}
-				<View style={[styles.inputContainer, styles.childContainer]}>
-					<Text style={styles.label}>Business Name</Text>
-					<TextInput
-						style={styles.input}
-						value={businessData?.businessName || ""}
-						onChangeText={(text) => handleInputChange("businessName", text)}
-					/>
-
-					<Text style={styles.label}>Description</Text>
-					<TextInput
-						style={[styles.input]}
-						value={businessData?.description || ""}
-						onChangeText={(text) => handleInputChange("description", text)}
-					/>
-
-					<Text style={styles.label}>Long Description</Text>
-					<TextInput
-						style={[styles.input, styles.longDescriptionInput]}
-						value={businessData?.longDescription || ""}
-						onChangeText={(text) => handleInputChange("longDescription", text)}
-						multiline
-					/>
-
-					<Text style={styles.label}>Phone Number</Text>
-					<TextInput
-						style={styles.input}
-						value={businessData?.phoneNumber || ""}
-						onChangeText={(text) => handleInputChange("phoneNumber", text)}
-						keyboardType="phone-pad"
-					/>
-
-					<Text style={styles.label}>Location</Text>
-					<TextInput
-						style={styles.input}
-						value={businessData?.location || ""}
-						onChangeText={(text) => handleInputChange("location", text)}
-					/>
-
-					<Text style={styles.label}>Business Category</Text>
-					<Picker
-						selectedValue={selectedCategory}
-						onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-						style={styles.picker}
-					>
-						<Picker.Item label="Food" value="food" />
-						<Picker.Item label="Service" value="service" />
-						<Picker.Item label="Arts and Crafts" value="arts_crafts" />
-						<Picker.Item label="Technology" value="technology" />
-						<Picker.Item label="Retail" value="retail" />
-					</Picker>
+		  <ScrollView style={styles.pageContainer}>
+			<View style={styles.headerContainer}>
+			  <MaterialCommunityIcons
+				name="store-edit"
+				size={40}
+				color={COLORS.primary}
+			  />
+			  <Text style={styles.headerText}>Edit Business Profile</Text>
+			</View>
+	
+			<View style={styles.formContainer}>
+			  {renderInputField(
+				"Business Name",
+				businessData?.businessName || "",
+				(text) => handleInputChange("businessName", text),
+				"store"
+			  )}
+	
+			  {renderInputField(
+				"Description",
+				businessData?.description || "",
+				(text) => handleInputChange("description", text),
+				"text-box",
+				true
+			  )}
+	
+			  {renderInputField(
+				"Long Description",
+				businessData?.longDescription || "",
+				(text) => handleInputChange("longDescription", text),
+				"text-box-multiple",
+				true
+			  )}
+	
+			  {renderInputField(
+				"Phone Number",
+				businessData?.phoneNumber || "",
+				(text) => handleInputChange("phoneNumber", text),
+				"phone",
+				false,
+				"phone-pad"
+			  )}
+	
+			  {renderInputField(
+				"Location",
+				businessData?.location || "",
+				(text) => handleInputChange("location", text),
+				"map-marker"
+			  )}
+	
+			  <View style={styles.pickerWrapper}>
+				<Text style={styles.label}>Business Category</Text>
+				<View style={styles.pickerContainer}>
+				  <MaterialCommunityIcons
+					name="tag"
+					size={20}
+					color={COLORS.text.secondary}
+					style={styles.inputIcon}
+				  />
+				  <Picker
+					selectedValue={selectedCategory}
+					onValueChange={(itemValue) => setSelectedCategory(itemValue)}
+					style={styles.picker}
+				  >
+					<Picker.Item label="Food" value="food" />
+					<Picker.Item label="Service" value="service" />
+					<Picker.Item label="Arts and Crafts" value="arts_crafts" />
+					<Picker.Item label="Technology" value="technology" />
+					<Picker.Item label="Retail" value="retail" />
+				  </Picker>
 				</View>
-
-				{/* Image picker and upload section */}
-				<View style={[styles.inputContainer, styles.childContainer]}>
-					<Text style={styles.label}>Current Images</Text>
-					{businessData?.images?.length > 0 ? (
-						<FlatList
-							data={businessData.images}
-							keyExtractor={(item, index) => `image-${index}`}
-							renderItem={({ item, index }) => (
-								<View style={styles.imageItem}>
-									<Image source={{ uri: item }} style={styles.image} />
-									<Button title="Remove" onPress={() => handleRemoveImage(index)} />
-								</View>
-							)}
-							horizontal
-						/>
-					) : (
-						<Text>No images available</Text>
+			  </View>
+	
+			  {/* Images Section */}
+			  <View style={styles.sectionContainer}>
+				<Text style={styles.sectionTitle}>Business Images</Text>
+				{businessData?.images?.length > 0 ? (
+				  <FlatList
+					data={businessData.images}
+					keyExtractor={(item, index) => `image-${index}`}
+					renderItem={({ item, index }) => (
+					  <View style={styles.imageItem}>
+						<Image source={{ uri: item }} style={styles.image} />
+						{renderActionButton(
+						  "Remove",
+						  () => handleRemoveImage(index),
+						  "delete",
+						  COLORS.error
+						)}
+					  </View>
 					)}
-					<Button title="Add Image from Camera Roll" onPress={handlePickImage} />
-					{uploading && (
-						<Text style={styles.uploadingText}>
-							Uploading... {transferred}% completed
-						</Text>
+					horizontal
+				  />
+				) : (
+				  <Text style={styles.emptyText}>No images available</Text>
+				)}
+				{renderActionButton(
+				  "Add Image",
+				  handlePickImage,
+				  "image-plus"
+				)}
+			  </View>
+	
+			  {/* Products Section */}
+			  <View style={styles.sectionContainer}>
+				<Text style={styles.sectionTitle}>Products</Text>
+				{products.map((product, index) => (
+				  <View key={product.productID} style={styles.productItem}>
+					<Text style={styles.productTitle}>{product.name}</Text>
+					<Text style={styles.productDescription}>{product.description}</Text>
+					<Text style={styles.productPrice}>${product.price}</Text>
+					<Image source={{ uri: product.image }} style={styles.productImage} />
+					{renderActionButton(
+					  "Remove Product",
+					  () => handleRemoveProduct(index),
+					  "delete",
+					  COLORS.error
 					)}
+				  </View>
+				))}
+	
+				<View style={styles.addProductForm}>
+				  <Text style={styles.subsectionTitle}>Add New Product</Text>
+				  {renderInputField(
+					"Product Name",
+					newProduct.name,
+					(text) => setNewProduct({ ...newProduct, name: text }),
+					"tag-text"
+				  )}
+				  {renderInputField(
+					"Product Description",
+					newProduct.description,
+					(text) => setNewProduct({ ...newProduct, description: text }),
+					"text-box",
+					true
+				  )}
+				  {renderInputField(
+					"Product Price",
+					newProduct.price,
+					(text) => setNewProduct({ ...newProduct, price: text }),
+					"currency-usd",
+					false,
+					"numeric"
+				  )}
+				  {renderActionButton(
+					"Add Product Image",
+					handlePickImage,
+					"image-plus"
+				  )}
+				  {renderActionButton(
+					"Add Product",
+					handleAddProduct,
+					"plus-circle"
+				  )}
 				</View>
-
-				{/* Products Section */}
-				<View style={[styles.inputContainer, styles.childContainer]}>
-					<Text style={[styles.label, { alignSelf: "center" }]}>Products</Text>
-					{products.length > 0 ? (
-						products.map((product, index) => (
-							<View key={product.productID} style={styles.productItem}>
-								<Text style={styles.productText}>Name: {product.name}</Text>
-								<Text style={styles.productText}>Description: {product.description}</Text>
-								<Text style={styles.productText}>Price: ${product.price}</Text>
-								<Image source={{ uri: product.image }} style={styles.image} />
-								<Button title="Remove Product" onPress={() => handleRemoveProduct(index)} />
-							</View>
-						))
-					) : (
-						<Text>No products added yet.</Text>
-					)}
-
-					{/* New Product Form */}
-					<Text style={styles.label}>Add New Product</Text>
-					<TextInput
-						style={styles.input}
-						value={newProduct.name}
-						onChangeText={(text) => setNewProduct({ ...newProduct, name: text })}
-						placeholder="Product Name"
-					/>
-					<TextInput
-						style={styles.input}
-						value={newProduct.description}
-						onChangeText={(text) => setNewProduct({ ...newProduct, description: text })}
-						placeholder="Product Description"
-						multiline
-					/>
-					<TextInput
-						style={styles.input}
-						value={newProduct.price}
-						onChangeText={(text) => setNewProduct({ ...newProduct, price: text })}
-						placeholder="Product Price"
-						keyboardType="numeric"
-					/>
-					<Button title="Add Product Image" onPress={handlePickImage} />
-					<Button title="Add Product" onPress={handleAddProduct} />
-				</View>
-
-				<View style={styles.buttonContainer}>
-					<Button title="Save Changes" onPress={handleSave} />
-				</View>
-			</ScrollView>
+			  </View>
+	
+			  {renderActionButton(
+				"Save Changes",
+				handleSave,
+				"content-save",
+				COLORS.success
+			  )}
+			</View>
+		  </ScrollView>
 		</SafeAreaView>
-	);
-};
-
-const styles = StyleSheet.create({
-	container: {
+	  );
+	};
+	
+	const styles = StyleSheet.create({
+	  container: {
 		flex: 1,
-		backgroundColor: "#F4F4F4",
-	},
-	pageContainer: {
-		padding: 15,
-	},
-	inputContainer: {
-		marginBottom: 20,
-	},
-	label: {
-		fontSize: 16,
-		fontWeight: "bold",
-	},
-	input: {
-		backgroundColor: "#FFF",
-		padding: 10,
-		marginVertical: 5,
-		borderRadius: 5,
-		borderColor: "#CCC",
-		borderWidth: 1,
-		fontSize: 16,
-	},
-	descriptionInput: {
-		height: 120,
-		textAlignVertical: "top",
-	},
-	longDescriptionInput: {
-		height: 150,
-		textAlignVertical: "top",
-	},
-	buttonContainer: {
-		marginTop: 20,
-		marginBottom: 30,
-	},
-	imageItem: {
-		marginRight: 10,
+		backgroundColor: COLORS.background,
+	  },
+	  pageContainer: {
+		padding: 16,
+	  },
+	  headerContainer: {
 		alignItems: "center",
-	},
-	image: {
-		width: 100,
-		height: 100,
-		borderRadius: 10,
-	},
-	uploadingText: {
-		textAlign: "center",
-		marginVertical: 10,
+		marginVertical: 24,
+	  },
+	  headerText: {
+		fontSize: 28,
+		fontWeight: "bold",
+		color: COLORS.text.primary,
+		marginTop: 8,
+	  },
+	  formContainer: {
+		backgroundColor: COLORS.surface,
+		borderRadius: 16,
+		padding: 24,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	  },
+	  inputWrapper: {
+		marginBottom: 16,
+	  },
+	  label: {
 		fontSize: 16,
-		color: "gray",
-	},
-	productItem: {
-		marginVertical: 10,
-	},
-	productText: {
-		fontSize: 16,
-	},
-	picker: {
-		backgroundColor: "#FFF",
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 8,
+	  },
+	  inputContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
 		borderWidth: 1,
-		borderColor: "#CCC",
-		marginTop: 10,
-		borderRadius: 5,
-	},
-	childContainer: {
-		backgroundColor: "white",
-		width: "100%",
-		borderRadius: 20,
-		marginBottom: 25,
-		shadowColor: "#171717",
-		shadowOffset: { width: -2, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 3,
-		padding: 25,
-	},
-});
-
-export default EditBusinessPage;
+		borderColor: COLORS.border,
+	  },
+	  inputIcon: {
+		padding: 12,
+	  },
+	  input: {
+		flex: 1,
+		paddingVertical: 12,
+		fontSize: 16,
+		color: COLORS.text.primary,
+	  },
+	  multilineInput: {
+		height: 100,
+		textAlignVertical: "top",
+	  },
+	  pickerWrapper: {
+		marginBottom: 16,
+	  },
+	  pickerContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
+		borderWidth: 1,
+		borderColor: COLORS.border,
+	  },
+	  picker: {
+		flex: 1,
+		height: 50,
+	  },
+	  sectionContainer: {
+		marginTop: 24,
+		marginBottom: 16,
+	  },
+	  sectionTitle: {
+		fontSize: 20,
+		fontWeight: "bold",
+		color: COLORS.text.primary,
+		marginBottom: 16,
+	  },
+	  subsectionTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 16,
+	  },
+	  imageItem: {
+		marginRight: 16,
+		marginBottom: 16,
+	  },
+	  image: {
+		width: 150,
+		height: 150,
+		borderRadius: 12,
+		marginBottom: 8,
+	  },
+	  productItem: {
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
+		padding: 16,
+		marginBottom: 16,
+	  },
+	  productTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 8,
+	  },
+	  productDescription: {
+		fontSize: 16,
+		color: COLORS.text.secondary,
+		marginBottom: 8,
+	  },
+	  productPrice: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: COLORS.primary,
+		marginBottom: 8,
+	  },
+	  productImage: {
+		width: 200,
+		height: 200,
+		borderRadius: 12,
+		marginBottom: 8,
+	  },
+	  addProductForm: {
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
+		padding: 16,
+		marginTop: 16,
+	  },
+	  actionButton: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: COLORS.primary,
+		borderRadius: 12,
+		paddingVertical: 16,
+		paddingHorizontal: 24,
+		marginVertical: 8,
+		gap: 8,
+	  },
+	  actionButtonText: {
+		color: COLORS.text.inverse,
+		fontSize: 16,
+		fontWeight: "600",
+	  },
+	  emptyText: {
+		color: COLORS.text.secondary,
+		fontSize: 16,
+		fontStyle: "italic",
+		marginBottom: 16,
+	  },
+	});
+	
+	export default EditBusinessPage;

@@ -1,27 +1,46 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Text, StyleSheet, SafeAreaView, Button, ActivityIndicator, ScrollView, View, Image } from "react-native";
+import { Text, StyleSheet, SafeAreaView, TouchableOpacity, ActivityIndicator, ScrollView, View, Image } from "react-native";
 import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
-import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore"; 
-import { FIRESTORE } from "../../FirebaseConfig";
-import { Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, updateDoc, doc, getDoc, setDoc } from "firebase/firestore"; 
+import { FIRESTORE, FIREBASE_AUTH } from "../../FirebaseConfig";
 import { format } from "date-fns";
-import { FIREBASE_AUTH } from "../../FirebaseConfig";
-import { getDoc, setDoc } from "firebase/firestore";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+// Consistent color palette matching login page
+const COLORS = {
+    primary: "#6366F1",
+    secondary: "#4F46E5",
+    background: "#F3F4F6",
+    surface: "#FFFFFF",
+    text: {
+        primary: "#1F2937",
+        secondary: "#6B7280",
+        inverse: "#FFFFFF",
+    },
+    border: "#E5E7EB",
+    success: "#10B981",
+};
 
 const BusinessOrdersPage: React.FC = () => {
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const route = useRoute();
     const { id } = route.params as { id: string };
-
     const navigation = useNavigation();
     
     useEffect(() => {
-		navigation.setOptions({
-			headerTitle: "Edit Business Details",
-			headerBackTitle: "Back",
-		});
-	}, [navigation]);
+        navigation.setOptions({
+            headerTitle: "Orders Dashboard",
+            headerBackTitle: "Back",
+            headerStyle: {
+                backgroundColor: COLORS.surface,
+            },
+            headerTintColor: COLORS.primary,
+            headerTitleStyle: {
+                fontWeight: "600",
+            },
+        });
+    }, [navigation]);
 
     const fetchOrders = async () => {
         try {
@@ -30,9 +49,7 @@ const BusinessOrdersPage: React.FC = () => {
             if (!querySnapshot.empty) {
                 const businessDoc = querySnapshot.docs[0];
                 const data = businessDoc.data();
-                setOrders(data.orders || []); // Assuming orders are stored under 'orders' field
-            } else {
-                console.log("No such business found with the given ID");
+                setOrders(data.orders || []);
             }
         } catch (error) {
             console.error("Error fetching orders: ", error);
@@ -46,17 +63,14 @@ const BusinessOrdersPage: React.FC = () => {
         }, [id])
     );
 
-    const currentUserEmail:any = FIREBASE_AUTH.currentUser?.email;
+    const currentUserEmail: any = FIREBASE_AUTH.currentUser?.email;
 
     const handleSendMessage = async (recipientEmail: string, orderId: string) => {
-        const docId =
-            currentUserEmail && recipientEmail
-                ? [currentUserEmail, recipientEmail].sort().join("&")
-                : null;
+        const docId = currentUserEmail && recipientEmail
+            ? [currentUserEmail, recipientEmail].sort().join("&")
+            : null;
         const docRef = doc(FIRESTORE, "messages", docId || "default");
-
         const messageContent = `Your order ${orderId} is ready for pickup!`;
-
         const newMessage = { [currentUserEmail]: messageContent };
 
         try {
@@ -90,116 +104,188 @@ const BusinessOrdersPage: React.FC = () => {
                 });
                 await updateDoc(docRef, { orders: updatedOrders });
                 return updatedOrders;
-            } else {
-                console.log("No such business found with the given ID.");
             }
         } catch (error) {
             console.error("Failed to update order status:", error);
         }
-        return orders; // Return current orders if error occurs
+        return orders;
     };
-    
 
     const handleFulfill = async (orderId: string, userEmail: string) => {
-        alert(`Order ${orderId} fulfilled!`);
         await handleSendMessage(userEmail, orderId);
         const updatedOrders = await setFulfillStatus(orderId);
-    
-        // Update the orders state after fulfilling
-        setOrders(updatedOrders.filter(order => !order.fulfilled)); // Remove fulfilled orders from the list
+        setOrders(updatedOrders.filter(order => !order.fulfilled));
     };
-    
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <ActivityIndicator size="large" color="#0000ff" />
+            <SafeAreaView style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color={COLORS.primary} />
             </SafeAreaView>
         );
     }
 
-
     return (
-        <ScrollView style={styles.pageContainer}>
-            <View style={[styles.childContainer, styles.middleContainer]}>
-                <Text style={styles.sectionTitle}>Orders</Text>
-                {orders.length > 0 ? (
-                    orders
-                        .filter((order: any) => !order.fulfilled) // Only render orders that are not fulfilled
-                        .map((order: any, index: any) => (
-                            <View key={index} style={styles.orderItem}>
-                                <Text style={styles.orderTitle}>{order.productName}</Text>
-                                <Image source={{ uri: order.productImage }} style={styles.orderImage} />
-                                <Text style={styles.orderDescription}>Price: ${order.productPrice}</Text>
-                                <Text style={styles.orderDescription}>Order Email: {order.userId}</Text>
-                                <Text style={styles.orderDescription}>Timestamp: {format(order.timestamp.toDate(), 'PPpp')}</Text>
-                                <Button title="Fulfill" onPress={() => handleFulfill(order.id, order.userId)} />
-                            </View>
-                        ))
-                ) : (
-                    <Text>No orders available</Text>
-                )}
-            </View>
-        </ScrollView>
+        <SafeAreaView style={styles.container}>
+            <ScrollView style={styles.scrollView}>
+                <View style={styles.headerContainer}>
+                    <MaterialCommunityIcons
+                        name="shopping"
+                        size={40}
+                        color={COLORS.primary}
+                    />
+                    <Text style={styles.headerTitle}>Pending Orders</Text>
+                    <Text style={styles.subtitle}>Manage your customer orders</Text>
+                </View>
+
+                <View style={styles.ordersContainer}>
+                    {orders.length > 0 ? (
+                        orders
+                            .filter((order: any) => !order.fulfilled)
+                            .map((order: any, index: number) => (
+                                <View key={index} style={styles.orderCard}>
+                                    <Image source={{ uri: order.productImage }} style={styles.orderImage} />
+                                    <View style={styles.orderDetails}>
+                                        <Text style={styles.orderTitle}>{order.productName}</Text>
+                                        <Text style={styles.orderPrice}>${order.productPrice}</Text>
+                                        <Text style={styles.orderEmail}>{order.userId}</Text>
+                                        <Text style={styles.orderTime}>
+                                            {format(order.timestamp.toDate(), 'PPpp')}
+                                        </Text>
+                                        <TouchableOpacity
+                                            style={styles.fulfillButton}
+                                            onPress={() => handleFulfill(order.id, order.userId)}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name="check-circle"
+                                                size={24}
+                                                color={COLORS.text.inverse}
+                                            />
+                                            <Text style={styles.fulfillButtonText}>Mark as Fulfilled</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))
+                    ) : (
+                        <View style={styles.emptyStateContainer}>
+                            <MaterialCommunityIcons
+                                name="package-variant"
+                                size={64}
+                                color={COLORS.text.secondary}
+                            />
+                            <Text style={styles.emptyStateText}>No pending orders</Text>
+                        </View>
+                    )}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     );    
 };
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#E4E8EE",
+        backgroundColor: COLORS.background,
     },
-    pageContainer: {
-        paddingVertical: 10,
+    loadingContainer: {
         flex: 1,
-        backgroundColor: "transparent",
-        paddingHorizontal: 25,
-    },
-    childContainer: {
-        backgroundColor: "white",
-        width: "100%",
-        borderRadius: 20,
-        marginBottom: 25,
-        shadowColor: "#171717",
-        shadowOffset: { width: -2, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-        padding: 25,
-        flexShrink: 1,
-    },
-    middleContainer: {
+        justifyContent: "center",
         alignItems: "center",
+        backgroundColor: COLORS.background,
     },
-    sectionTitle: {
-        fontWeight: "500",
-        fontSize: 25,
-        marginBottom: 10,
-        paddingTop: 10,
+    scrollView: {
+        flex: 1,
     },
-    orderItem: {
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 10,
-        padding: 10,
-        marginBottom: 15,
+    headerContainer: {
         alignItems: "center",
-        width: "100%",
+        padding: 24,
+        backgroundColor: COLORS.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: COLORS.border,
     },
-    orderTitle: {
-        fontSize: 18,
+    headerTitle: {
+        fontSize: 28,
         fontWeight: "bold",
-        marginBottom: 5,
+        color: COLORS.text.primary,
+        marginTop: 8,
     },
-    orderDescription: {
-        fontSize: 14,
-        marginVertical: 5,
-        textAlign: "center",
+    subtitle: {
+        fontSize: 16,
+        color: COLORS.text.secondary,
+        marginTop: 4,
+    },
+    ordersContainer: {
+        padding: 16,
+    },
+    orderCard: {
+        backgroundColor: COLORS.surface,
+        borderRadius: 16,
+        marginBottom: 16,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+        overflow: "hidden",
     },
     orderImage: {
-        width: 150,
-        height: 150,
-        marginBottom: 10,
-        borderRadius: 10,
+        width: "100%",
+        height: 200,
+        resizeMode: "cover",
+    },
+    orderDetails: {
+        padding: 16,
+    },
+    orderTitle: {
+        fontSize: 20,
+        fontWeight: "600",
+        color: COLORS.text.primary,
+        marginBottom: 8,
+    },
+    orderPrice: {
+        fontSize: 18,
+        fontWeight: "600",
+        color: COLORS.primary,
+        marginBottom: 8,
+    },
+    orderEmail: {
+        fontSize: 14,
+        color: COLORS.text.secondary,
+        marginBottom: 4,
+    },
+    orderTime: {
+        fontSize: 14,
+        color: COLORS.text.secondary,
+        marginBottom: 16,
+    },
+    fulfillButton: {
+        backgroundColor: COLORS.success,
+        borderRadius: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 8,
+    },
+    fulfillButtonText: {
+        color: COLORS.text.inverse,
+        fontSize: 16,
+        fontWeight: "600",
+    },
+    emptyStateContainer: {
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 48,
+        backgroundColor: COLORS.surface,
+        borderRadius: 16,
+        marginTop: 16,
+    },
+    emptyStateText: {
+        fontSize: 18,
+        color: COLORS.text.secondary,
+        marginTop: 16,
+        fontWeight: "500",
     },
 });
 
