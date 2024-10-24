@@ -151,37 +151,44 @@ function AuthLayout() {
 function CustomerTabNavigator() {
   return (
     <Tab.Navigator
-      initialRouteName="Dashboard" // Add this line
+      initialRouteName="Dashboard"
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ color, size }) => {
           let iconName: any;
 
           if (route.name === "Dashboard") {
             iconName = "home";
           } else if (route.name === "Businesses") {
-            iconName = "briefcase";
+            iconName = "search";
           } else if (route.name === "Messages") {
             iconName = "message-square";
           } else if (route.name === "Settings") {
             iconName = "settings";
           }
 
-          return <Feather name={iconName} size={30} color={color} />;
+          return <Feather name={iconName} size={20} color={color} />;
         },
         tabBarActiveTintColor: "white",
         tabBarInactiveTintColor: "rgba(255,255,255,0.5)",
         tabBarStyle: {
+          position: "absolute", // Make the tab bar float
           backgroundColor: "#5A5D9D",
           borderTopWidth: 0,
-          height: 80,
+          height: 50,
           paddingBottom: 10,
           paddingTop: 10,
-          marginBottom: 35,
-          marginHorizontal: 15,
+          bottom: 20, // Adjust the position from the bottom
+          left: 20,   // Add some margin from the sides to create floating space
+          right: 20,
           borderRadius: 40,
+          shadowColor: "#000", // Add shadow for elevation effect
+          shadowOffset: { width: 0, height: 5 },
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          elevation: 5, // For Android devices
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 7,
         },
         headerShown: false,
       })}
@@ -193,6 +200,7 @@ function CustomerTabNavigator() {
     </Tab.Navigator>
   );
 }
+
 
 function CustomerLayout() {
   return (
