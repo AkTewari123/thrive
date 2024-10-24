@@ -21,418 +21,447 @@ import { Picker } from "@react-native-picker/picker";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DropDownPicker from 'react-native-dropdown-picker';
 
-
-// Consistent color palette
 const COLORS = {
-  primary: "#6366F1", // Main brand color (purple)
-  secondary: "#4F46E5", // Darker purple for hover states
-  background: "#F3F4F6", // Light grey background
-  surface: "#FFFFFF", // White surface
+  primary: "#6366F1",
+  secondary: "#4F46E5",
+  background: "#F3F4F6",
+  surface: "#FFFFFF",
   text: {
-    primary: "#1F2937", // Dark grey for primary text
-    secondary: "#6B7280", // Medium grey for secondary text
-    inverse: "#FFFFFF", // White text
+    primary: "#1F2937",
+    secondary: "#6B7280",
+    inverse: "#FFFFFF",
   },
-  border: "#E5E7EB", // Light grey for borders
-  error: "#EF4444", // Red for errors
-  success: "#10B981", // Green for success states
+  border: "#E5E7EB",
+  error: "#EF4444",
+  success: "#10B981",
 };
 
-
 const EditBusinessPage: React.FC = () => {
-	const [businessData, setBusinessData] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-	const [products, setProducts] = useState<any[]>([]);
-	const [newProduct, setNewProduct] = useState({
-		name: "",
-		description: "",
-		price: "",
-		image: "",
-	});
-	const [uploading, setUploading] = useState(false);
-	const [transferred, setTransferred] = useState(0);
-	const [imageUrl, setImageUrl] = useState<string>("");
-	const [open, setOpen] = useState(false);
-const [selectedCategory, setSelectedCategory] = useState("food");
-const [items, setItems] = useState([
-  { label: 'Food', value: 'food' },
-  { label: 'Service', value: 'service' },
-  { label: 'Arts and Crafts', value: 'arts_crafts' },
-  { label: 'Technology', value: 'technology' },
-  { label: 'Retail', value: 'retail' },
-]);
+  const [businessData, setBusinessData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>([]);
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    description: "",
+    price: "",
+    image: "",
+  });
+  const [uploading, setUploading] = useState(false);
+  const [transferred, setTransferred] = useState(0);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [open, setOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("food");
+  const [items, setItems] = useState([
+    { label: 'Food', value: 'food' },
+    { label: 'Service', value: 'service' },
+    { label: 'Arts and Crafts', value: 'arts_crafts' },
+    { label: 'Technology', value: 'technology' },
+    { label: 'Retail', value: 'retail' },
+  ]);
 
+  const route = useRoute();
+  const { id } = route.params as { id: string };
+  const navigation = useNavigation();
 
-	const route = useRoute();
-	const { id } = route.params as { id: string };
-	const navigation = useNavigation();
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: "Edit Business Details",
+      headerBackTitle: "Back",
+    });
+  }, [navigation]);
 
-	useEffect(() => {
-		navigation.setOptions({
-			headerTitle: "Edit Business Details",
-			headerBackTitle: "Back",
-		});
-	}, [navigation]);
+  useEffect(() => {
+    const fetchBusinessData = async () => {
+      setLoading(true);
+      try {
+        const q = query(
+          collection(FIRESTORE, "businessData"),
+          where("businessID", "==", id)
+        );
+        const querySnapshot = await getDocs(q);
 
-	useEffect(() => {
-		const fetchBusinessData = async () => {
-			setLoading(true);
-			try {
-				const q = query(
-					collection(FIRESTORE, "businessData"),
-					where("businessID", "==", id)
-				);
-				const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          setBusinessData(doc.data());
+          setProducts(doc.data()?.products || []);
+        } else {
+          console.log("No such document with the given businessID!");
+          setBusinessData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching business data: ", error);
+        setBusinessData(null);
+      }
+      setLoading(false);
+    };
 
-				if (!querySnapshot.empty) {
-					const doc = querySnapshot.docs[0];
-					setBusinessData(doc.data());
-					setProducts(doc.data()?.products || []);
-				} else {
-					console.log("No such document with the given businessID!");
-					setBusinessData(null);
-				}
-			} catch (error) {
-				console.error("Error fetching business data: ", error);
-				setBusinessData(null);
-			}
-			setLoading(false);
-		};
+    fetchBusinessData();
+  }, [id]);
 
-		fetchBusinessData();
-	}, [id]);
+  const handleSave = async () => {
+    try {
+      const q = query(
+        collection(FIRESTORE, "businessData"),
+        where("businessID", "==", id)
+      );
+      const querySnapshot = await getDocs(q);
 
-	const handleSave = async () => {
-		try {
-			const q = query(
-				collection(FIRESTORE, "businessData"),
-				where("businessID", "==", id)
-			);
-			const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const docRef = querySnapshot.docs[0].ref;
+        await updateDoc(docRef, {
+          ...businessData,
+          products,
+          longDescription: businessData.longDescription,
+          category: selectedCategory,
+        });
+        Alert.alert("Success", "Business information updated successfully!");
+      } else {
+        Alert.alert("Error", "No business found with the given ID.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to update business information.");
+      console.error("Error updating business data: ", error);
+    }
+  };
 
-			if (!querySnapshot.empty) {
-				const docRef = querySnapshot.docs[0].ref;
-				await updateDoc(docRef, {
-					...businessData,
-					products,
-					longDescription: businessData.longDescription,
-					category: selectedCategory,
-				});
-				Alert.alert("Success", "Business information updated successfully!");
-			} else {
-				Alert.alert("Error", "No business found with the given ID.");
-			}
-		} catch (error) {
-			Alert.alert("Error", "Failed to update business information.");
-			console.error("Error updating business data: ", error);
-		}
-	};
+  const handleInputChange = (field: string, value: any) => {
+    setBusinessData((prevData: any) => ({
+      ...prevData,
+      [field]: value,
+    }));
+  };
 
-	const handleInputChange = (field: string, value: any) => {
-		setBusinessData((prevData: any) => ({
-			...prevData,
-			[field]: value,
-		}));
-	};
+  const handleRemoveImage = (index: number) => {
+    const updatedImages = [...businessData.images];
+    updatedImages.splice(index, 1);
+    handleInputChange("images", updatedImages);
+  };
 
-	const handleRemoveImage = (index: number) => {
-		const updatedImages = [...businessData.images];
-		updatedImages.splice(index, 1);
-		handleInputChange("images", updatedImages);
-	};
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-	const handlePickImage = async () => {
-		const result = await ImagePicker.launchImageLibraryAsync({
-			mediaTypes: ImagePicker.MediaTypeOptions.Images,
-			allowsEditing: true,
-			aspect: [4, 3],
-			quality: 1,
-		});
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `businessImages/${Date.now()}.jpg`);
+        const uploadTask = uploadBytesResumable(storageRef, blob);
 
-		if (!result.canceled) {
-			const uri = result.assets[0].uri;
-			try {
-				const response = await fetch(uri);
-				const blob = await response.blob();
-				const storageRef = ref(storage, `businessImages/${Date.now()}.jpg`);
-				const uploadTask = uploadBytesResumable(storageRef, blob);
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setTransferred(progress);
+          },
+          (error) => {
+            console.error("Upload failed: ", error);
+            Alert.alert("Error", `Image upload failed: ${error.message}`);
+          },
+          async () => {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            handleInputChange("images", [
+              ...(businessData.images || []),
+              downloadUrl,
+            ]);
+            Alert.alert("Success", "Image uploaded successfully!");
+          }
+        );
+      } catch (error: any) {
+        console.error("Upload failed: ", error);
+        Alert.alert("Error", `Image upload failed: ${error.message}`);
+      }
+    }
+  };
 
-				uploadTask.on(
-					"state_changed",
-					(snapshot) => {
-						const progress =
-							(snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-						setTransferred(progress);
-					},
-					(error) => {
-						console.error("Upload failed: ", error);
-						Alert.alert("Error", `Image upload failed: ${error.message}`);
-					},
-					async () => {
-						const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-						handleInputChange("images", [
-							...(businessData.images || []),
-							downloadUrl,
-						]);
-						Alert.alert("Success", "Image uploaded successfully!");
-					}
-				);
-			} catch (error:any) {
-				console.error("Upload failed: ", error);
-				Alert.alert("Error", `Image upload failed: ${error.message}`);
-			}
-		}
-	};
+  const handlePickProductImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-	const handleAddProduct = () => {
-		if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.image) {
-			Alert.alert("Error", "Please fill in all product fields.");
-			return;
-		}
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      try {
+        const response = await fetch(uri);
+        const blob = await response.blob();
+        const storageRef = ref(storage, `productImages/${Date.now()}.jpg`);
+        const uploadTask = uploadBytesResumable(storageRef, blob);
 
-		const updatedProducts = [...products, { ...newProduct, productID: Date.now() }];
-		setProducts(updatedProducts);
-		setNewProduct({ name: "", description: "", price: "", image: "" });
-		Alert.alert("Success", "Product added successfully!");
-	};
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setTransferred(progress);
+          },
+          (error) => {
+            console.error("Upload failed: ", error);
+            Alert.alert("Error", `Image upload failed: ${error.message}`);
+          },
+          async () => {
+            const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            setNewProduct((prevProduct) => ({
+              ...prevProduct,
+              image: downloadUrl,
+            }));
+            Alert.alert("Success", "Product image uploaded successfully!");
+          }
+        );
+      } catch (error: any) {
+        console.error("Upload failed: ", error);
+        Alert.alert("Error", `Image upload failed: ${error.message}`);
+      }
+    }
+  };
 
-	const handleRemoveProduct = (index: number) => {
-		const updatedProducts = [...products];
-		updatedProducts.splice(index, 1);
-		setProducts(updatedProducts);
-		Alert.alert("Success", "Product removed successfully!");
-	};
+  const handleAddProduct = () => {
+    if (!newProduct.name || !newProduct.description || !newProduct.price || !newProduct.image) {
+      Alert.alert("Error", "Please fill in all product fields.");
+      return;
+    }
 
-	if (loading) {
-		return (
-			<SafeAreaView style={styles.container}>
-				<Text>Loading...</Text>
-			</SafeAreaView>
-		);
-	}
+    const updatedProducts = [...products, { ...newProduct, productID: Date.now() }];
+    setProducts(updatedProducts);
+    setNewProduct({ name: "", description: "", price: "", image: "" });
+    Alert.alert("Success", "Product added successfully!");
+  };
 
-	const renderInputField = (
-		label: string,
-		value: string,
-		onChangeText: (text: string) => void,
-		icon: string,
-		multiline: boolean = false,
-		keyboardType: any = "default"
-	  ) => (
-		<View style={styles.inputWrapper}>
-		  <Text style={styles.label}>{label}</Text>
-		  <View style={styles.inputContainer}>
-			<MaterialCommunityIcons
-			  name={icon as any}
-			  size={20}
-			  color={COLORS.text.secondary}
-			  style={styles.inputIcon}
-			/>
-			<TextInput
-			  style={[
-				styles.input,
-				multiline && styles.multilineInput
-			  ]}
-			  value={value}
-			  onChangeText={onChangeText}
-			  multiline={multiline}
-			  keyboardType={keyboardType}
-			  placeholderTextColor={COLORS.text.secondary}
-			/>
-		  </View>
-		</View>
-	  );
-	
-	  const renderActionButton = (title: string, onPress: () => void, icon: string, color: string = COLORS.primary) => (
-		<TouchableOpacity
-		  style={[styles.actionButton, { backgroundColor: color }]}
-		  onPress={onPress}
-		>
-		  <MaterialCommunityIcons
-			name={icon as any}
-			size={24}
-			color={COLORS.text.inverse}
-		  />
-		  <Text style={styles.actionButtonText}>{title}</Text>
-		</TouchableOpacity>
-	  );
-	
-	  return (
-		<SafeAreaView style={styles.container}>
-  <FlatList
-    data={[{ key: 'form' }]}  // FlatList requires data, so use a single dummy item
-    renderItem={() => (
-      <View style={styles.pageContainer}>
-        {/* Business form fields */}
-        <View style={styles.headerContainer}>
-          <MaterialCommunityIcons
-            name="store-edit"
-            size={40}
-            color={COLORS.primary}
-          />
-          <Text style={styles.headerText}>Edit Business Profile</Text>
-        </View>
+  const handleRemoveProduct = (index: number) => {
+    const updatedProducts = [...products];
+    updatedProducts.splice(index, 1);
+    setProducts(updatedProducts);
+    Alert.alert("Success", "Product removed successfully!");
+  };
 
-        <View style={styles.formContainer}>
-          {renderInputField(
-            "Business Name",
-            businessData?.businessName || "",
-            (text) => handleInputChange("businessName", text),
-            "store"
-          )}
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
 
-          {renderInputField(
-            "Description",
-            businessData?.description || "",
-            (text) => handleInputChange("description", text),
-            "text-box",
-            true
-          )}
+  const renderInputField = (
+    label: string,
+    value: string,
+    onChangeText: (text: string) => void,
+    icon: string,
+    multiline: boolean = false,
+    keyboardType: any = "default"
+  ) => (
+    <View style={styles.inputWrapper}>
+      <Text style={styles.label}>{label}</Text>
+      <View style={styles.inputContainer}>
+        <MaterialCommunityIcons
+          name={icon as any}
+          size={20}
+          color={COLORS.text.secondary}
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={[styles.input, multiline && styles.multilineInput]}
+          value={value}
+          onChangeText={onChangeText}
+          multiline={multiline}
+          keyboardType={keyboardType}
+          placeholderTextColor={COLORS.text.secondary}
+        />
+      </View>
+    </View>
+  );
 
-          {renderInputField(
-            "Long Description",
-            businessData?.longDescription || "",
-            (text) => handleInputChange("longDescription", text),
-            "text-box-multiple",
-            true
-          )}
+  const renderActionButton = (
+    title: string,
+    onPress: () => void,
+    icon: string,
+    color: string = COLORS.primary
+  ) => (
+    <TouchableOpacity
+      style={[styles.actionButton, { backgroundColor: color }]}
+      onPress={onPress}
+    >
+      <MaterialCommunityIcons name={icon as any} size={24} color={COLORS.text.inverse} />
+      <Text style={styles.actionButtonText}>{title}</Text>
+    </TouchableOpacity>
+  );
 
-          {renderInputField(
-            "Phone Number",
-            businessData?.phoneNumber || "",
-            (text) => handleInputChange("phoneNumber", text),
-            "phone",
-            false,
-            "phone-pad"
-          )}
+  return (
+    <SafeAreaView style={styles.container}>
+      <FlatList
+        data={[{ key: 'form' }]}
+        renderItem={() => (
+          <View style={styles.pageContainer}>
+            {/* Business form fields */}
+            <View style={styles.headerContainer}>
+              <MaterialCommunityIcons name="store-edit" size={40} color={COLORS.primary} />
+              <Text style={styles.headerText}>Edit Business Profile</Text>
+            </View>
 
-          {renderInputField(
-            "Location",
-            businessData?.location || "",
-            (text) => handleInputChange("location", text),
-            "map-marker"
-          )}
+            <View style={styles.formContainer}>
+              {renderInputField(
+                "Business Name",
+                businessData?.businessName || "",
+                (text) => handleInputChange("businessName", text),
+                "store"
+              )}
 
-          {/* Dropdown for category */}
-          <View style={styles.pickerWrapper}>
-            <Text style={styles.label}>Business Category</Text>
+              {renderInputField(
+                "Description",
+                businessData?.description || "",
+                (text) => handleInputChange("description", text),
+                "text-box",
+                true
+              )}
 
-              <DropDownPicker
-                open={open}
-                value={selectedCategory}
-                items={items}
-                setOpen={setOpen}
-                setValue={setSelectedCategory}
-                setItems={setItems}
-                placeholder="Select a Category"
-                style={styles.dropdown}
-                dropDownContainerStyle={styles.dropdownContainer}
-              />
-          </View>
+              {renderInputField(
+                "Long Description",
+                businessData?.longDescription || "",
+                (text) => handleInputChange("longDescription", text),
+                "text-box-multiple",
+                true
+              )}
 
-          {/* Images section */}
-          <View style={[styles.sectionContainer, {alignContent:"center"}]}>
-            <Text style={styles.sectionTitle}>Business Images</Text>
-            {businessData?.images?.length > 0 ? (
-              <FlatList
-                data={businessData.images}
-                keyExtractor={(item, index) => `image-${index}`}
-                renderItem={({ item, index }) => (
-                  <View style={styles.imageItem}>
-                    <Image source={{ uri: item }} style={styles.image} />
+              {renderInputField(
+                "Phone Number",
+                businessData?.phoneNumber || "",
+                (text) => handleInputChange("phoneNumber", text),
+                "phone",
+                false,
+                "phone-pad"
+              )}
+
+              {renderInputField(
+                "Location",
+                businessData?.location || "",
+                (text) => handleInputChange("location", text),
+                "map-marker"
+              )}
+
+              {/* Dropdown for category */}
+              <View style={styles.pickerWrapper}>
+                <Text style={styles.label}>Business Category</Text>
+                <DropDownPicker
+                  open={open}
+                  value={selectedCategory}
+                  items={items}
+                  setOpen={setOpen}
+                  setValue={setSelectedCategory}
+                  setItems={setItems}
+                  placeholder="Select a Category"
+                  style={styles.dropdown}
+                  dropDownContainerStyle={styles.dropdownContainer}
+                />
+              </View>
+
+              {/* Images section */}
+              <View style={[styles.sectionContainer, { alignContent: "center" }]}>
+                <Text style={styles.sectionTitle}>Business Images</Text>
+                {businessData?.images?.length > 0 ? (
+                  <FlatList
+                    data={businessData.images}
+                    keyExtractor={(item, index) => `image-${index}`}
+                    renderItem={({ item, index }) => (
+                      <View style={styles.imageItem}>
+                        <Image source={{ uri: item }} style={styles.image} />
+                        {renderActionButton(
+                          "Remove",
+                          () => handleRemoveImage(index),
+                          "delete",
+                          COLORS.error
+                        )}
+                      </View>
+                    )}
+                    horizontal
+                  />
+                ) : (
+                  <Text style={styles.emptyText}>No images available</Text>
+                )}
+                {renderActionButton(
+                  "Add Image",
+                  handlePickImage,
+                  "image-plus"
+                )}
+              </View>
+
+              {/* Products section */}
+              <View style={styles.sectionContainer}>
+                <Text style={styles.sectionTitle}>Products</Text>
+                {products.map((product, index) => (
+                  <View key={product.productID} style={styles.productItem}>
+                    <Text style={styles.productTitle}>{product.name}</Text>
+                    <Text style={styles.productDescription}>{product.description}</Text>
+                    <Text style={styles.productPrice}>${product.price}</Text>
+                    <Image source={{ uri: product.image }} style={styles.productImage} />
                     {renderActionButton(
-                      "Remove",
-                      () => handleRemoveImage(index),
+                      "Remove Product",
+                      () => handleRemoveProduct(index),
                       "delete",
                       COLORS.error
                     )}
                   </View>
-                )}
-                horizontal
-              />
-            ) : (
-              <Text style={styles.emptyText}>No images available</Text>
-            )}
-            {renderActionButton(
-              "Add Image",
-              handlePickImage,
-              "image-plus"
-            )}
-          </View>
+                ))}
 
-          {/* Products section */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Products</Text>
-            {products.map((product, index) => (
-              <View key={product.productID} style={styles.productItem}>
-                <Text style={styles.productTitle}>{product.name}</Text>
-                <Text style={styles.productDescription}>
-                  {product.description}
-                </Text>
-                <Text style={styles.productPrice}>${product.price}</Text>
-                <Image source={{ uri: product.image }} style={styles.productImage} />
-                {renderActionButton(
-                  "Remove Product",
-                  () => handleRemoveProduct(index),
-                  "delete",
-                  COLORS.error
-                )}
+                {/* Add product form */}
+                <View style={styles.addProductForm}>
+                  <Text style={styles.subsectionTitle}>Add New Product</Text>
+                  {renderInputField(
+                    "Product Name",
+                    newProduct.name,
+                    (text) => setNewProduct({ ...newProduct, name: text }),
+                    "tag-text"
+                  )}
+                  {renderInputField(
+                    "Product Description",
+                    newProduct.description,
+                    (text) => setNewProduct({ ...newProduct, description: text }),
+                    "text-box",
+                    true
+                  )}
+                  {renderInputField(
+                    "Product Price",
+                    newProduct.price,
+                    (text) => setNewProduct({ ...newProduct, price: text }),
+                    "currency-usd",
+                    false,
+                    "numeric"
+                  )}
+                  {renderActionButton(
+                    "Add Product Image",
+                    handlePickProductImage,
+                    "image-plus"
+                  )}
+                  {renderActionButton(
+                    "Add Product",
+                    handleAddProduct,
+                    "plus-circle"
+                  )}
+                </View>
               </View>
-            ))}
 
-            {/* Add product form */}
-            <View style={styles.addProductForm}>
-              <Text style={styles.subsectionTitle}>Add New Product</Text>
-              {renderInputField(
-                "Product Name",
-                newProduct.name,
-                (text) => setNewProduct({ ...newProduct, name: text }),
-                "tag-text"
-              )}
-              {renderInputField(
-                "Product Description",
-                newProduct.description,
-                (text) => setNewProduct({ ...newProduct, description: text }),
-                "text-box",
-                true
-              )}
-              {renderInputField(
-                "Product Price",
-                newProduct.price,
-                (text) => setNewProduct({ ...newProduct, price: text }),
-                "currency-usd",
-                false,
-                "numeric"
-              )}
+              {/* Save changes button */}
               {renderActionButton(
-                "Add Product Image",
-                handlePickImage,
-                "image-plus"
-              )}
-              {renderActionButton(
-                "Add Product",
-                handleAddProduct,
-                "plus-circle"
+                "Save Changes",
+                handleSave,
+                "content-save",
+                COLORS.success
               )}
             </View>
           </View>
-
-          {/* Save changes button */}
-          {renderActionButton(
-            "Save Changes",
-            handleSave,
-            "content-save",
-            COLORS.success
-          )}
-        </View>
-      </View>
-    )}
-    keyExtractor={(item) => item.key}
-  />
-</SafeAreaView>
-
-	  );
-	};
+        )}
+        keyExtractor={(item) => item.key}
+      />
+    </SafeAreaView>
+  );
+};
 	
 	const styles = StyleSheet.create({
 	  container: {
@@ -558,6 +587,7 @@ const [items, setItems] = useState([
 		borderRadius: 12,
 		padding: 16,
 		marginBottom: 16,
+		alignItems: "center",
 	  },
 	  
 	  

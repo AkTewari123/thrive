@@ -6,7 +6,6 @@ import {
   ScrollView,
   SafeAreaView,
   ActivityIndicator,
-  TouchableOpacity,
 } from "react-native";
 import {
   collection,
@@ -18,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { FIRESTORE } from "../../FirebaseConfig";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { set } from "date-fns";
 
 interface Post {
   id?: string;
@@ -30,8 +30,7 @@ interface Post {
 }
 
 interface RouteParams {
-  companyEmail: string;
-  companyName: string;
+  businessID: string;
 }
 
 const PostItem: React.FC<Post> = ({
@@ -63,43 +62,70 @@ const PostItem: React.FC<Post> = ({
 export const CompanyPostHistory: React.FC = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { companyName } = route.params as RouteParams;
+  const { businessID } = route.params as RouteParams;
 
-  const [loading, setLoading] = useState(true);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
+  // Fetch user by businessID and then their posts
   useEffect(() => {
-    fetchCompanyPosts();
-  }, [companyName]);
+    const fetchUserAndPosts = async () => {
+      try {
+        // Query the users collection for the user with the given businessID
+        const userQuery = query(
+          collection(FIRESTORE, 'users'),
+          where('userType', '==', 'Business')
+        );
 
-  useEffect(() => {
-			navigation.setOptions({
-				headerTitle: companyName,
-				headerBackTitle: "Back",
-			});
-	}, [companyName, navigation]);
+        const userSnapshot = await getDocs(userQuery);
 
-  const fetchCompanyPosts = async () => {
-    if (!companyName) return;
+        let foundUserEmail: string | null = null;
 
-    try {
-      const q = query(
-        collection(FIRESTORE, "posts"),
-        where("companyName", "==", companyName),
-        orderBy("timestamp", "desc")
-      );
-      const querySnapshot = await getDocs(q);
-      const postsData: Post[] = [];
-      querySnapshot.forEach((doc) => {
-        postsData.push({ id: doc.id, ...doc.data() } as Post);
-      });
-      setPosts(postsData);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+        userSnapshot.forEach((doc) => {
+          const userData = doc.data();
+          if (userData.businessID === businessID) {
+            foundUserEmail = userData.email;
+          }
+        });
+
+        if (!foundUserEmail) {
+          throw new Error('No user found with the given businessID');
+        }
+
+        setUserEmail(foundUserEmail);
+
+        // Query the posts collection for posts related to the found user's email
+        const postQuery = query(
+          collection(FIRESTORE, 'posts'),
+          where('companyEmail', '==', foundUserEmail),
+          orderBy('timestamp', 'desc')
+        );
+
+        const postSnapshot = await getDocs(postQuery);
+
+        const postsData: Post[] = [];
+        postSnapshot.forEach((doc) => {
+          postsData.push({
+            id: doc.id,
+            ...doc.data(),
+          } as Post);
+        });
+
+        setPosts(postsData);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserAndPosts();
+  }, [businessID]);
+
+  
+  
+  
 
   if (loading) {
     return (
@@ -111,16 +137,6 @@ export const CompanyPostHistory: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{companyName}'s Updates</Text>
-      </View> */}
-
       <ScrollView style={styles.content}>
         {posts.length === 0 ? (
           <View style={styles.emptyStateContainer}>
@@ -141,27 +157,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#E4E8EE",
-  },
-  header: {
-    backgroundColor: "#5A5D9D",
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  headerTitle: {
-    color: "white",
-    fontSize: 20,
-    fontWeight: "bold",
-    flex: 1,
-    textAlign: "center",
-    marginRight: 40, // Offset for back button to center title
-  },
-  backButton: {
-    padding: 8,
-  },
-  backButtonText: {
-    color: "white",
-    fontSize: 24,
   },
   content: {
     flex: 1,

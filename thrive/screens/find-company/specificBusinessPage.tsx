@@ -128,7 +128,7 @@ const SpecificBusinessPage: React.FC = () => {
 	const schedule = businessData?.schedule || {};
 	const images = businessData?.images || [];
 	const reviews = businessData?.reviews || [
-		{ username: "None", rating: 5, review: "No Reviews" },
+		{ username: "None", rating: 0, review: "No Reviews" },
 	];
 	const email = businessData?.email || "Not defined";
 	const products = businessData?.products || [];
@@ -311,15 +311,12 @@ const SpecificBusinessPage: React.FC = () => {
 											color={i < numStars ? COLORS.primary : COLORS.text.secondary}
 										/>
 									))}
-									<Text style={styles.ratingText}>({reviews.length} reviews)</Text>
+									<Text style={styles.ratingText}>({reviews.length} {reviews.length == 1 ? "review" : "reviews"})</Text>
 								</View>
 							</View>
 							<TouchableOpacity
 								style={styles.viewPostsButton}
-								onPress={() => navigation.navigate('CompanyPostHistory', {
-									businessId: id,
-									businessName: businessName
-								})}
+								onPress={() => navigation.navigate('CompanyPostHistory', {businessID: businessData?.businessID,})}
 							>
 								<MaterialCommunityIcons name="post" size={20} color={COLORS.text.inverse} />
 								<Text style={styles.viewPostsButtonText}>Posts</Text>

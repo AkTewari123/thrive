@@ -15,10 +15,7 @@ import { FIRESTORE } from "../../FirebaseConfig";
 import { Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { Modal } from "react-native";
-
-const categories = ["food", "service", "arts_crafts", "technology", "retail"];
-import { FlatList } from "react-native";
+import DropDownPicker from 'react-native-dropdown-picker';
 
 const SearchResults: React.FC = () => {
   const [businesses, setBusinesses] = useState([]);
@@ -28,31 +25,28 @@ const SearchResults: React.FC = () => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-
+  
     const filtered = businesses.filter((item: any) => {
-      const matchesQuery = item["businessName"]
-        .toLowerCase()
-        .includes(query.toLowerCase());
-      const matchesCategory = selectedCategory
-        ? item["category"] === selectedCategory
-        : true; // If no category is selected, match all
+      const businessName = item["businessName"] || "";  // Default to empty string if undefined
+      const matchesQuery = businessName.toLowerCase().includes(query.toLowerCase());
+      const matchesCategory = selectedCategory ? item["category"] === selectedCategory : true;
       return matchesQuery && matchesCategory;
     });
     setFilteredResults(filtered);
   };
-
+  
   const handleCategorySelect = (category: string | null) => {
     setSelectedCategory(category);
-
+  
     const filtered = businesses.filter((item: any) => {
-      const matchesQuery = item["businessName"]
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+      const businessName = item["businessName"] || "";  // Default to empty string if undefined
+      const matchesQuery = businessName.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = category ? item["category"] === category : true;
       return matchesQuery && matchesCategory;
     });
     setFilteredResults(filtered);
   };
+  
 
   const navigation = useNavigation<StackNavigationProp<any>>();
 
@@ -136,16 +130,15 @@ const SearchResults: React.FC = () => {
     fetchBusinesses();
   }, []);
 
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-
-  const toggleDropdown = () => {
-    setDropdownVisible(!dropdownVisible);
-  };
-
-  const handleSelection = (category: any) => {
-    handleCategorySelect(category);
-    toggleDropdown();
-  };
+  const [open, setOpen] = useState(false);
+  const [items, setItems] = useState([
+    { label: 'All', value: null },
+    { label: 'Food', value: 'food' },
+    { label: 'Service', value: 'service' },
+    { label: 'Arts and Crafts', value: 'arts_crafts' },
+    { label: 'Technology', value: 'technology' },
+    { label: 'Retail', value: 'retail' },
+  ]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -167,50 +160,18 @@ const SearchResults: React.FC = () => {
       </View>
 
       <View style={styles.dropdownContainer}>
-        <TouchableOpacity
-          style={styles.dropdownButton}
-          onPress={toggleDropdown}
-        >
-          <Text style={styles.dropdownButtonText}>
-            {selectedCategory === null ? "All" : selectedCategory}
-          </Text>
-        </TouchableOpacity>
-
-        <Modal
-          visible={dropdownVisible}
-          transparent={true}
-          animationType="fade"
-        >
-          <TouchableOpacity
-            style={styles.modalOverlay}
-            onPress={toggleDropdown}
-          >
-            <View style={styles.dropdown}>
-              <FlatList
-                data={["All", ...categories]}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.dropdownItem}
-                    onPress={() =>
-                      handleSelection(item === "All" ? null : item)
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.dropdownItemText,
-                        selectedCategory === item &&
-                          styles.selectedCategoryText,
-                      ]}
-                    >
-                      {item}
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
-          </TouchableOpacity>
-        </Modal>
+        <DropDownPicker
+          open={open}
+          value={selectedCategory}
+          items={items}
+          setOpen={setOpen}
+          setValue={setSelectedCategory}
+          setItems={setItems}
+          placeholder="Select a Category"
+          onChangeValue={handleCategorySelect}
+          style={styles.dropdown}
+          dropDownContainerStyle={styles.dropdownContainerStyle}
+        />
       </View>
 
       <ScrollView style={styles.resultsList}>{displayBusinesses()}</ScrollView>
@@ -309,68 +270,20 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingHorizontal: 40,
   },
-  categoryScroll: {
-    marginTop: 10,
-    paddingLeft: 10,
-    height: 5,
-  },
-  categoryButton: {
-    backgroundColor: "#f3f4f6",
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    marginRight: 10,
-    height: 40,
-  },
-  selectedCategory: {
-    backgroundColor: "#4338ca",
-  },
-  categoryText: {
-    color: "#1F2937",
-    fontSize: 14,
-    fontWeight: "500",
-  },
   dropdownContainer: {
     margin: 10,
-  },
-  dropdownButton: {
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  dropdownButtonText: {
-    fontSize: 16,
-    backgroundColor: "white",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    height:50,
+    zIndex: 1000,
   },
   dropdown: {
     backgroundColor: "white",
-    width: "80%",
-    maxHeight: 300,
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    borderRadius: 10,
+    borderColor: "#E5E7EB",
   },
-  dropdownItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
-  },
-  dropdownItemText: {
-    fontSize: 16,
-  },
-  selectedCategoryText: {
-    fontWeight: "bold",
+  dropdownContainerStyle: {
+    backgroundColor: "white",
+    borderColor: "#E5E7EB",
+    maxHeight: 150,
   },
 });
 
