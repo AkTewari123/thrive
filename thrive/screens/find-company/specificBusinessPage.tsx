@@ -1,71 +1,71 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  Text,
-  StyleSheet,
-  Dimensions,
-  TouchableOpacity,
-  SafeAreaView,
-  View,
-  ScrollView,
-  Alert,
-  TextInput,
-  ActivityIndicator,
+	Text,
+	StyleSheet,
+	Dimensions,
+	TouchableOpacity,
+	SafeAreaView,
+	View,
+	ScrollView,
+	Alert,
+	TextInput,
+	ActivityIndicator,
 } from "react-native";
 import { Image } from "react-native-ui-lib";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRoute, useNavigation, useFocusEffect } from "@react-navigation/native";
 import { FIREBASE_AUTH, FIRESTORE } from "../../FirebaseConfig";
 import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-  arrayUnion,
-  Timestamp,
+	collection,
+	query,
+	where,
+	getDocs,
+	updateDoc,
+	arrayUnion,
+	Timestamp,
 } from "firebase/firestore";
 import { format } from 'date-fns';
 
 // Consistent color palette
 const COLORS = {
-  primary: '#6366F1',     // Main brand color (purple)
-  secondary: '#4F46E5',   // Darker purple for hover states
-  background: '#F3F4F6',  // Light grey background
-  surface: '#FFFFFF',     // White surface
-  text: {
-    primary: '#1F2937',   // Dark grey for primary text
-    secondary: '#6B7280', // Medium grey for secondary text
-    inverse: '#FFFFFF',   // White text
-  },
-  border: '#E5E7EB',      // Light grey for borders
-  error: '#EF4444',       // Red for errors
-  success: '#10B981',     // Green for success states
+	primary: '#6366F1',     // Main brand color (purple)
+	secondary: '#4F46E5',   // Darker purple for hover states
+	background: '#F3F4F6',  // Light grey background
+	surface: '#FFFFFF',     // White surface
+	text: {
+		primary: '#1F2937',   // Dark grey for primary text
+		secondary: '#6B7280', // Medium grey for secondary text
+		inverse: '#FFFFFF',   // White text
+	},
+	border: '#E5E7EB',      // Light grey for borders
+	error: '#EF4444',       // Red for errors
+	success: '#10B981',     // Green for success states
 };
 
 interface ReviewProps {
-  username: string;
-  rating: number;
-  review: string;
+	username: string;
+	rating: number;
+	review: string;
 }
 
 const Review: React.FC<ReviewProps> = ({ username, rating, review }) => {
-  const stars = Array.from({ length: 5 }, (_, i) => (
-    <FontAwesome
-      key={i}
-      name={i < rating ? "star" : "star-o"}
-      size={16}
-      color={i < rating ? COLORS.primary : COLORS.text.secondary}
-      style={{ marginRight: 4 }}
-    />
-  ));
+	const stars = Array.from({ length: 5 }, (_, i) => (
+		<FontAwesome
+			key={i}
+			name={i < rating ? "star" : "star-o"}
+			size={16}
+			color={i < rating ? COLORS.primary : COLORS.text.secondary}
+			style={{ marginRight: 4 }}
+		/>
+	));
 
-  return (
-    <View style={styles.reviewCard}>
-      <Text style={styles.reviewUsername}>{username}</Text>
-      <View style={styles.starsContainer}>{stars}</View>
-      <Text style={styles.reviewText}>{review}</Text>
-    </View>
-  );
+	return (
+		<View style={styles.reviewCard}>
+			<Text style={styles.reviewUsername}>{username}</Text>
+			<View style={styles.starsContainer}>{stars}</View>
+			<Text style={styles.reviewText}>{review}</Text>
+		</View>
+	);
 };
 
 const SpecificBusinessPage: React.FC = () => {
@@ -295,298 +295,335 @@ const SpecificBusinessPage: React.FC = () => {
 	const totalReviews = reviews.length;
 
 	return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        {/* Header Section */}
-        <View style={styles.headerSection}>
-          <Text style={styles.businessName}>{businessName}</Text>
-          <View style={styles.ratingContainer}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <FontAwesome
-                key={i}
-                name={i < numStars ? "star" : "star-o"}
-                size={20}
-                color={i < numStars ? COLORS.primary : COLORS.text.secondary}
-              />
-            ))}
-            <Text style={styles.ratingText}>({reviews.length} reviews)</Text>
-          </View>
-        </View>
+		<SafeAreaView style={styles.container}>
+			<ScrollView style={styles.scrollView}>
+				{/* Header Section */}
+				<View style={styles.headerSection}>
+						<View style={styles.headerRow}>
+							<View>
+								<Text style={styles.businessName}>{businessName}</Text>
+								<View style={styles.ratingContainer}>
+									{Array.from({ length: 5 }).map((_, i) => (
+										<FontAwesome
+											key={i}
+											name={i < numStars ? "star" : "star-o"}
+											size={20}
+											color={i < numStars ? COLORS.primary : COLORS.text.secondary}
+										/>
+									))}
+									<Text style={styles.ratingText}>({reviews.length} reviews)</Text>
+								</View>
+							</View>
+							<TouchableOpacity
+								style={styles.viewPostsButton}
+								onPress={() => navigation.navigate('CompanyPostHistory', {
+									businessId: id,
+									businessName: businessName
+								})}
+							>
+								<MaterialCommunityIcons name="post" size={20} color={COLORS.text.inverse} />
+								<Text style={styles.viewPostsButtonText}>Posts</Text>
+							</TouchableOpacity>
+						</View>
+					</View>
 
-        {/* Image Carousel */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.carouselContainer}
-        >
-          {images.map((image: any, index: any) => (
-            <Image
-              key={`image-${index}`}
-              source={{ uri: image }}
-              style={styles.carouselImage}
-            />
-          ))}
-        </ScrollView>
+				{/* Image Carousel */}
+				<ScrollView
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					style={styles.carouselContainer}
+				>
+					{images.map((image: any, index: any) => (
+						<Image
+							key={`image-${index}`}
+							source={{ uri: image }}
+							style={styles.carouselImage}
+						/>
+					))}
+				</ScrollView>
 
-        {/* Business Info Card */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <Text style={styles.descriptionText}>{businessDescription}</Text>
-          
-          <View style={styles.contactInfo}>
-            <View style={styles.contactItem}>
-              <MaterialCommunityIcons name="phone" size={24} color={COLORS.primary} />
-              <Text style={styles.contactText}>{phoneNumber}</Text>
-            </View>
-            <View style={styles.contactItem}>
-              <MaterialCommunityIcons name="map-marker" size={24} color={COLORS.primary} />
-              <Text style={styles.contactText}>{address}</Text>
-            </View>
-          </View>
-        </View>
+				{/* Business Info Card */}
+				<View style={styles.card}>
+					<Text style={styles.sectionTitle}>About</Text>
+					<Text style={styles.descriptionText}>{businessDescription}</Text>
 
-        {/* Products Section */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Products</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {products.map((product: any, index: any) => (
-              <View key={index} style={styles.productCard}>
-                <Image source={{ uri: product.image }} style={styles.productImage} />
-                <Text style={styles.productTitle}>{product.name}</Text>
-                <Text style={styles.productPrice}>${product.price}</Text>
-                <TouchableOpacity
-                  style={styles.orderButton}
-                  onPress={() => handleOrder(product.productID, product.image, product.price, product.name)}
-                >
-                  <Text style={styles.orderButtonText}>Order Now</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+					<View style={styles.contactInfo}>
+						<View style={styles.contactItem}>
+							<MaterialCommunityIcons name="phone" size={24} color={COLORS.primary} />
+							<Text style={styles.contactText}>{phoneNumber}</Text>
+						</View>
+						<View style={styles.contactItem}>
+							<MaterialCommunityIcons name="map-marker" size={24} color={COLORS.primary} />
+							<Text style={styles.contactText}>{address}</Text>
+						</View>
+					</View>
+				</View>
 
-        {/* Reviews Section */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Reviews</Text>
-          <View>
-            {reviews.map((review: any, index: any) => (
-              <Review
-                key={index}
-                username={review.username}
-                rating={review.rating}
-                review={review.review}
-              />
-            ))}
-          </View>
-          
-          {/* Add Review Form */}
-          <View style={styles.addReviewSection}>
-            <Text style={styles.subsectionTitle}>Write a Review</Text>
-            <View style={styles.ratingInput}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <TouchableOpacity key={i} onPress={() => setNewRating(i + 1)}>
-                  <FontAwesome
-                    name={i < newRating ? "star" : "star-o"}
-                    size={24}
-                    color={i < newRating ? COLORS.primary : COLORS.text.secondary}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-            <TextInput
-              style={styles.reviewInput}
-              placeholder="Share your experience..."
-              multiline
-              value={newReview}
-              onChangeText={setNewReview}
-            />
-            <TouchableOpacity
-              style={styles.submitButton}
-              onPress={handleSubmitReview}
-              disabled={submitting}
-            >
-              <Text style={styles.submitButtonText}>
-                {submitting ? "Submitting..." : "Submit Review"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+				{/* Products Section */}
+				<View style={styles.card}>
+					<Text style={styles.sectionTitle}>Products</Text>
+					<ScrollView horizontal showsHorizontalScrollIndicator={false}>
+						{products.map((product: any, index: any) => (
+							<View key={index} style={styles.productCard}>
+								<Image source={{ uri: product.image }} style={styles.productImage} />
+								<Text style={styles.productTitle}>{product.name}</Text>
+								<Text style={styles.productPrice}>${product.price}</Text>
+								<TouchableOpacity
+									style={styles.orderButton}
+									onPress={() => handleOrder(product.productID, product.image, product.price, product.name)}
+								>
+									<Text style={styles.orderButtonText}>Order Now</Text>
+								</TouchableOpacity>
+							</View>
+						))}
+					</ScrollView>
+				</View>
+
+				{/* Reviews Section */}
+				<View style={styles.card}>
+					<Text style={styles.sectionTitle}>Reviews</Text>
+					<View>
+						{reviews.map((review: any, index: any) => (
+							<Review
+								key={index}
+								username={review.username}
+								rating={review.rating}
+								review={review.review}
+							/>
+						))}
+					</View>
+
+					{/* Add Review Form */}
+					<View style={styles.addReviewSection}>
+						<Text style={styles.subsectionTitle}>Write a Review</Text>
+						<View style={styles.ratingInput}>
+							{Array.from({ length: 5 }).map((_, i) => (
+								<TouchableOpacity key={i} onPress={() => setNewRating(i + 1)}>
+									<FontAwesome
+										name={i < newRating ? "star" : "star-o"}
+										size={24}
+										color={i < newRating ? COLORS.primary : COLORS.text.secondary}
+									/>
+								</TouchableOpacity>
+							))}
+						</View>
+						<TextInput
+							style={styles.reviewInput}
+							placeholder="Share your experience..."
+							multiline
+							value={newReview}
+							onChangeText={setNewReview}
+						/>
+						<TouchableOpacity
+							style={styles.submitButton}
+							onPress={handleSubmitReview}
+							disabled={submitting}
+						>
+							<Text style={styles.submitButtonText}>
+								{submitting ? "Submitting..." : "Submit Review"}
+							</Text>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</ScrollView>
+		</SafeAreaView>
+	);
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  headerSection: {
-    padding: 20,
-    backgroundColor: COLORS.surface,
-  },
-  businessName: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: COLORS.text.primary,
-    marginBottom: 8,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  ratingText: {
-    marginLeft: 8,
-    color: COLORS.text.secondary,
-  },
-  carouselContainer: {
-    height: 200,
-    marginBottom: 16,
-  },
-  carouselImage: {
-    width: 300,
-    height: 200,
-    marginHorizontal: 8,
-    borderRadius: 12,
-  },
-  card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 20,
-    marginHorizontal: 16,
-    marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: COLORS.text.primary,
-    marginBottom: 16,
-  },
-  descriptionText: {
-    fontSize: 16,
-    color: COLORS.text.secondary,
-    lineHeight: 24,
-    marginBottom: 16,
-  },
-  contactInfo: {
-    marginTop: 16,
-  },
-  contactItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  contactText: {
-    marginLeft: 12,
-    fontSize: 16,
-    color: COLORS.text.secondary,
-  },
-  productCard: {
-    width: 200,
-    backgroundColor: COLORS.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginRight: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  productImage: {
-    width: "100%",
-    height: 150,
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  productTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.text.primary,
-    marginBottom: 4,
-  },
-  productPrice: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: COLORS.primary,
-    marginBottom: 12,
-  },
-  orderButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-  },
-  orderButtonText: {
-    color: COLORS.text.inverse,
-    fontWeight: "600",
-  },
-  reviewCard: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-  },
-  reviewUsername: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: COLORS.text.primary,
-    marginBottom: 4,
-  },
-  starsContainer: {
-    flexDirection: "row",
-    marginBottom: 8,
-  },
-  reviewText: {
-    fontSize: 14,
-    color: COLORS.text.secondary,
-    lineHeight: 20,
-  },
-  addReviewSection: {
-    marginTop: 24,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: COLORS.border,
-  },
-  subsectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: COLORS.text.primary,
-    marginBottom: 16,
-  },
-  ratingInput: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 16,
-    gap: 8,
-  },
-  reviewInput: {
-    backgroundColor: COLORS.background,
-    borderRadius: 12,
-    padding: 16,
-    height: 120,
-    textAlignVertical: "top",
-    marginBottom: 16,
-  },
-  submitButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 16,
-    alignItems: "center",
-  },
-  submitButtonText: {
-    color: COLORS.text.inverse,
-    fontSize: 16,
-    fontWeight: "600",
-  },
+	container: {
+		flex: 1,
+		backgroundColor: COLORS.background,
+	},
+	scrollView: {
+		flex: 1,
+	},
+	headerSection: {
+		padding: 20,
+		backgroundColor: COLORS.surface,
+	},
+	businessName: {
+		fontSize: 28,
+		fontWeight: "bold",
+		color: COLORS.text.primary,
+		marginBottom: 8,
+	},
+	ratingContainer: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 16,
+	},
+	ratingText: {
+		marginLeft: 8,
+		color: COLORS.text.secondary,
+	},
+	carouselContainer: {
+		height: 200,
+		marginBottom: 16,
+	},
+	carouselImage: {
+		width: 300,
+		height: 200,
+		marginHorizontal: 8,
+		borderRadius: 12,
+	},
+	card: {
+		backgroundColor: COLORS.surface,
+		borderRadius: 16,
+		padding: 20,
+		marginHorizontal: 16,
+		marginBottom: 16,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 3,
+	},
+	sectionTitle: {
+		fontSize: 20,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 16,
+	},
+	descriptionText: {
+		fontSize: 16,
+		color: COLORS.text.secondary,
+		lineHeight: 24,
+		marginBottom: 16,
+	},
+	contactInfo: {
+		marginTop: 16,
+	},
+	contactItem: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 12,
+	},
+	contactText: {
+		marginLeft: 12,
+		fontSize: 16,
+		color: COLORS.text.secondary,
+	},
+	productCard: {
+		width: 200,
+		backgroundColor: COLORS.surface,
+		borderRadius: 12,
+		padding: 16,
+		marginRight: 16,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+	},
+	productImage: {
+		width: "100%",
+		height: 150,
+		borderRadius: 8,
+		marginBottom: 12,
+	},
+	productTitle: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 4,
+	},
+	productPrice: {
+		fontSize: 18,
+		fontWeight: "bold",
+		color: COLORS.primary,
+		marginBottom: 12,
+	},
+	orderButton: {
+		backgroundColor: COLORS.primary,
+		borderRadius: 8,
+		padding: 12,
+		alignItems: "center",
+	},
+	orderButtonText: {
+		color: COLORS.text.inverse,
+		fontWeight: "600",
+	},
+	reviewCard: {
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
+		padding: 16,
+		marginBottom: 16,
+	},
+	reviewUsername: {
+		fontSize: 16,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 4,
+	},
+	starsContainer: {
+		flexDirection: "row",
+		marginBottom: 8,
+	},
+	reviewText: {
+		fontSize: 14,
+		color: COLORS.text.secondary,
+		lineHeight: 20,
+	},
+	addReviewSection: {
+		marginTop: 24,
+		paddingTop: 24,
+		borderTopWidth: 1,
+		borderTopColor: COLORS.border,
+	},
+	subsectionTitle: {
+		fontSize: 18,
+		fontWeight: "600",
+		color: COLORS.text.primary,
+		marginBottom: 16,
+	},
+	ratingInput: {
+		flexDirection: "row",
+		justifyContent: "center",
+		marginBottom: 16,
+		gap: 8,
+	},
+	reviewInput: {
+		backgroundColor: COLORS.background,
+		borderRadius: 12,
+		padding: 16,
+		height: 120,
+		textAlignVertical: "top",
+		marginBottom: 16,
+	},
+	submitButton: {
+		backgroundColor: COLORS.primary,
+		borderRadius: 12,
+		padding: 16,
+		alignItems: "center",
+	},
+	submitButtonText: {
+		color: COLORS.text.inverse,
+		fontSize: 16,
+		fontWeight: "600",
+	},
+	headerSection: {
+		padding: 20,
+		backgroundColor: COLORS.surface,
+	},
+	headerRow: {
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
+	},
+	viewPostsButton: {
+		backgroundColor: COLORS.primary,
+		flexDirection: 'row',
+		alignItems: 'center',
+		paddingVertical: 8,
+		paddingHorizontal: 12,
+		borderRadius: 8,
+		gap: 4,
+	},
+	viewPostsButtonText: {
+		color: COLORS.text.inverse,
+		fontSize: 14,
+		fontWeight: '600',
+	},
 });
 
 export default SpecificBusinessPage;
